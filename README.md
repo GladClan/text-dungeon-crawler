@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 To run the development server:
 
-```bash
+```
 npm run dev
 ```
 
@@ -24,7 +24,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 - Party is displayed on the left of the battle page with their items and abilities which they can use.
     - add a flee button underneath the party, which gives the enemies the chance to attack the party as they flee.
     - Make hidden enemies hidden 🕶️
-    - ✅ the items and abilities underneath the party will be their attacks and abilities and I will need to pass in the functions through to the buttons from the weapons and such
+    - ✅ the items and abilities underneath the party will be their attacks and abilities. will need to pass in the functions through to the buttons from the weapons and such
         - Select a target, then the ability to use.. or vice versa, that might be more intuitive.
         - Considering when characters or the party has the "blind" effect, hides all the enemies so the character can't see who they're targeting. They also have a chance to hit friends 👀
     - ✅ who is active will be emphasized somehow, either size or a scrollbar at the top that rotates the party and enemies according to the initiative list.
@@ -56,5 +56,5 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 - The main screen will be a map where the rooms appear as you explore. So divs that are hidden until you complete the adjacent div.
     - To make the story more adaptive, rooms can have different states that create different descriptions--'default' state for a room unopened, or 'empty' for a room that has been defeated. Or perhaps a 'recovering' for a room that repeats, like enemies inside regenerating.
 
-# Events
+## Events
 - **<u>Treasure Room event</u>**</br>Gives an awesome weapon and gold to the party, and has an image of a grand chest in the corner of an old, dusty storeroom.
