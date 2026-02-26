@@ -1,6 +1,6 @@
-import { Entity } from "./entity";
+import { Entity } from "./entity/entity";
 import Skill from "./skill";
-import { Proficiency, Element } from "../proficiency-elements";
+import { Proficiency, DamageType } from "../proficiency-elements";
 import { ContinuousEffects } from "./ContinuousEffects";
 
 // skills: {[key: string]: { proficiency: string, skill: Function } };
@@ -8,12 +8,12 @@ export const exampleSkills = {
     heal: new Skill(
         "Heal",
         Proficiency.healing,
-        Element.healing,
+        DamageType.healing,
         7,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = -10 * source.getStats().getProficiency(Proficiency.healing);
             source.getStats().addProficiencyEntry(Proficiency.healing);
-            return target.takeMagicDamage(damage, Element.healing, source);
+            return target.takeMagicDamage(damage, DamageType.healing, source);
         },
         1
     ),
@@ -21,12 +21,12 @@ export const exampleSkills = {
     greaterHeal: new Skill(
         "Greater Heal",
         Proficiency.healing,
-        Element.healing,
+        DamageType.healing,
         15,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = -30 * source.getStats().getProficiency(Proficiency.healing);
             source.getStats().addProficiencyEntry(Proficiency.healing);
-            return target.takeMagicDamage(damage, Element.healing, source);
+            return target.takeMagicDamage(damage, DamageType.healing, source);
         },
         2
     ),
@@ -34,12 +34,12 @@ export const exampleSkills = {
     fireball : new Skill(
         "Fireball",
         Proficiency.spellstrike,
-        Element.fire,
+        DamageType.fire,
         7,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = 20 * source.getStats().getProficiency(Proficiency.spellstrike);
             source.getStats().addProficiencyEntry(Proficiency.spellstrike);
-            return target.takeMagicDamage(damage, Element.fire, source);
+            return target.takeMagicDamage(damage, DamageType.fire, source);
         },
         1
     ),
@@ -47,12 +47,12 @@ export const exampleSkills = {
     thunderbolt : new Skill(
         "Thunderbolt",
         Proficiency.spellstrike,
-        Element.lightning,
+        DamageType.lightning,
         7,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = 20 * source.getStats().getProficiency(Proficiency.spellstrike);
             source.getStats().addProficiencyEntry(Proficiency.spellstrike);
-            return target.takeMagicDamage(damage, Element.lightning, source);
+            return target.takeMagicDamage(damage, DamageType.lightning, source);
         },
         1
     ),
@@ -60,7 +60,7 @@ export const exampleSkills = {
     blizzard : new Skill(
         "Blizzard",
         Proficiency.spellstrike,
-        Element.ice,
+        DamageType.ice,
         9,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = 5 * source.getStats().getProficiency(Proficiency.spellstrike);
@@ -69,11 +69,11 @@ export const exampleSkills = {
                 'Blizzard',
                 target,
                 source,
-                (target: Entity, source: Entity) => {return target.damageEffect(damage, Element.ice, source)},
+                (target: Entity, source: Entity) => {return target.damageEffect(damage, DamageType.ice, source)},
                 0.5,
                 6
             )
-            const result = target.damageEffect(damage, Element.ice, source);
+            const result = target.damageEffect(damage, DamageType.ice, source);
             return [[result[0], result[1]], [0,0], result[2]]
         },
         1
@@ -82,7 +82,7 @@ export const exampleSkills = {
     poison: new Skill(
         "Poison",
         Proficiency.spellstrike,
-        Element.poison,
+        DamageType.poison,
         7,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = 3 * source.getStats().getProficiency(Proficiency.spellstrike);
@@ -91,11 +91,11 @@ export const exampleSkills = {
                 'Poison',
                 target,
                 source,
-                (target: Entity, source: Entity) => {return target.damageEffect(damage, Element.poison, source)},
+                (target: Entity, source: Entity) => {return target.damageEffect(damage, DamageType.poison, source)},
                 0.125,
                 30
             )
-            const result = target.damageEffect(damage, Element.poison, source);
+            const result = target.damageEffect(damage, DamageType.poison, source);
             return [[result[0], result[1]], [0,0], result[2]]
         },
         1
@@ -104,7 +104,7 @@ export const exampleSkills = {
     steal: new Skill(
         "Steal",
         Proficiency.stealth,
-        Element.none,
+        DamageType.none,
         5,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             source.getStats().addProficiencyEntry(Proficiency.stealth);
@@ -136,15 +136,15 @@ export const exampleSkills = {
     sacrifice: new Skill(
         'Noble Sacrifice',
         Proficiency.nobility,
-        Element.holy,
+        DamageType.holy,
         20,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const max = source.getStats().getMaxHealth()
             const current = source.getStats().getHealth()
             const multiplier = max / current;
             const damage = max * multiplier * source.getStats().getProficiency(Proficiency.nobility);
-            source.takeMagicDamage(damage, Element.holy, target);
-            return target.takeMagicDamage(damage, Element.holy, source);
+            source.takeMagicDamage(damage, DamageType.holy, target);
+            return target.takeMagicDamage(damage, DamageType.holy, source);
         },
         2
     ),
@@ -153,7 +153,7 @@ export const exampleSkills = {
     libra: new Skill(
         'Libra',
         Proficiency.stealth,
-        Element.light,
+        DamageType.light,
         5,
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             if (target.getStats().isVisible()) {

@@ -1,7 +1,7 @@
 "use client"
 import React from "react";
 import { gameContext } from "@/context/gameContext";
-import { Entity } from "@/lib/obj/entity";
+import { Entity } from "@/lib/obj/entity/entity";
 import { getTurnOrder, isParty } from "@/lib/battleFunctions";
 import TurnOrderCard from "./turnOrderCard";
 import PartyMemberCard from "@/components/partyMemberCard";

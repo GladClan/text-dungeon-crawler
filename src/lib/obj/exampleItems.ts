@@ -1,7 +1,7 @@
-import { Entity } from "./entity";
+import { Entity } from "./entity/entity";
 import { Equippable } from "./itemCases/equippable";
 import { Useable } from "./itemCases/useable";
-import { Proficiency, Element } from "../proficiency-elements";
+import { Proficiency, DamageType } from "../proficiency-elements";
 import { ContinuousEffects } from "./ContinuousEffects";
 import { exampleSkills } from "./exampleSkills";
 
@@ -41,7 +41,7 @@ export const exampleItems = {
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = 30 * source.getStats().getProficiency(Proficiency.spellstrike);
             source.getStats().addProficiencyEntry(Proficiency.spellstrike);
-            return target.takeMagicDamage(damage, Element.fire, source);
+            return target.takeMagicDamage(damage, DamageType.fire, source);
         },
         true
     ),
@@ -54,7 +54,7 @@ export const exampleItems = {
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const damage = 20 * source.getStats().getProficiency(Proficiency.spellstrike);
             source.getStats().addProficiencyEntry(Proficiency.spellstrike);
-            return target.takeMagicDamage(damage, Element.ice, source);
+            return target.takeMagicDamage(damage, DamageType.ice, source);
         },
         true
     ),
@@ -235,7 +235,7 @@ export const exampleItems = {
         (target: Entity, source: Entity, damageEffect: ContinuousEffects) => {
             const amt = -50 * source.getStats().getProficiency(Proficiency.healing)
             source.getStats().addProficiencyEntry(Proficiency.healing);
-            return target.takeMagicDamage(amt, Element.healing, source);
+            return target.takeMagicDamage(amt, DamageType.healing, source);
         },
         true
     ),

@@ -1,5 +1,5 @@
 import { ContinuousEffects } from "./obj/ContinuousEffects";
-import { Entity } from "./obj/entity";
+import { Entity } from "./obj/entity/entity";
 
 /* Damage sent vs received to target, damage sent vs received to self, damage type, stat affected */
 export type returnType = [[number, number], [number, number], [string, string]];
@@ -70,11 +70,11 @@ export function getEffectText(target: Entity, resultsArr: returnTypeSingleton): 
 }
 
 export function getTurnOrder(members: Entity[]): Entity[] {
-    const sortedMembers = members.sort((a, b) => b.getInitiative() - a.getInitiative());
+    const sortedMembers = members.sort((a, b) => b.getSpeed() - a.getSpeed());
 
     const turnCounts = sortedMembers.map(member => ({
         member,
-        turns: 1 + Math.floor(member.getInitiative() / 20),
+        turns: 1 + Math.floor(member.getSpeed() / 20),
     }));
 
     const totalTurns = turnCounts.reduce((sum, tc) => sum + tc.turns, 0);
@@ -93,5 +93,5 @@ export function getTurnOrder(members: Entity[]): Entity[] {
 }
 
 export function isParty(party: Entity[], target: Entity): boolean {
-    return party.some(member => member.getMetadata().getEntityId() === target.getMetadata().getEntityId());
+    return party.some(member => member.getEntityId() === target.getEntityId());
 }

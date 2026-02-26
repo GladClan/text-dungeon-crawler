@@ -1,5 +1,5 @@
 export enum Proficiency {
-    none = '',
+    default = 'hand-to-hand',
     slashing = 'slashing',
     bludgeoning = 'bludgeoning',
     piercing = 'piercing',

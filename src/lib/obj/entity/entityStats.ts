@@ -1,3 +1,5 @@
+import { Proficiency } from "@/lib/proficiency-elements";
+
 export class EntityStats {
     private maxHealth: number;
     private health: number;
@@ -9,12 +11,12 @@ export class EntityStats {
     private level: number;
     private experience: number;
     private isEntityAlive: boolean;
-    private proficiencies: { [key: string]: number } = {}; // Proficiency in skills or equipment
-    private proficiencyEntries: { [key: string]: number } = {}; // Skills or equipment types used during a level and number of times that was used. Used to calculate what proficiency to add on level up
+    private proficiencies: Partial<Record<Proficiency, number>> = {}; // Proficiency in skills or equipment
+    private proficiencyEntries: Partial<Record<Proficiency, number>> = {}; // Skills or equipment types used during a level and number of times that was used. Used to calculate what proficiency to add on level up
     private visible: boolean = false; // Whether the entity's stats are visible in the UI
     private state: string = 'ready';
 
-    constructor(maxHealth: number, maxMana: number, magic: number, strength: number, defense: number, proficiencies: { [key: string]: number } = {}, level?: number, experience?: number) {
+    constructor(maxHealth: number, maxMana: number, magic: number, strength: number, defense: number, proficiencies: Partial<Record<Proficiency, number>> = {}, level?: number, experience?: number) {
         this.maxHealth = maxHealth;
         this.maxMana = maxMana;
         this.magic = magic;
@@ -159,11 +161,14 @@ export class EntityStats {
         const leftover = this.experience - this.getExperienceForNextLevel();
         this.level++;
 
-        for (const entry in this.proficiencyEntries) {
-            this.proficiencies[entry] = (this.proficiencies[entry] || 1) + (this.proficiencyEntries[entry] / this.getExperienceForNextLevel(this.level - 1));
+        for (const entry of Object.keys(this.proficiencyEntries) as Proficiency[]) {
+        const gained = this.proficiencyEntries[entry] ?? 0;
+        this.proficiencies[entry] =
+            (this.proficiencies[entry] ?? 0.5) +
+            (gained / this.getExperienceForNextLevel(this.level - 1));
         }
-        this.proficiencyEntries = {}; // Reset proficiency entries on level up
 
+        this.proficiencyEntries = {}; // Reset proficiency entries on level up
         this.health = this.maxHealth; // Restore health on level up
         this.mana = this.maxMana; // Restore mana on level up
         this.experience = leftover;
@@ -180,16 +185,16 @@ export class EntityStats {
         return this.proficiencies.hasOwnProperty(skill);
     }
 
-    public getProficiency(skill: string): number {
+    public getProficiency(skill: Proficiency): number {
         return this.proficiencies[skill] || 0.5;
     }
 
-    public setProficiency(skill: string, value: number): EntityStats {
+    public setProficiency(skill: Proficiency, value: number): EntityStats {
         this.proficiencies[skill] = value;
         return this;
     }
 
-    public getAllProficiencies(): { [key: string]: number } {
+    public getAllProficiencies(): Partial<Record<Proficiency, number>> {
         return this.proficiencies;
     }
 
@@ -199,12 +204,8 @@ export class EntityStats {
             .join(", ");
     }
 
-    addProficiencyEntry(entry: string): void {
-        if (this.proficiencyEntries[entry]) {
-            this.proficiencyEntries[entry] += 5;
-        } else {
-            this.proficiencyEntries[entry] = 5;
-        }
+    addProficiencyEntry(entry: Proficiency): void {
+        this.proficiencyEntries[entry] = (this.proficiencyEntries[entry] ?? 0) + 5
     }
 
     public setVisible(visible: boolean): EntityStats {

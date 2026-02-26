@@ -7,11 +7,11 @@ import { EntityAI } from "@/lib/entityAI";
 export class Entity extends DamageableEntity {
     private inventory: EntityInventory;
     private skills: EntitySkills;
-    private isHidden: boolean = false;
-    private speed: number = 10;
-    private AI: EntityAI | null = null;
+    private isHidden: boolean = false; // Whether the entity is hidden or not
+    private speed: number = 10; // Used to determine turn order
+    private AI: EntityAI | null = null; // Logic object for entity, if applicable
     
-    constructor(name: string, type: string, resistances?: {[key in DamageType]?: number}, id?: string) {
+    constructor(name: string, type: string, resistances?: Partial<Record<DamageType, number>>, id?: string) {
         super(name, type, {...resistances}, id);
         this.inventory = new EntityInventory;
         this.skills = new EntitySkills;
@@ -93,5 +93,9 @@ export class Entity extends DamageableEntity {
             copy.setAI(this.getAI()!);
         }
         return copy;
+    }
+
+    public shadow(): Entity {
+        return this;
     }
 }

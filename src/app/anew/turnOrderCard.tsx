@@ -1,7 +1,7 @@
 import React from "react";
 import HealthBar from "@/components/healthBar";
 
-import { Entity } from "@/lib/obj/entity";
+import { Entity } from "@/lib/obj/entity/entity";
 
 const TurnOrderCard: React.FC<{
     member: Entity,
@@ -15,10 +15,10 @@ const TurnOrderCard: React.FC<{
         borderColor: member.getStats().isAlive() ? (isParty ? "#4ade80" : "#ef4444") : "#6b7280"
         }}>
         <div style={styles.entityName}>
-            {member.getMetadata().getName()}
+            {member.getName()}
         </div>
         <div style={styles.entityInfo}>
-            <span style={{ color: "#d4af37" }}>Init: {member.getInitiative()}</span>
+            <span style={{ color: "#d4af37" }}>Init: {member.getSpeed()}</span>
             <span style={{ fontSize: '12px' }}>{isParty ? "🛡️" : "⚔️"}</span>
             <HealthBar
                 max={member.getStats().getMaxHealth()}

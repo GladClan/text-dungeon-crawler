@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Entity } from '@/lib/obj/entity';
+import { Entity } from '@/lib/obj/entity/entity';
 import EquipModal from './equipModal';
 
 const PartyMemberCard: React.FC<{
@@ -8,9 +8,9 @@ const PartyMemberCard: React.FC<{
     member: Entity;
     isActive?: boolean;
     onRemove?: (index: number) => void;
-}> = ({ member, id = member.getMetadata().getEntityId(), index, onRemove, isActive = false }) => {
+}> = ({ member, id = member.getEntityId(), index, onRemove, isActive = false }) => {
     const stats = member.getStats();
-    const metadata = member.getMetadata();
+    const metadata = member;
     const inventory = member.getInventory();
     const skills = member.getSkills();
     const [showEquipment, setShowEquipment] = useState(false)

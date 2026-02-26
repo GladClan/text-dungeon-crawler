@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { StoryBox } from "@/components/storybox";
 import { gameContext } from "@/context/gameContext";
 import EnemyCard from "@/components/enemyCard";
-import { Entity } from "@/lib/obj/entity";
+import { Entity } from "@/lib/obj/entity/entity";
 import { EntityAI } from "@/lib/entityAI";
 import PartyMemberCard from "@/components/partyMemberCard";
 import ActionButtons from "./actionButtons";
@@ -36,7 +36,7 @@ const BattlePage: React.FC = () => {
     });
 
     // Sort by initiative (highest first)
-    const sortedOrder = [...party, ...enemies].sort((a, b) => b.getInitiative() - a.getInitiative());
+    const sortedOrder = [...party, ...enemies].sort((a, b) => b.getSpeed() - a.getSpeed());
     setTurnOrder(sortedOrder);
     turnoverEffects.setEntityCount(turnOrder.length);
   }, [party, enemies]);
@@ -66,7 +66,7 @@ const BattlePage: React.FC = () => {
     }
     // Skip dead entities
     if (currentEntity && !currentEntity.getStats().isAlive()) {
-      setEvents(prev => [...prev, `${currentEntity.getMetadata().getName()} is unconscious (or dead)`]);
+      setEvents(prev => [...prev, `${currentEntity.getName()} is unconscious (or dead)`]);
       nextTurn();
       return;
     }
@@ -111,11 +111,11 @@ const BattlePage: React.FC = () => {
   };
 
   const isEntityTurn = (entity: Entity) => {
-    return getCurrentEntity()?.getMetadata().getEntityId() === entity.getMetadata().getEntityId();
+    return getCurrentEntity()?.getEntityId() === entity.getEntityId();
   };
 
   const isPartyMember = (entity: Entity) => {
-    return party.some(member => member.getMetadata().getEntityId() === entity.getMetadata().getEntityId());
+    return party.some(member => member.getEntityId() === entity.getEntityId());
   };
 
   const isPlayerTurn = () => {
@@ -132,7 +132,7 @@ const BattlePage: React.FC = () => {
             const isParty = isPartyMember(member);
             return (
               <div 
-                key={member.getMetadata().getEntityId()} 
+                key={member.getEntityId()} 
                 style={{
                   ...styles.turnQueueItem,
                   ...(isCurrent ? styles.currentTurnItem : {}),
@@ -140,10 +140,10 @@ const BattlePage: React.FC = () => {
                 }}
               >
                 <div style={styles.queueEntityName}>
-                  {member.getMetadata().getName()}
+                  {member.getName()}
                 </div>
                 <div style={styles.queueEntityInfo}>
-                  <span style={{ color: "#d4af37" }}>Init: {member.getInitiative()}</span>
+                  <span style={{ color: "#d4af37" }}>Init: {member.getSpeed()}</span>
                   <span style={{ fontSize: '12px' }}>{isParty ? "🛡️" : "⚔️"}</span>
                 </div>
                 {isCurrent && <div style={styles.currentTurnIndicator}>▶ ACTIVE</div>}
@@ -162,7 +162,7 @@ const BattlePage: React.FC = () => {
           {isPlayerTurn() && (
             <div style={{display: "flex", flexDirection:"column", gap: 5}}>
               {targetedEntity ? (
-                <div style={{textAlign: "center"}}>Targeting {targetedEntity.getMetadata().getName()}</div>
+                <div style={{textAlign: "center"}}>Targeting {targetedEntity.getName()}</div>
               ) : (
                 <span style={{ color: "#ff0000", textAlign: "center" }}>⚠️ Select a target to attack!</span>
               )}
@@ -183,7 +183,7 @@ const BattlePage: React.FC = () => {
               const isActive = isEntityTurn(member);
               return (
                 <div 
-                  key={member.getMetadata().getEntityId()} 
+                  key={member.getEntityId()} 
                   style={{
                     ...styles.combatantCard,
                     ...(isActive ? styles.activeCard : styles.inactiveCard),
@@ -215,7 +215,7 @@ const BattlePage: React.FC = () => {
                   {isPlayerTurn() ? "🛡️ Your Turn:" : "⚔️ Enemy Turn:"}
                 </h3>
                 <div style={styles.currentEntityName}>
-                  {getCurrentEntity().getMetadata().getName()}
+                  {getCurrentEntity().getName()}
                 </div>
               </>
             )}
@@ -229,7 +229,7 @@ const BattlePage: React.FC = () => {
             {enemies.map((enemy, index) => {
               return (
                 <button 
-                  key={enemy.getMetadata().getEntityId()} 
+                  key={enemy.getEntityId()} 
                   style={{
                     ...styles.combatantCard,
                     ...(isEntityTurn(enemy) ? styles.activeCard : styles.inactiveCard),
@@ -238,7 +238,7 @@ const BattlePage: React.FC = () => {
                   onClick={() => {
                     setTargetedEntity(enemy)
                     if (!enemy.getStats().isAlive())
-                      setEvents(prev => ([...prev, `${enemy.getMetadata().getName()} is already dead!`]))
+                      setEvents(prev => ([...prev, `${enemy.getName()} is already dead!`]))
                   }}
                   disabled={processingTurn || !isPlayerTurn()}
                 >
