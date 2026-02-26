@@ -1,9 +1,9 @@
 import { DamageableEntity } from "./entityParams/damageableEntity";
-import { EntityInventory } from "./entityParams/entityInventory";
-import { EntityMetadata } from "./entityParams/entityMetadata";
-import { EntitySkills } from "./entityParams/entitySkills";
+import { EntityInventory } from "./entity/entityInventory";
+import { EntityMetadata } from "./entity/entityMetadata";
+import { EntitySkills } from "./entity/entitySkills";
 import { EntityAI } from "../entityAI";
-import { Element } from "../proficiency-elements";
+import { DamageType } from "../proficiency-elements";
 
 export class Entity extends DamageableEntity {
     private metadata: EntityMetadata;
@@ -23,7 +23,7 @@ export class Entity extends DamageableEntity {
         defense: number,
         proficiencies?: { [key: string]: number },
         resistances?: { [key: string]: number },
-        element?: Element,
+        element?: DamageType,
         level?: number,
         experience?: number,
         entityId?: string

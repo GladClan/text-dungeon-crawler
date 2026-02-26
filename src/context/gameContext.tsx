@@ -1,6 +1,6 @@
 "use client"
 import React, { createContext, useState } from 'react';
-import { Entity } from '@/lib/obj/entity';
+import { Entity } from '@/lib/obj/entity/entity';
 import { errorMonster, defaultParty } from '@/lib/errorMonster';
 
 type gameContextType = {

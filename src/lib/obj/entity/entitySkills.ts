@@ -55,6 +55,12 @@ export class EntitySkills {
         return this.skills.length === 0;
     }
 
+    public addSkills(skills: Skill[]) {
+        skills.forEach((item) => {
+            this.addSkill(item);
+        })
+    }
+
     public clone(): EntitySkills {
         return new EntitySkills([...this.skills])
     }

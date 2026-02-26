@@ -1,8 +1,8 @@
-import { EntityMetadata } from "../entityParams/entityMetadata";
+import { EntityMetadata } from "./entityMetadata";
 import { EntityStats } from "./entityStats"
 import { BattleLog } from "../battleLog";
 import { defaults } from "./entityDefaults";
-import { Element, Proficiency } from "@/lib/proficiency-elements";
+import { DamageType, Proficiency } from "@/lib/proficiency-elements";
 
 export default class DamageableEntity extends EntityMetadata {
     private stats = new EntityStats(defaults.health, defaults.mana, defaults.magic, defaults.strength, defaults.defense, defaults.proficiencies);
@@ -12,7 +12,7 @@ export default class DamageableEntity extends EntityMetadata {
     // private strengthMultipliers: { [key: string]: number };
     // private statusEffects: string[];
     // private element: Element;
-    constructor(name: string, type: string, resistances?: {[key in Element]?: number}, id?: string) {
+    constructor(name: string, type: string, resistances?: {[key in DamageType]?: number}, id?: string) {
         super(name, type, id);
         this.resistances = resistances || {};
     }
@@ -21,7 +21,7 @@ export default class DamageableEntity extends EntityMetadata {
         return this.stats;
     }
 
-    public fixStats(health: number, mana: number, magic: number, strength: number, defense: number, proficiencies: {[key in Proficiency]?: number}, level?: number, experience?: number) {
+    public fixStats(health: number, mana: number, magic: number, strength: number, defense: number, proficiencies?: {[key in Proficiency]: number}, level?: number, experience?: number) {
         this.stats = new EntityStats(health, mana, magic, strength, defense, proficiencies, level, experience)
     }
 
@@ -29,16 +29,49 @@ export default class DamageableEntity extends EntityMetadata {
         this.stats = stats;
     }
 
-    public getResistance(key: Element): number {
+    public getResistance(key: DamageType): number {
         return this.resistances[key] || 1;
     }
 
+    public getAllResistances(): { [key: string]: number} {
+        return this.resistances;
+    }
+
     public heal(source: DamageableEntity, amount: number, battleLog: BattleLog): void {
-        const actual = Math.min(amount, this.stats.getMaxHealth() - this.stats.getHealth());
+        if (!this.getStats().isAlive()) {
+            console.warn(`Entity is not alive and cannot be healed.`);
+        }
+        let actual = (amount * this.resistances[DamageType.healing] || 1); // Apply healing resistance if exists
+        actual = Math.min(amount, this.stats.getMaxHealth() - this.stats.getHealth());
         this.stats.setHealth(this.stats.getHealth() + actual);
     }
 
-    public takeDamage(source: DamageableEntity, amount: number, element: Element, battleLog: BattleLog): void {
-        let actual = amount / this.getResistance(element);
+    public takeDamage(source: DamageableEntity, amount: number, damageType: DamageType, battleLog: BattleLog): void {
+        if (!this.getStats().isAlive()) {
+            console.warn(`Entity is not alive and cannot take damage.`);
+        }
+        let actual = amount / this.getResistance(damageType);
+    }
+
+    public expendMana(amount: number): number {
+        const stats = this.getStats();
+        if (!stats.isAlive()) {
+            console.warn(`Entity is not alive and cannot use mana`);
+        } if (stats.getMana() < amount) {
+            console.warn(`Entity does not have sufficient mana to accomplish the requested action`);
+            return stats.getMana();
+        }
+        stats.setMana(stats.getMana() - amount);
+        return stats.getMana();
+    }
+
+    public gainMana(amt: number): number {
+        const stats = this.getStats();
+        if (!stats.isAlive()) {
+            console.warn(`Entity is not alive and cannot gain mana`);
+        }
+        const actual = Math.min(stats.getMaxMana() - stats.getMana(), amt);
+        stats.setMana(stats.getMana() + actual)
+        return actual;
     }
 }

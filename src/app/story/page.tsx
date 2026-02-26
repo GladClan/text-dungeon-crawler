@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { gameContext } from '@/context/gameContext';
 import { StoryBox } from '@/components/storybox';
 import { Entity } from '@/lib/obj/entity';
-import { EntityInventory } from '@/lib/obj/entityParams/entityInventory';
+import { EntityInventory } from '@/lib/obj/entity/entityInventory';
 import { exampleItems } from '@/lib/obj/exampleItems';
 import { Element } from '@/lib/proficiency-elements';
 import { gamestate } from '@/lib/gamestateLib';

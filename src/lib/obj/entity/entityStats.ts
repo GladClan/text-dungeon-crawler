@@ -152,7 +152,7 @@ export class EntityStats {
 
     private levelUp(): number {
         if (this.experience < this.getExperienceForNextLevel()) {
-            throw new Error(`Failed to level up, need ${this.getExperienceForNextLevel() - this.experience} more experience to level up.\n
+            throw new Error(`Failed to level up: need ${this.getExperienceForNextLevel() - this.experience} more experience to level up.\n
              Current exp: ${this.experience}\n
              Exp for next level: ${this.getExperienceForNextLevel()}`);
         }

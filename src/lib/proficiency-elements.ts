@@ -11,7 +11,7 @@ export enum Proficiency {
     nobility = 'nobility',
 }
 
-export enum Element {
+export enum DamageType {
     none = 'physical',
     healing = 'healing',
     holy = 'holy',
@@ -25,4 +25,8 @@ export enum Element {
     necro = 'necrotic',
     water = 'water',
     poison = 'poison',
+    slashing = 'slashing',
+    bludgeoning = 'bludgeoning',
+    piercing = 'piercing',
+    spellstrike = 'spellstrike',
 }

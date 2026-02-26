@@ -1,9 +1,9 @@
-import { Entity } from "./obj/entity";
+import { Entity } from "./obj/entity/entity";
 import { exampleItems } from "./obj/exampleItems";
 import { exampleSkills } from "./obj/exampleSkills";
-import { Element, Proficiency } from "./proficiency-elements";
+import { DamageType, Proficiency } from "./proficiency-elements";
 
-export const errorMonster = new Entity("m̴̪̟̒͆y̸̑͜s̸͚̜̘̲̋̋̀̕͜͜͝t̴̲̞͕̤͂͝e̵̺̤͂̑͋̀́̅r̷̟̳̼̪͛ỉ̵͙͎̟̮͎̐̊̒̈́̂ͅo̵̪͕͑̿̈̇̄ṳ̴̗̰̱̣̣͑s̸̩̠̩͐̔͝ ̴̢̒ç̴̠̏̂̇̇̾o̶̖̙͔͕͍͕̓r̶̗͆̽̍̂̓͝r̶̦̭̗̄̆̆͛̔͠u̶̬̗̮̺̪̫͂̀̋̚p̵̗̆̉t̷̤͉͍̞̫̪̂i̸̦͎̭̬̊̈́̐̅͝ͅõ̴̡̫̥͊n̶̡̡͖͈̍͂̾̔͠", "monster", 10000, 10000, 20, 40, 50, {"hand-to-hand": 1.2}, {spellstrike: 1.5, bludgeoning: 0.5, piercing: 0.5, slashing: 0.5, fire: 0.5, ice: 0.5, poison: 0.5, lightning: 0.5}, Element.necro, 0, 100000, "error-retreiving-monsters-from-storage");
+export const errorMonster = new Entity("m̴̪̟̒͆y̸̑͜s̸͚̜̘̲̋̋̀̕͜͜͝t̴̲̞͕̤͂͝e̵̺̤͂̑͋̀́̅r̷̟̳̼̪͛ỉ̵͙͎̟̮͎̐̊̒̈́̂ͅo̵̪͕͑̿̈̇̄ṳ̴̗̰̱̣̣͑s̸̩̠̩͐̔͝ ̴̢̒ç̴̠̏̂̇̇̾o̶̖̙͔͕͍͕̓r̶̗͆̽̍̂̓͝r̶̦̭̗̄̆̆͛̔͠u̶̬̗̮̺̪̫͂̀̋̚p̵̗̆̉t̷̤͉͍̞̫̪̂i̸̦͎̭̬̊̈́̐̅͝ͅõ̴̡̫̥͊n̶̡̡͖͈̍͂̾̔͠", "monster", 10000, 10000, 20, 40, 50, {"hand-to-hand": 1.2}, {spellstrike: 1.5, bludgeoning: 0.5, piercing: 0.5, slashing: 0.5, fire: 0.5, ice: 0.5, poison: 0.5, lightning: 0.5}, DamageType.necro, 0, 100000, "error-retreiving-monsters-from-storage");
 errorMonster.getStats().setVisible(true);
 
 const defaultParty1 = new Entity("Defaulto", "player", 100, 50, 8, 8, 8);
@@ -22,9 +22,9 @@ const defaultParty3 = new Entity("Defaulto tank", "player", 130, 25, 4, 8, 12);
     defaultParty3.setInitiative(18);
 export const defaultParty = [defaultParty1, defaultParty2, defaultParty3];
 
-const quickEnemy1 = new Entity("Slime", "monster", 10, 0, 0, 5, 5, {}, {}, Element.none, 1, 5);
+const quickEnemy1 = new Entity("Slime", "monster", 10, 0, 0, 5, 5, {}, {}, DamageType.none, 1, 5);
 export const toVictory = [quickEnemy1.clone(), quickEnemy1.clone(), quickEnemy1.clone()];
 
-const glassEnemy = new Entity("Glass Cannon", "monster", 10, 100, 100, 90, 0, {[Proficiency.bludgeoning]: 1.2}, {}, Element.none, 1, 50);
+const glassEnemy = new Entity("Glass Cannon", "monster", 10, 100, 100, 90, 0, {[Proficiency.bludgeoning]: 1.2}, {}, DamageType.none, 1, 50);
     glassEnemy.setInitiative(10);
 export const quickLevel = [glassEnemy.clone(), glassEnemy.clone(), glassEnemy.clone()];
