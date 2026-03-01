@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Entity } from "@/lib/obj/entity";
+import { Entity } from "@/lib/obj/entity/entity";
 import { Equippable } from "@/lib/obj/itemCases/equippable";
 
 interface EquipModalProps {
@@ -94,7 +94,7 @@ const EquipModal: React.FC<EquipModalProps> = ({
         {/* Modal Header */}
         <div style={styles.header}>
           <h2 style={styles.title}>
-            ⚔️ {member.getMetadata().getName()}'s Equipment
+            ⚔️ {member.getName()}'s Equipment
           </h2>
           <button style={styles.closeButton} onClick={onClose}>
             ✕
@@ -278,7 +278,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   categoryTab: {
     flex: 1,
     padding: "15px",
-    background: "transparent",
+    backgroundColor: "#0F0B08",
     border: "none",
     color: "#8b6914",
     cursor: "pointer",

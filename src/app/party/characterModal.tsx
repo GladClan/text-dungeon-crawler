@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Entity } from '@/lib/obj/entity';
+import { Entity } from '@/lib/obj/entity/entity';
 
 const CharacterCreationModal: React.FC<{
     onCharacterCreated: (character: Entity) => void;
@@ -58,13 +58,14 @@ const CharacterCreationModal: React.FC<{
 
         const newCharacter = new Entity(
             name,
-            'player',
-            stats.health * 10, // Scale health for gameplay
-            stats.mana * 5,    // Scale mana for gameplay
+            'player'
+        );
+        newCharacter.fixStats(
+            stats.health * 10,
+            stats.mana * 5,
             stats.magic,
             stats.strength,
-            stats.defense,
-            {}, // No resistances initially
+            stats.defense
         );
 
         onCharacterCreated(newCharacter);

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import PartyMemberCard from '@/components/partyMemberCard';
 import CharacterCreationModal from './characterModal';
 import { gameContext } from '@/context/gameContext';
-import { Entity } from '@/lib/obj/entity';
+import { Entity } from '@/lib/obj/entity/entity';
 import { useRouter } from 'next/navigation';
 import { quickLevel } from '@/lib/errorMonster';
 
@@ -44,7 +44,7 @@ const PartyPage: React.FC = () => {
                 <div style={styles.partyContainer}>
                     {party.map((member, index) => (
                         <PartyMemberCard
-                            key={member.getMetadata().getEntityId()} 
+                            key={member.getEntityId()} 
                             member={member} 
                             index={index}
                             onRemove={handleRemoveCharacter}

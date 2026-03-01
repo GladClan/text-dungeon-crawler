@@ -34,11 +34,11 @@ export default TurnOrderCard;
 
 const styles: { [key: string]: React.CSSProperties } = {
     turnQueueItem: {
-        width: "120px",
+        position: 'relative',
+        minWidth: "120px",
+        maxWidth: "280px",
         height: "100%",
-        // minWidth: "120px",
-        // maxWidth: "280px",
-        padding: "8px 12px",
+        padding: "4px 6px",
         border: "2px solid",
         borderRadius: "8px",
         background: "rgba(26, 22, 17, 0.7)",
@@ -60,6 +60,9 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        // position: "absolute",
+        // bottom: "10px",
+        // left: "10px",
         fontSize: "10px",
     },
     currentTurnIndicator: {

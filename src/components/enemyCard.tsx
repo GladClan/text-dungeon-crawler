@@ -1,12 +1,11 @@
-import { Entity } from "@/lib/obj/entity";
+import { Entity } from "@/lib/obj/entity/entity";
 import React from "react";
 
 const EnemyCard: React.FC<{
     enemy: Entity,
     id?: string,
     showAllStats?: boolean
-}> = ({ enemy, id = enemy.getMetadata().getEntityId(), showAllStats = enemy.getStats().isVisible() }) => {
-    const metadata = enemy.getMetadata();
+}> = ({ enemy, id = enemy.getEntityId(), showAllStats = enemy.getStats().isVisible() }) => {
     const stats = enemy.getStats();
     const inventory = enemy.getInventory();
     const skills = enemy.getSkills();
@@ -29,7 +28,7 @@ const EnemyCard: React.FC<{
     return (
         <div style={styles.container}>
             <div style={styles.header}>
-                <h3 style={styles.monsterName}>{metadata.getName()}</h3>
+                <h3 style={styles.monsterName}>{enemy.getName()}</h3>
             </div>
             
             {/* Health Section */}

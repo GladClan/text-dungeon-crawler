@@ -1,5 +1,5 @@
-import { Entity } from "./entity";
-import { Element, Proficiency } from "../proficiency-elements";
+import { Entity } from "./entity/entity";
+import { DamageType, Proficiency } from "../proficiency-elements";
 
 import { effectType } from "../battleFunctions";
 
@@ -8,13 +8,13 @@ export default class Skill {
     private static nextId = 0;
     private name: string;
     private proficiency: Proficiency;
-    private element: Element;
+    private element: DamageType;
     private cost: number;
     private effect: effectType;
     private level: number;
     private isLearnable: ((target: Entity) => boolean) | undefined;
 
-    constructor(name: string, proficiency: Proficiency, element: Element, cost: number, effect: effectType, level: number, isLearnable?: (target: Entity) => boolean) {
+    constructor(name: string, proficiency: Proficiency, element: DamageType, cost: number, effect: effectType, level: number, isLearnable?: (target: Entity) => boolean) {
         this.id = this.generateId(name, proficiency, element)
         this.name = name;
         this.proficiency = proficiency;
@@ -41,7 +41,7 @@ export default class Skill {
         return this.proficiency;
     }
 
-    public getElement(): Element {
+    public getElement(): DamageType {
         return this.element;
     }
 

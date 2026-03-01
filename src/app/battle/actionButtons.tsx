@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Entity } from "@/lib/obj/entity";
+import { Entity } from "@/lib/obj/entity/entity";
 import { Useable } from '@/lib/obj/itemCases/useable';
 import { getActionText } from '@/lib/battleFunctions';
 import { returnType } from '@/lib/battleFunctions';
@@ -34,23 +34,23 @@ const ActionButtons: React.FC<{
               ...styles.dropdownContainer,
               ...(dropdownOpen === 'attack' ? styles.dropdownOpen : styles.dropdownClosed),
               }}>
-                <WigglyActionButton
+                {/* <WigglyActionButton
                   key={`attack`}
                   clickFunction={() => handleAction(
-                  ` attacks ${targetedEntity?.getMetadata().getName()}`,
+                  ` attacks ${targetedEntity?.getName()}`,
                   currentEntity.physicalAttack(targetedEntity!)
                 )}
                 disabled={processingTurn || !targetedEntity}
                 >
                   👊 Physical Attack
-                </WigglyActionButton>
+                </WigglyActionButton> */}
               {
                 currentEntity.getInventory().getItems().filter(item => item.getType() === 'weapon')
                   .map((item, index) => (
                     <WigglyActionButton
                       key={`waepon-${index}`}
                       clickFunction={() => handleAction(
-                        ` attacks ${targetedEntity?.getMetadata().getName()} with ${item.getName()}`,
+                        ` attacks ${targetedEntity?.getName()} with ${item.getName()}`,
                         (item as Useable).getEffect()(targetedEntity!, currentEntity, aftereffects)
                       )}
                       disabled={processingTurn || !targetedEntity}
@@ -79,7 +79,7 @@ const ActionButtons: React.FC<{
                       clickFunction={() => (currentEntity.getStats().getMana() >= skillEntry.getManaCost() ? (
                         currentEntity.expendMana(skillEntry.getManaCost()),
                         handleAction(
-                          ` uses ${skillEntry.getName()} on ${targetedEntity?.getMetadata().getName()}`,
+                          ` uses ${skillEntry.getName()} on ${targetedEntity?.getName()}`,
                           skillEntry.getEffect()(targetedEntity!, currentEntity, aftereffects)
                         )
                       ) : alert(`You don't have enough mana for ${skillEntry.getName()}`))}
@@ -89,7 +89,7 @@ const ActionButtons: React.FC<{
                     </WigglyActionButton>
                   ))
               ) : (
-                <span>{currentEntity.getMetadata().getName()} hasn't learned any skills yet!</span>
+                <span>{currentEntity.getName()} hasn't learned any skills yet!</span>
               )}
             </div>
           )}
@@ -112,7 +112,7 @@ const ActionButtons: React.FC<{
                   <WigglyActionButton
                     key={`item-${index}`}
                     clickFunction={() => {
-                      handleAction(` uses ${item.getName()} on ${targetedEntity?.getMetadata().getName()}`,(item as Useable).getEffect()(targetedEntity!, currentEntity, aftereffects))
+                      handleAction(` uses ${item.getName()} on ${targetedEntity?.getName()}`,(item as Useable).getEffect()(targetedEntity!, currentEntity, aftereffects))
                       if (item.isConsumable()) currentEntity.getInventory().removeItemById(item.getId())
                     }}
                     disabled={processingTurn || !targetedEntity}

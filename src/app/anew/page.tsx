@@ -3,8 +3,10 @@ import React from "react";
 import { gameContext } from "@/context/gameContext";
 import { Entity } from "@/lib/obj/entity/entity";
 import { getTurnOrder, isParty } from "@/lib/battleFunctions";
-import TurnOrderCard from "./turnOrderCard";
+import TurnOrderCard from "./components/turnOrderCard";
 import PartyMemberCard from "@/components/partyMemberCard";
+import PartySection from "./components/partySection";
+import ActionButtons from "./components/actionButtons";
 
 const BattlePage: React.FC = () => {
     const contextValue = React.useContext(gameContext);
@@ -14,9 +16,22 @@ const BattlePage: React.FC = () => {
     const {party, guests, pets, enemies, setGameState, eventTime} = contextValue;
 
     const [turnOrder] = React.useState(getTurnOrder([...party, ...guests, ...pets, ...enemies]));
+    const [currentEntity, setCurrentEntity] = React.useState(turnOrder[0]);
 
     const isCurrentEntity = (entity: Entity) => {
-        return false;
+        return entity.getEntityId() === currentEntity.getEntityId();
+    }
+
+    const [turn, setTurn] = React.useState(1);
+    const [round, setRound] = React.useState(0);
+    function nextTurn() {
+        setTurn((turn >= turnOrder.length - 1) ? 0 : (turn + 1));
+        setCurrentEntity(turnOrder[turn]);
+        setRound(round+1);
+        if (round > 10) {
+            console.log("what are you doing?");
+            setRound(0);
+        }
     }
 
     return(
@@ -26,49 +41,45 @@ const BattlePage: React.FC = () => {
             <div style={styles.turnOrderContainer}>
                 { turnOrder.map((member, index) => (
                     <div key={index}>
-                        <TurnOrderCard member={member} isCurrentEntity={isCurrentEntity(member)} isParty={isParty([...party, ...guests, ...pets], member)} />
+                        <TurnOrderCard
+                            member={member}
+                            isCurrentEntity={isCurrentEntity(member)}
+                            isParty={isParty([...party, ...guests, ...pets], member)}
+                        />
                     </div>
                 ))}
             </div>
 
-            <div style={styles.contentContainer}>
-                {/* party section */}
-                <div>
+            <div style={{display: "flex", flexDirection: "row"}}>
+                <div style={styles.section}>
                     {/* party */}
-                    {party.map((member, index) => (
-                        <div key={index}>
-                            <PartyMemberCard
-                            index={index}
-                            member={member}
-                            isActive={isCurrentEntity(member)}
-                            />
-                        </div>
-                    ))}
-                        {/* actions */}
+                    <PartySection
+                        party={party}
+                        guests={guests}
+                        pets={pets}
+                        isCurrentEntity={isCurrentEntity}
+                    />
+                    {/* actions */}
+                    <ActionButtons
+                        member={currentEntity}
+                        isActive={isParty([...party, ...pets], currentEntity)}
+                    />
+                    {/* events log */}
+                    {/* enemies section */}
                 </div>
-                    {/* guests */}
+                <div style={styles.section}>
+                    {}
+                </div>
+                <div style={styles.section}>
+                    {}
+                </div>
                 <div>
-                    {guests.map((member, index) => (
-                        <PartyMemberCard
-                            index={index}
-                            member={member}
-                            isActive={isCurrentEntity(member)}
-                        />
-                    ))}
+                    <button
+                        onClick={() => nextTurn()}
+                        >
+                        Next turn: {turn + 1}
+                    </button>
                 </div>
-                    {/* pets */}
-                <div>
-                    {pets.map((member, index) => (
-                        <PartyMemberCard
-                            index={index}
-                            member={member}
-                            isActive={isCurrentEntity(member)}
-                        />
-                    ))}
-                </div>
-                        {/* actions */}
-                {/* events log */}
-                {/* enemies section */}
             </div>
         </div>
     )
@@ -97,8 +108,11 @@ const styles: { [key: string]: React.CSSProperties } = {
         boxShadow: "inset 0 0 20px rgba(139,105,20,0.3)",
         overflowX: "auto"
     },
-    contentContainer: {
+    section: {
         display: "flex",
-        flexDirection: "row"
-    }
+        flexDirection: "row",
+        // minWidth: "100px",
+        maxWidth: "30vw",
+        // border: "2px solid #fff"
+    },
 }
