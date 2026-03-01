@@ -1,0 +1,299 @@
+[
+	{
+		"name": "Opening tunnel",
+		"sequence": 0,
+		"content": {
+			"intro": {
+				"order": 0,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "Stepping through the opening, the light of the town immediately fades behind the party as if walking through a dark veil."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "The group hesitates for a moment, waiting for something to jump out of the darkness."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "As your eyes adjust to the darkness, you see that in front of you is a small landing before stairs."
+					}
+				],
+				"options": [
+					{ "title": "Descend", "ref": "descend" },
+					{ "title": "Turn around", "ref": "turn around" }
+				]
+			},
+			"turn around": {
+				"order": 1,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "Thinking it might be wise to double-check your provisions, or perhaps just spooked by the unnatural darkness, you turn to go back to the town you came from."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "As you look back, the chapel that surrounded the dungeon's entrance seems almost invisible in a black veil."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "You discover as you attempt to step through that there is some force stopping you from retreating."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "You cannot turn back, the only option left is to descend the stairs."
+					}
+				],
+				"acquire": "cowards-pendant @main",
+				"options": [
+					{ "title": "Descend", "ref": "descend" }
+				]
+			},
+			"descend": {
+				"order": 2,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "You take the first step down the stairs. The party follows your lead."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "The stairs seem to go on for ages, but eventually you reach the bottom."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "The stairway ends in a short hallway of gray stone with blue bands of light running along the middle of each wall. At the end of the hallway is a circular room with a large arched stone double door."
+					}
+				],
+				"options": [
+					{ "title": "Open the doors", "ref": "fight" },
+					{ "title": "Investigate the room", "ref": "investigate" }
+				]
+			},
+			"investigate": {
+				"order": 3,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "The room is lined with what looks like windows of the blue lights evenly spaced along the walls, ten of them in all."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Really, the room is bare except for the door, the lights, and the hall behind you."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "The stone is smooth, certainly not jagged or rounded like that of a cave."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Looking up, you note that it is a very tall room--the ceiling is so high, it is obscured in blackness."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "You do note that there are three square holes above the door."
+					}
+				],
+				"options": [
+					{ "title": "Open the doors", "ref": "fight" },
+					{ "title": "Investigate the holes", "ref": "investigate 2" }
+				]
+			},
+			"investigate 2": {
+				"order": 5,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "Approaching the doors, you notice that the room is not as smooth as you previously thought."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "There are faint gouges and cracks in the walls, and hanging from one of the holes is a small scrap of cloth."
+					}
+				],
+				"options": [
+					{ "title": "Open the doors", "ref": "fight" },
+					{ "title": "Take the cloth", "ref": "acquire cloth" }
+				]
+			},
+			"acquire cloth": {
+				"order": 6,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "You're not sure how to get the cloth, seeing as it is twice the height of the doors."
+					}
+				],
+				"options": [
+					{ "title": "Open the doors", "ref": "fight" },
+					{ "title": "Climb to reach it", "ref": "climb" },
+					{ "title": "Shoot it down", "ref": "shoot" }, 
+					{ "title": "Use magic", "ref": "magic" }
+				]
+			},
+			"climb": {
+				"order": 7,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "It's pretty high up, but you're sure you can reach it by using the handle of the door as a step and then climbing on top of the small portrusion of the doorframe."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Unfortunately to do so you'll have to remove your armor."
+					}
+				],
+				"options": [
+					{ "title": "Do it", "ref": "unequip" },
+					{ "title": "Reconsider", "ref": "acquire cloth"},
+					{ "title": "Open the doors", "ref": "fight" }
+				]
+			},
+			"unequip": {
+				"order": 10,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "You take off your equipment, then climb your way up to reach the odd piece of cloth."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Leaping to acquire it, you land back safely on your feet. The door creaks ominously, open a crack as you climbed up the handle."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Looking down at the cloth, you see it has a spell burned into the back of it."
+					}
+				],
+				"effect": "unequip @main #armor",
+				"acquire": "spell-scroll-banish @main",
+				"options": [{"title": "Continue", "ref": "fight"}]
+			},
+			"shoot": {
+				"order": 8,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "Shooting the cloth down with a bow seems doable, but it will undoubtably damage whatever it is, and potentially lose your friend an arrow."
+					}
+				],
+				"options": [
+					{ "title": "Do it.", "ref": "damage cloth" },
+					{ "title": "Reconsider", "ref": "acquire cloth" },
+					{ "title": "Open the door", "ref": "fight" }
+				]
+			},
+			"damage cloth": {
+				"order": 11,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "With a twang and a sharp crack of the arrow hitting stone, the cloth falls to the floor, an arrow impaling the piece of cloth."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Picking it up, you see that it has a spell burned into it, but unfortunately you can feel that the spell contained has been damaged by the arrow piercing through it."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "It might still be usable, but it might have a bit different affect than it would undamaged."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "The only thing left to do seems to be to—"
+					}
+				],
+				"acquire": "spell-scroll-banish-damaged @main",
+				"options": [{ "title": "Open the door", "ref": "fight"}]
+			},
+			"magic": {
+				"order": 9,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "At this suggestion, your wizard friend looks at you with an expression of incredulity and dubiousness."
+					},
+					{
+						"source": "@wizard",
+						"dialogue": "I really don't think that's a good use of my magic. Not to mention I don't believe I have any spells that would be of use in getting it down, unless you want it to be a smear of ash."
+					},
+					{
+						"source": "@wizard",
+						"dialogue": "I suggest you find another way or move on."
+					}
+				],
+				"options": [
+					{ "title": "Reconsider", "ref": "acquire cloth" },
+					{ "title": "Open the door", "ref": "fight" }
+				]
+			},
+			"fight": {
+				"order": 4,
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "The doors creak open ominously."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Before anyone can step through, there is a clatter from above, and the party jumps back in shock and horror as bones start raining from above."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Bones and old armor, along with rusty weapons. You're not sure what to make of the grisly sight, but the pile is rapidly growing in size to the point that it is blocking the doorway."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Without warning, the pile starts exploding outward as skeletons begin to spring forth toward you and your companions."
+					}
+				],
+				"fight": {
+					"enemies": [
+						"skeleton-ancient-warrior",
+						"skeleton-ancient-warrior",
+						"skeleton-ancient-warrior",
+						"skeleton-ancient-wizard",
+						"skeleton-ancient-wizard",
+						"skeleton-ancient-wizard",
+						"skeleton-ancient-archer",
+						"skeleton-firehurler",
+						"turpis &ai:isolate@main"
+					],
+					"ai-target": "!@main",
+					"next-scene": true
+				}
+			}
+		}
+	},
+	{
+		"name": "dungeons",
+		"sequence": 1,
+		"content": {
+			"undefeated": {
+				"order": 0,
+				"require": "@wizard || @princess",
+				"chat": [
+					{
+						"source": "narrator",
+						"dialogue": "You breathe a sigh of relief. That fight could have been disastrous."
+					},
+					{
+						"source": "@turpis",
+						"dialogue": "That fight could have been disastrous, indeed."
+					},
+					{
+						"source": "narrator",
+						"dialogue": "Who was that? You see a figure seem to coalesce out of the shadows in the open doorway."
+					},
+					{
+						"source": "narrator",
+						"dialogue": ""
+					}
+				],
+				"options": [
+					{ "title": "fight", "ref": "broken"}
+				]
+			}
+		}
+	}
+]

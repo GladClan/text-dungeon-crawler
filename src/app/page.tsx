@@ -17,10 +17,10 @@ export default function Home() {
     <div style={styles.page}>
       <main style={styles.main}>
         <Image
-          src="/next.svg"
-          alt="Next.js logo"
+          src="/explosion.gif"
+          alt="Explosively capturing"
           width={180}
-          height={38}
+          height={180}
           priority
         />
         <ol style={styles.ol}>

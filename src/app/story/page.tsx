@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation';
 
 import { gameContext } from '@/context/gameContext';
 import { StoryBox } from '@/components/storybox';
-import { Entity } from '@/lib/obj/entity';
-import { EntityInventory } from '@/lib/obj/entity/entityInventory';
-import { exampleItems } from '@/lib/obj/exampleItems';
-import { Element } from '@/lib/proficiency-elements';
 import { gamestate } from '@/lib/gamestateLib';
+import { first } from '@/lib/prefabs/enemies/base';
+import ChatOverlay from '@/components/Chat Overlay/chatOverlay';
+import storyline from '@/lib/storylines/storyline.json';
+import type { Scene } from '@/lib/storylines/storyline-type';
+
+const storylineData = storyline as unknown as Scene[];
 
 export default function App() {
     const router = useRouter();
@@ -16,21 +18,10 @@ export default function App() {
     if (!contextValue) { throw new Error("gameContext is not available"); }
     const { setEnemies, setGameState, eventTime } = contextValue;
 
+    const [showOverlay, toggleShowOverlay] = React.useState(false);
+
     const handleContinueToBattle = () => {
-        // The old method: store monsters in local storage
-        // localStorage.setItem('battleMonsters', JSON.stringify(["Skeleton Warrior", "Skeleton Archer", "Skeleton Mage"]));
-        setEnemies([
-            new Entity("Skeleton Warrior", "monster", 25, 0, 0, 40, 50, { ice: 0.5, poison: 1, lightning: 0.2, healing: 1.75, necrotic: 2 }, {}, Element.none, 0, 100)
-                .setInventory(new EntityInventory().setGold(7).addItem(exampleItems.rustySabre)).setInitiative(16),
-            new Entity("Skeleton Warrior", "monster", 25, 0, 0, 40, 50, { ice: 0.5, poison: 1, lightning: 0.2, healing: 1.75, necrotic: 2 }, {}, Element.none, 0, 100)
-                .setInventory(new EntityInventory().setGold(12).addItem(exampleItems.oldSword)).setInitiative(16),
-            new Entity("Skeleton Archer", "monster", 20, 0, 0, 30, 20, { ice: 0.5, poison: 1, lightning: 0.2, healing: 1.75, necrotic: 2 }, {}, Element.none, 0, 80)
-                .setInventory(new EntityInventory().setGold(5).addItem(exampleItems.crumblingBow)),
-            new Entity("Skeleton Archer", "monster", 20, 0, 0, 30, 20, { ice: 0.5, poison: 1, lightning: 0.2, healing: 1.75, necrotic: 2 }, {}, Element.none, 0, 80)
-                .setInventory(new EntityInventory().setGold(5).addItem(exampleItems.crumblingBow)),
-            new Entity("Skeleton Mage", "monster", 18, 60, 25, 5, 10, { ice: 0.5, poison: 1, lightning: 0.25, healing: 1.75, necrotic: 2 }, {}, Element.none, 0, 90)
-                .setInventory(new EntityInventory().setGold(10).addItem(exampleItems.oldStaff).addItem(exampleItems.fireScroll).addItem(exampleItems.iceScroll)),
-        ]);
+        setEnemies(first);
         setGameState(gamestate.Battle);
         router.push('/battle');
     };
@@ -53,6 +44,25 @@ export default function App() {
         <div style={styles.container}>
             <h1>Text Dungeon Crawler</h1>
             <StoryBox textArr={[...story.intro]} autonext={false} continueFunction={handleContinueToBattle} speed={eventTime * 25} />
+            <button
+                onClick={() => toggleShowOverlay(!showOverlay)}
+            >
+                Chat {showOverlay ? "true" : "fasle"}
+            </button>
+            {showOverlay &&
+                <ChatOverlay
+                    story={storylineData}
+                    onSelectOption={(ref: string) => {
+                        console.log('Selected option:', ref);
+                    }}
+                    onFight={() => {
+                        setEnemies(first);
+                        setGameState(gamestate.Battle);
+                        router.push('/anew');
+                    }}
+                    onClose={() => toggleShowOverlay(!showOverlay)}
+                />
+            }
         </div>
     )
 }

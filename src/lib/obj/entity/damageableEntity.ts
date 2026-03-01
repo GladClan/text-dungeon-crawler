@@ -42,6 +42,15 @@ export default class DamageableEntity extends EntityMetadata {
         return this.resistances[key];
     }
 
+    public fixResistances(resistances: Partial<Record<DamageType, number>>): void {
+        (Object.keys(resistances) as DamageType[]).forEach((key) => {
+            const val = resistances[key];
+            if (val !== undefined) {
+                this.setResistance(key, val);
+            }
+        });
+    }
+
     public increaseResistance(key: DamageType, amount: number): number {
         this.resistances[key] = (this.resistances[key] ?? 0) + amount;
         return this.resistances[key];

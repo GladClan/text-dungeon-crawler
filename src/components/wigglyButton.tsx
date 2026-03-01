@@ -14,7 +14,10 @@ const WigglyButton: React.FC<{func: Function, children: any}> = ({func, children
                 e.currentTarget.style.backgroundColor = "#8b4513";
                 e.currentTarget.style.boxShadow = "0 4px 8px rgba(255,215,0,0.4)";
             }}
-            onClick={() => func()}
+            onClick={(event) => {
+                event.stopPropagation();
+                func();
+            }}
             >
             {children}
         </div>
