@@ -281,6 +281,7 @@ const styles: Record<string, React.CSSProperties> = {
         padding: 12,
     },
     sceneTitle: {
+        maxWidth: '50%',
         fontWeight: 700,
         color: '#e6d3a3',
         opacity: 0.95,

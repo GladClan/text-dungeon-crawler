@@ -18,7 +18,7 @@ export default function App() {
     if (!contextValue) { throw new Error("gameContext is not available"); }
     const { setEnemies, setGameState, eventTime } = contextValue;
 
-    const [showOverlay, toggleShowOverlay] = React.useState(false);
+    const [showOverlay, setShowOverlay] = React.useState(false);
 
     const handleContinueToBattle = () => {
         setEnemies(first);
@@ -45,7 +45,7 @@ export default function App() {
             <h1>Text Dungeon Crawler</h1>
             <StoryBox textArr={[...story.intro]} autonext={false} continueFunction={handleContinueToBattle} speed={eventTime * 25} />
             <button
-                onClick={() => toggleShowOverlay(!showOverlay)}
+                onClick={() => setShowOverlay(!showOverlay)}
             >
                 Chat {showOverlay ? "true" : "fasle"}
             </button>
@@ -60,7 +60,7 @@ export default function App() {
                         setGameState(gamestate.Battle);
                         router.push('/anew');
                     }}
-                    onClose={() => toggleShowOverlay(!showOverlay)}
+                    onClose={() => setShowOverlay(!showOverlay)}
                 />
             }
         </div>
