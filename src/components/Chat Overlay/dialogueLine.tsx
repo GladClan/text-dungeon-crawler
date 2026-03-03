@@ -1,22 +1,21 @@
-import { DialogueEntry } from '@/lib/storylines/storyline-type'
 import React from 'react'
 
-const DialogueLine: React.FC<{ entry: DialogueEntry, text: string}> = ({ entry, text }) => {
+const DialogueLine: React.FC<{ source: 'narrator' | 'enemy' | 'party', text: string}> = ({ source, text }) => {
   return (
     <div style={{
       ...styles.dialogueRow,
-      ...(entry.source === 'narrator' ? {justifyContent: "center"} : (
-        entry.source === 'enemy' ? {justifyContent: 'flex-end'} : {justifyContent: 'flex-start'}))
+      ...(source === 'narrator' ? {justifyContent: "center"} : (
+        source === 'enemy' ? {justifyContent: 'flex-end'} : {justifyContent: 'flex-start'}))
     }}>
       <div style={{
         ...styles.bubble,
-        ...(entry.source === 'narrator' ? 
+        ...(source === 'narrator' ? 
           {backgroundColor: 'rgba(70, 70, 70, 0.95)', fontStyle: 'italic'} : 
-            (entry.source === 'enemy' ? {backgroundColor: 'rgba(130, 28, 28, 0.95)', minHeight: 90} : 
+            (source === 'enemy' ? {backgroundColor: 'rgba(130, 28, 28, 0.95)', minHeight: 90} : 
             {backgroundColor: 'rgba(30, 55, 120, 0.95)', minHeight: 90}
         ))
       }}>
-        {entry.source !== 'narrator' && <div style={styles.img}/>}
+        {source !== 'narrator' && <div style={styles.img}/>}
         {text}
       </div>
     </div>

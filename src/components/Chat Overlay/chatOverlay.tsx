@@ -38,6 +38,16 @@ const FightNotice: React.FC<{fight: FightConfig}> = ({ fight }) => {
     )
 }
 
+function entrySource(q: DialogueEntry): 'narrator' | 'enemy' | 'party' {
+    if (q.source === 'narrator') {
+        return 'narrator';
+    } else if (q.source === 'wizard') {
+        return 'party';
+    } else {
+        return 'enemy';
+    }
+}
+
 function getFirstBlockKey(scene: Scene): string | null {
     const entries = Object.entries(scene.content);
     if (entries.length === 0) {
@@ -180,7 +190,7 @@ export default function ChatOverlay({ story, onSelectOption, onFight, onSceneEnd
 
                         <div style={styles.dialogueColumn}>
                             {renderedDialogue.map(({ entry, text }, index) => (
-                                <DialogueLine key={`${entry.source}-${index}`} entry={entry} text={text} />
+                                <DialogueLine key={`${entry.source}-${index}`} source={entrySource(entry)} text={text} />
                             ))}
                         </div>
 

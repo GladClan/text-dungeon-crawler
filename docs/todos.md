@@ -43,6 +43,8 @@
 
 ## Events
 - **<u>Treasure Room event</u>**</br>Gives an awesome weapon and gold to the party, and has an image of a grand chest in the corner of an old, dusty storeroom.
+- **<u>Ardent</u>**</br>How about that for an encounter?
+- **<u>Betrayal Boss</u>**</br>You meet a guy that ends up joining our party with really good stats, but in the end he turns on you and all the equipment and everything you gave him, he uses against you in the final battle.
 
 ## Eneies
 - Brigands
@@ -56,3 +58,5 @@
     - ***Even more dark and broody***
 - Abomination
     - **It's really just unspeakable**
+- Benissait
+    - Holy-element ceratures made of several intertwined, revolving rings. The main reing, or sometimes several rings, have an ee on them through which the creature sees and is seen.
