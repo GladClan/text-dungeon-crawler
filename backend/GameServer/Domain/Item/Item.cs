@@ -1,11 +1,11 @@
-namespace GameServer.Domain;
+namespace GameServer.Domain.Item;
 
-public class Item
+public class Item(string type, string name, int value, string description, bool consumable)
 {
-    public Guid Id { get; private set; }
-    public string Type { get; private set; }
-    public string Name { get; private set; }
-    public int Value { get; private set; }
-    public string Description { get; private set; }
-    public bool Consumable { get; private set; }
+    public Guid Id { get; } = id;
+    public string Type { get; private set; } = type;
+    public string Name { get; private set; } = name;
+    public int Value { get; private set; } = value;
+    public string Description { get; private set; } = description;
+    public bool Consumable { get; private set; } = consumable;
 }
