@@ -1,9 +1,13 @@
-namespace GameServer.Domain.Entity;
+using GameServer.Domain.Items;
+
+namespace GameServer.Domain.Entities;
 
 public sealed class EntityInventory(Item[] items, int gold)
 {
+    public EntityInventory() : this([], 0) { }
+
     public int Gold { get; set; } = gold;
-    public List<Item> Items { get; private set; } = [.. items];
+    public List<Item> Items { get; private set; } = [.. items ?? []];
 
     public EntityInventory AddItem(Item item)
     {
@@ -13,29 +17,35 @@ public sealed class EntityInventory(Item[] items, int gold)
 
     public Item RemoveItemByName(string name)
     {
-        Item item = Items.Find(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        Item? item = Items.Find(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Item '{name}' was not found.");
         Items.Remove(item);
-        return item is null ? throw new Exception(KeyNotFoundException($"Item '{name}' was not found.")) : item;
+        return item;
     }
 
     public Item RemoveItemByIndex(int index)
     {
-        Item item;
-        index > items.Length ? throw new IndexOutOfRangeException($"Index {index} is out of bounds for length {items.Length}") : item = Items[index];
+        if (index >= Items.Count)
+        {
+            throw new IndexOutOfRangeException($"Index {index} is out of bounds for length {Items.Count}.");
+        }
+        Item item = Items[index];
         Items.RemoveAt(index);
         return item;
     }
 
-    public Item getItemAtIndex(int index)
+    public Item GetItemAtIndex(int index)
     {
-        Items item;
-        index > items.Length ? throw new IndexOutOfRangeException($"Index {index} is out of bounds for length {items.Length}") : item = Items[index];
-        return item;
+        if (index >= Items.Count)
+        {
+            throw new IndexOutOfRangeException($"Index {index} is out of bounds for length {Items.Count}.");
+        }
+        return Items[index];
     }
 
     public bool HasItem(string itemName)
     {
-        return Items.All(i => i.Name == itemName);
+        return Items.Any(i => i.Name == itemName);
     }
 
     public void Clear()
@@ -45,20 +55,16 @@ public sealed class EntityInventory(Item[] items, int gold)
 
     public int GetItemCount()
     {
-        return items.Length;
+        return Items.Count;
     }
 
     public void Merge(EntityInventory other)
     {
-        other.Items.CopyTo(Items);
+        Items.AddRange(other.Items);
     }
 
     public EntityInventory Clone()
     {
-        return new EntityInventory
-        {
-            Gold = Gold,
-            Items = [.. Items]
-        };
+        return new EntityInventory([.. Items], Gold);
     }
 }

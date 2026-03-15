@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# .NET / C# backend build artifacts
+/backend/**/bin/
+/backend/**/obj/
+/backend/**/TestResults/
+
+# Visual Studio / .NET user files
+/.vs/
+*.suo
+*.user
+*.userosscache
+*.rsuser
+*.sln.docstates

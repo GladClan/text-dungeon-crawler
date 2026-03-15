@@ -1,6 +1,7 @@
-# Proposed File Structure (C# Backend + TypeScript Frontend)
+# File Structure (C# Backend + TypeScript Frontend)
 
-Below is a practical structure showing how to add an ASP.NET Core backend alongside your current Next.js app.
+Current state of the project structure. Items marked **TODO** do not yet exist and are planned for future implementation.
+*The project was changed from a 100% Next.js typescript project to a Next.js frontend with an ASP.NET Core backend*
 
 ```txt
 text_dungeon_crawler/
@@ -8,70 +9,98 @@ text_dungeon_crawler/
 │  ├─ entity-csharp-ts-draft.md
 │  └─ entity-csharp-ts-file-structure.md
 │
-├─ src/                                      # Existing Next.js frontend
+├─ src/                                      # Next.js frontend
 │  ├─ app/
+│  │  ├─ globals.css
+│  │  ├─ layout.tsx
+│  │  ├─ page.tsx
 │  │  ├─ anew/
-│  │  │  └─ page.tsx
-│  │  └─ ...
+│  │  ├─ battle/
+│  │  ├─ battleResult/
+│  │  ├─ game/
+│  │  ├─ party/
+│  │  └─ story/
 │  ├─ components/
-│  │  └─ ...
+│  │  ├─ enemyCard.tsx
+│  │  ├─ equipModal.tsx
+│  │  ├─ healthBar.tsx
+│  │  ├─ partyMemberCard.tsx
+│  │  ├─ storybox.tsx
+│  │  ├─ wigglyButton.tsx
+│  │  └─ Chat Overlay/
 │  ├─ context/
 │  │  └─ gameContext.tsx
 │  ├─ lib/
-│  │  ├─ entityApiClient.ts                  # NEW: frontend API calls to C# backend
+│  │  ├─ entityApiClient.ts                  # TODO: frontend API calls to C# backend
 │  │  └─ ...
 │  ├─ types/
-│  │  └─ entityApi.ts                        # NEW: DTO types matching backend JSON
-│  └─ ...
+│  │  └─ entityApi.ts                        # TODO: DTO types matching backend JSON
+│  └─ entityApiClient.ts                     # TODO: frontend API calls to C# backend
 │
-├─ backend/                                  # NEW: ASP.NET Core Web API
+├─ backend/
 │  ├─ GameServer.sln
 │  └─ GameServer/
 │     ├─ GameServer.csproj
-│     ├─ Program.cs                          # CORS + DI + controllers
-│     ├─ appsettings.json
-│     ├─ appsettings.Development.json
+│     ├─ Program.cs                          # TODO: CORS + DI + controllers
+│     ├─ appsettings.json                    # TODO
+│     ├─ appsettings.Development.json        # TODO
 │     │
-│     ├─ Api/
-│     │  └─ EntitiesController.cs            # GET/POST endpoints for Entity
+│     ├─ Api/                                # TODO
+│     │  └─ EntitiesController.cs            # TODO: GET/POST endpoints for Entity
 │     │
 │     ├─ Domain/
-│     │  ├─ Entity.cs                        # Core entity logic (hide/reveal/speed/etc.)
-│     │  ├─ EntityInventory.cs
-│     │  └─ EntitySkills.cs
+│     │  ├─ Entity/
+│     │  │  ├─ DamageableEntity.cs
+│     │  │  ├─ Entity.cs
+│     │  │  ├─ EntityAI.cs                  # TODO: Algorithm base for decision-making
+│     │  │  ├─ EntityInventory.cs
+│     │  │  ├─ EntityMetadata.cs
+│     │  │  └─ EntitySkills.cs
+│     │  ├─ Enums/
+│     │  │  ├─ DamageType.cs
+│     │  │  └─ Proficiency.cs
+│     │  ├─ Exceptions/
+│     │  │  └─ EntityExceptions.cs
+│     │  ├─ Items/
+│     │  │  ├─ Equippable.cs
+│     │  │  ├─ Item.cs
+│     │  │  └─ Useable.cs
+│     │  └─ Skills/
+│     │     └─ Skill.cs
 │     │
-│     ├─ Contracts/
-│     │  ├─ EntityDto.cs                     # API output models
-│     │  ├─ InventoryDto.cs
-│     │  ├─ SkillsDto.cs
-│     │  ├─ SetSpeedRequest.cs               # API input model
-│     │  └─ EntityMapper.cs                  # Domain <-> DTO mapping
+│     ├─ Contracts/                          # TODO
+│     │  ├─ EntityDto.cs                     # TODO: API output models
+│     │  ├─ InventoryDto.cs                  # TODO
+│     │  ├─ SkillsDto.cs                     # TODO
+│     │  ├─ SetSpeedRequest.cs               # TODO: API input model
+│     │  └─ EntityMapper.cs                  # TODO: Domain <-> DTO mapping
 │     │
-│     ├─ Infrastructure/
-│     │  └─ EntityStore.cs                   # In-memory repository/store (starter)
+│     ├─ Infrastructure/                     # TODO
+│     │  └─ EntityStore.cs                   # TODO: In-memory repository/store
 │     │
-│     └─ Realtime/                           # OPTIONAL later
-│        └─ BattleHub.cs                     # SignalR for live updates
+│     └─ Realtime/                           # TODO (optional)
+│        └─ BattleHub.cs                     # TODO: SignalR for live updates
 │
 ├─ package.json
 ├─ tsconfig.json
 └─ README.md
 ```
 
-## Minimal First Pass
+## Still TODO
 
-If you want the leanest setup first, create only these new files:
+Next files to create for the backend API layer:
 
 ```txt
 backend/GameServer/Program.cs
+backend/GameServer/appsettings.json
+backend/GameServer/appsettings.Development.json
 backend/GameServer/Api/EntitiesController.cs
-backend/GameServer/Domain/Entity.cs
 backend/GameServer/Contracts/EntityDto.cs
+backend/GameServer/Contracts/InventoryDto.cs
+backend/GameServer/Contracts/SkillsDto.cs
 backend/GameServer/Contracts/SetSpeedRequest.cs
 backend/GameServer/Contracts/EntityMapper.cs
 backend/GameServer/Infrastructure/EntityStore.cs
 src/types/entityApi.ts
-src/lib/entityApiClient.ts
+src/entityApiClient.ts
 ```
-
-Then expand into separate files (`EntityInventory.cs`, `EntitySkills.cs`, etc.) as complexity grows.
