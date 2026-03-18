@@ -1,6 +1,6 @@
 namespace GameServer.Domain.Items;
 
-abstract class Item(string type, string name, int value, string description, bool consumable)
+public abstract class Item(string type, string name, int value, string description, bool consumable)
 {
     public Guid Id { get; } = Guid.NewGuid();
     public string Type { get; protected set; } = type;

@@ -3,7 +3,7 @@ using GameServer.Domain.Entities;
 
 namespace GameServer.Domain.Skills;
 
-abstract class Skill(string name, int cost, DamageType element, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
+public abstract class Skill(string name, int cost, DamageType element, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
 {
     public Guid Id { get; } = Guid.NewGuid();
     public string Name { get; protected set; } = name;
