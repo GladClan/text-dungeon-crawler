@@ -3,39 +3,77 @@ using GameServer.Domain.Exceptions;
 
 namespace GameServer.Domain.Entities;
 
-public class DamageableEntity(
-    string name,
-    string entityType,
-    int health,
-    int mana,
-    int magic,
-    int strength,
-    int defense,
-    int level = 0,
-    int experience = 0,
-    Dictionary<DamageType, double>? resistances = null,
-    Dictionary<Proficiency, double>? proficiencies = null
-) : EntityMetadata(name, entityType)
+public class DamageableEntity
 {
-    public int MaxHealth { get; protected set; } = health;
-    public double Health { get; protected set; } = health;
-    public int MaxMana { get; protected set; } = mana;
-    public double Magic { get; protected set; } = magic;
-    public double Mana { get; protected set; } = mana;
-    public double Strength { get; protected set; } = strength;
-    public double Defense { get; protected set; } = defense;
-    public int Level { get; protected set; } = level;
-    public int Experience { get; protected set; } = experience;
-    public bool IsEntityAlive { get; protected set; } = true;
-    public bool Visible { get; protected set; } = true;
-    public Dictionary<DamageType, double> Resistances { get; private set; } = resistances ?? [];
-    public Dictionary<Proficiency, double> Proficiencies { get; private set; } = proficiencies ?? new Dictionary<Proficiency, double>(){
-        {Proficiency.bludgeoning, 0.85d},
-        {Proficiency.potions, 0.85d},
-        {Proficiency.slashing, 0.65d},
-        {Proficiency.healing, 0.6d}
-    };
+    
+    private static int _entityCounter = 0;
+    public string Name { get; protected set; } = string.Empty;
+    public string EntityType { get; protected set; } = string.Empty;
+    public string Race { get; protected set; } = string.Empty;
+    public Guid ID { get; } = Guid.NewGuid();
+    public string SimpleID { get; } = string.Empty;
+    public int MaxHealth { get; protected set; }
+    public double CurrentHealth { get; protected set; }
+    public int MaxMana { get; protected set; }
+    public double Magic { get; protected set; }
+    public double CurrentMana { get; protected set; }
+    public double Strength { get; protected set; }
+    public double Defense { get; protected set; }
+    public int Level { get; protected set; }
+    public int Experience { get; protected set; }
+    public bool IsEntityAlive { get; protected set; }
+    public bool Visible { get; protected set; }
+    public Dictionary<DamageType, double> Resistances { get; private set; } = [];
+    public Dictionary<Proficiency, double> Proficiencies { get; private set; } = [];
     public Dictionary<Proficiency, double> ProficiencyEntries { get; private set; } = [];
+    public EntityInventory Inventory { get; private set; } = new();
+    public EntitySkills Skills { get; private set; } = new();
+    public double Speed { get; private set; } = 12d;
+    // public EntityAI AI { get; private set; }
+    public bool IsHidden { get; private set; } = false;
+
+    DamageableEntity() {}
+    public DamageableEntity(
+        string name,
+        string entityType,
+        string race,
+        int health,
+        int mana,
+        int magic,
+        int strength,
+        int defense,
+        int speed = 12,
+        int level = 0,
+        int experience = 0,
+        Dictionary<DamageType, double>? resistances = null,
+        Dictionary<Proficiency, double>? proficiencies = null
+    )
+    {
+        Name = name;
+        EntityType = entityType;
+        Race = race;
+        ID = Guid.NewGuid();
+        SimpleID = GenerateEntityId();
+        MaxHealth = health;
+        CurrentHealth = health;
+        Magic = magic;
+        MaxMana = mana;
+        CurrentMana = mana;
+        Strength = strength;
+        Defense = defense;
+        Speed = speed;
+        Level = level;
+        Experience = experience;
+        IsEntityAlive = true;
+        Visible = true;
+        Resistances = resistances ?? [];
+        Proficiencies = proficiencies ?? new Dictionary<Proficiency, double>(){
+            {Proficiency.bludgeoning, 0.85d},
+            {Proficiency.potions, 0.85d},
+            {Proficiency.slashing, 0.65d},
+            {Proficiency.healing, 0.6d}
+        };
+    }
 
     public void FixResistances(Dictionary<DamageType, double> resDict) {
         Resistances = [];
@@ -74,8 +112,8 @@ public class DamageableEntity(
         }
         // apply healing resistance if exists
         double multiplier = Resistances.TryGetValue(DamageType.healing, out var value) ? value : 1;
-        double actual = Math.Min(amount * multiplier, MaxHealth - Health);
-        Health += actual;
+        double actual = Math.Min(amount * multiplier, MaxHealth - CurrentHealth);
+        CurrentHealth += actual;
         return actual;
     }
 
@@ -85,9 +123,9 @@ public class DamageableEntity(
         {
             throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose health");
         }
-        double actual = Math.Min(amount, Health);
-        Health += actual;
-        if (Health <= 0)
+        double actual = Math.Min(amount, CurrentHealth);
+        CurrentHealth += actual;
+        if (CurrentHealth <= 0)
         {
             OnDeath();
         }
@@ -96,12 +134,12 @@ public class DamageableEntity(
 
     public double ExpendMana(double amount)
     {
-        if (!IsEntityAlive || amount > Mana)
+        if (!IsEntityAlive || amount > CurrentMana)
         {
             throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose mana");
         }
-        Mana -= amount;
-        return Mana;
+        CurrentMana -= amount;
+        return CurrentMana;
     }
 
     public double GainMana(double amount)
@@ -110,8 +148,8 @@ public class DamageableEntity(
         {
             throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose mana");
         }
-        double actual = Math.Min(amount, MaxMana - Mana);
-        Mana += actual;
+        double actual = Math.Min(amount, MaxMana - CurrentMana);
+        CurrentMana += actual;
         return actual;
     }
 
@@ -136,4 +174,62 @@ public class DamageableEntity(
     {
         return Resistances.TryGetValue(d, out var value) ? value : 0d;
     }
+
+    public bool Hide()
+    {
+        if (IsHidden)
+        {
+            return false;
+        }
+        IsHidden = true;
+        return true;
+    }
+
+    public bool Reveal()
+    {
+        if (!IsHidden)
+        {
+            return false;
+        }
+        IsHidden = false;
+        return true;
+    }
+
+    public DamageableEntity Clone()
+    {
+        return new DamageableEntity(
+            Name,
+            EntityType,
+            Race,
+            MaxHealth,
+            MaxMana,
+            (int)Magic,
+            (int)Strength,
+            (int)Defense,
+            (int)Speed,
+            Level,
+            Experience,
+            new Dictionary<DamageType, double>(Resistances),
+            new Dictionary<Proficiency, double>(Proficiencies)
+        )
+        {
+            Inventory = Inventory.Clone(),
+            Skills = Skills.Clone(),
+            Speed = Speed,
+            IsHidden = IsHidden,
+        };
+    }
+
+    private string GenerateEntityId()
+    {
+        string counter = Interlocked.Increment(ref _entityCounter).ToString("D3");
+        string timestamp = DateTime.Now.ToString("MMddyyyyHHmmss");
+        string prefix = EntityType.PadRight(3, '_')[..3].ToLowerInvariant();
+
+        return $"{prefix}_{timestamp}_{counter}";
+    }
 }
+
+/**
+
+*/
