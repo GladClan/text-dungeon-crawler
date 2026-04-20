@@ -7,7 +7,7 @@ namespace GameServer.Contracts;
 
 /*
 Quick start
-1) Use EntityDto (and nested DTOs) as your API response shape.
+1) Use DamageableEntityDto (and nested DTOs) as your API response shape.
 2) Use request DTOs (SetSpeedRequest, ChangeHealthRequest, etc.) as [FromBody] inputs.
 3) In controllers/services, map domain entities with: entity.ToDto().
 4) Keep game logic in domain classes; keep API contracts and validation in this Contracts layer.
@@ -92,18 +92,17 @@ public static class EntityContractMapper
     /// Main mapper used by query endpoints and mutation responses.
     /// Example controller usage: return Ok(entity.ToDto());
     /// </summary>
-    public static EntityDto ToDto(this Entity entity)
+    public static DamageableEntityDto ToDto(this DamageableEntity entity)
     {
-        return new EntityDto
+        return new DamageableEntityDto
         {
             Id = entity.ID,
-            SimpleId = entity.SimpleID,
             Name = entity.Name,
             EntityType = entity.EntityType,
             MaxHealth = entity.MaxHealth,
-            Health = entity.Health,
+            CurrentHealth = entity.CurrentHealth,
             MaxMana = entity.MaxMana,
-            Mana = entity.Mana,
+            CurrentMana = entity.CurrentMana,
             Magic = entity.Magic,
             Strength = entity.Strength,
             Defense = entity.Defense,
@@ -130,9 +129,9 @@ public static class EntityContractMapper
     /// <summary>
     /// Utility mapper for list endpoints.
     /// </summary>
-    public static List<EntityDto> ToDtos(this IEnumerable<Entity> entities)
+    public static List<DamageableEntityDto> ToDtos(this IEnumerable<DamageableEntity> entities)
     {
-        return entities.Select(ToDto).ToList();
+        return [.. entities.Select(ToDto)];
     }
 
     private static Dictionary<string, double> ToStringKeyDictionary<TEnum>(Dictionary<TEnum, double> source)

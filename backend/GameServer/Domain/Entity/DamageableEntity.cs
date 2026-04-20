@@ -7,30 +7,29 @@ public class DamageableEntity
 {
     
     private static int _entityCounter = 0;
-    public string Name { get; protected set; } = string.Empty;
-    public string EntityType { get; protected set; } = string.Empty;
-    public string Race { get; protected set; } = string.Empty;
-    public Guid ID { get; } = Guid.NewGuid();
-    public string SimpleID { get; } = string.Empty;
-    public int MaxHealth { get; protected set; }
-    public double CurrentHealth { get; protected set; }
-    public int MaxMana { get; protected set; }
-    public double Magic { get; protected set; }
-    public double CurrentMana { get; protected set; }
-    public double Strength { get; protected set; }
-    public double Defense { get; protected set; }
-    public int Level { get; protected set; }
-    public int Experience { get; protected set; }
-    public bool IsEntityAlive { get; protected set; }
-    public bool Visible { get; protected set; }
-    public Dictionary<DamageType, double> Resistances { get; private set; } = [];
-    public Dictionary<Proficiency, double> Proficiencies { get; private set; } = [];
-    public Dictionary<Proficiency, double> ProficiencyEntries { get; private set; } = [];
-    public EntityInventory Inventory { get; private set; } = new();
-    public EntitySkills Skills { get; private set; } = new();
-    public double Speed { get; private set; } = 12d;
-    // public EntityAI AI { get; private set; }
-    public bool IsHidden { get; private set; } = false;
+    public string ID { get; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string EntityType { get; set; } = string.Empty;
+    public string Race { get; set; } = string.Empty;
+    public int MaxHealth { get; set; }
+    public double CurrentHealth { get; set; }
+    public double Magic { get; set; }
+    public int MaxMana { get; set; }
+    public double CurrentMana { get; set; }
+    public double Strength { get; set; }
+    public double Defense { get; set; }
+    public int Level { get; set; }
+    public int Experience { get; set; }
+    public bool IsEntityAlive { get; set; }
+    public bool Visible { get; set; }
+    public bool IsHidden { get; set; } = false;
+    public double Speed { get; set; } = 12d;
+    public Dictionary<DamageType, double> Resistances { get; set; } = [];
+    public Dictionary<Proficiency, double> Proficiencies { get; set; } = [];
+    public Dictionary<Proficiency, double> ProficiencyEntries { get; set; } = [];
+    public EntityInventory Inventory { get; set; } = new();
+    public EntitySkills Skills { get; set; } = new();
+    // public EntityAI AI { get; set; }
 
     DamageableEntity() {}
     public DamageableEntity(
@@ -52,8 +51,7 @@ public class DamageableEntity
         Name = name;
         EntityType = entityType;
         Race = race;
-        ID = Guid.NewGuid();
-        SimpleID = GenerateEntityId();
+        ID = GenerateEntityId();
         MaxHealth = health;
         CurrentHealth = health;
         Magic = magic;

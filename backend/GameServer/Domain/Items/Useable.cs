@@ -3,13 +3,24 @@ using GameServer.Domain.Enums;
 
 namespace GameServer.Domain.Items;
 
-abstract class Useable(string type, string name, int cost, string description, bool sellable, DamageType element, Proficiency proficiency) : Item(type, name, cost, description, sellable)
+abstract class Useable : Item
 {
-    public DamageType Element { get; protected set; } = element;
-    public Proficiency Prof { get; protected set; } = proficiency;
-    public abstract string ItemEffect(Entity target, Entity source);
-    public bool CanUse(Entity target)
+    public DamageType Element { get; protected set; }
+    public Proficiency Prof { get; protected set; }
+    public abstract string ItemEffect(DamageableEntity target, DamageableEntity source);
+    public bool CanUse(DamageableEntity target)
     {
         return true;
+    }
+
+    public Useable()
+    {
+    }
+
+    public Useable(string type, string name, int cost, string description, bool consumable, bool sellable, DamageType element, Proficiency proficiency)
+     : base(type, name, cost, description, consumable, sellable)
+    {
+        Element = element;
+        Prof = proficiency;
     }
 }

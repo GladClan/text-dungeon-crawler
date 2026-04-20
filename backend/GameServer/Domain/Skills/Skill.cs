@@ -3,18 +3,32 @@ using GameServer.Domain.Entities;
 
 namespace GameServer.Domain.Skills;
 
-public abstract class Skill(string name, int cost, DamageType element, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
+public abstract class Skill
 {
-    public Guid Id { get; } = Guid.NewGuid();
-    public string Name { get; protected set; } = name;
-    public int Cost { get; protected set; } = cost;
-    public DamageType Element { get; protected set; } = element; // i.e. fire, lightning, water, holy, etc.
-    public Proficiency Prof { get; protected set; } = proficiency; // i.e. gen (spellstrike), ice, fire, lightning, holy, necro, etc.
-    public int Level { get; protected set; } = level;
-    public abstract string SkillEffect(Entity target, Entity source);
+    public int Id { get; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int Cost { get; set; }
+    public DamageType Element { get; set; }
+    public Proficiency Prof { get; set; }
+    public int Level { get; set; }
+    public abstract string SkillEffect(DamageableEntity target, DamageableEntity source);
     public abstract void LevelUpSkill();
-    public bool IsLearnable (Entity target)
+    public bool IsLearnable (DamageableEntity target)
     {
         return true;
+    }
+
+    public Skill()
+    {
+    }
+
+    public Skill(string name, int cost, DamageType element, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
+    {
+        Name = name;
+        Cost = cost;
+        Element = element;
+        Prof = proficiency;
+        Level = level;
     }
 }

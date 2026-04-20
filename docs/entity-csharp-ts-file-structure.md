@@ -75,7 +75,7 @@ text_dungeon_crawler/
 │     │  ├─ SetSpeedRequest.cs               # TODO: API input model
 │     │  └─ EntityMapper.cs                  # TODO: Domain <-> DTO mapping
 │     │
-│     ├─ Infrastructure/                     # TODO
+│     ├─ Infrastructure/
 │     │  └─ EntityStore.cs                   # TODO: In-memory repository/store
 │     │
 │     └─ Realtime/                           # TODO (optional)
