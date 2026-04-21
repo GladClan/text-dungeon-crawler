@@ -1,30 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Gameserver.DataAnnotations;
+using GameServer.Domain.Enums;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Items;
 using GameServer.Domain.Skills;
 
+// These contracts are used during the api call to send information to or from the server. Classes are used to map out the requirements for the requests.
 namespace GameServer.Contracts;
-
-/*
-Quick start
-1) Use DamageableEntityDto (and nested DTOs) as your API response shape.
-2) Use request DTOs (SetSpeedRequest, ChangeHealthRequest, etc.) as [FromBody] inputs.
-3) In controllers/services, map domain entities with: entity.ToDto().
-4) Keep game logic in domain classes; keep API contracts and validation in this Contracts layer.
-
-Why this exists
-- DTOs prevent frontend code from depending on domain internals.
-- Request DTOs centralize validation rules for API commands.
-- Mapper methods keep controllers thin and consistent.
-*/
-
-/// <summary>
-/// A transport-safe item shape for API responses.
-/// Optional fields allow one DTO to represent useable and equippable item variants.
-/// </summary>
-
-
-// Request DTOs are command payloads sent by the frontend to mutate game state.
 
 public sealed class SetSpeedRequest
 {
@@ -32,6 +14,18 @@ public sealed class SetSpeedRequest
     public double Speed { get; init; }
 }
 
+public sealed class RemoveItemByNameRequest
+{
+    [Required]
+    [MinLength(1)]
+    public string ItemName { get; init; } = string.Empty;
+}
+
+public sealed class RemoveItemByIndexRequest
+{
+    [Range(0, int.MaxValue)]
+    public int Index { get; init; }
+}
 public sealed class ChangeHealthRequest
 {
     /// <summary>
@@ -47,19 +41,6 @@ public sealed class ChangeManaRequest
 {
     [Range(typeof(double), "-999999", "999999", ConvertValueInInvariantCulture = true)]
     public double Amount { get; init; }
-}
-
-public sealed class RemoveItemByNameRequest
-{
-    [Required]
-    [MinLength(1)]
-    public string ItemName { get; init; } = string.Empty;
-}
-
-public sealed class RemoveItemByIndexRequest
-{
-    [Range(0, int.MaxValue)]
-    public int Index { get; init; }
 }
 
 public sealed class AddItemByIdRequest
@@ -82,11 +63,83 @@ public sealed class LearnSkillByIdRequest
     public string SkillId { get; init; } = string.Empty;
 }
 
+public sealed class ResistanceRequest
+{
+    [Required]
+    [EnumDataType(typeof(DamageType))]
+    [MinLength(1)]
+    public string Type { get; init; } = string.Empty;
+
+    [Required]
+    [Range(typeof(double), "-999999", "999999", ConvertValueInInvariantCulture = true)]
+    public double Value { get; init; }
+}
+
+public sealed class ProficiencyRequest
+{
+    [Required]
+    [EnumDataType(typeof(Proficiency))]
+    [MinLength(1)]
+    public string Type { get; init; } = string.Empty;
+
+    [Required]
+    [Range(typeof(double), "-999999", "999999", ConvertValueInInvariantCulture = true)]
+    public double Value { get; init; }
+}
+
+public sealed class DamageableEntityRequest
+{
+    [Required]
+    [MinLength(1)]
+    public string Name { get; init; } = string.Empty;
+    
+    [Required]
+    [MinLength(1)]
+    public string EntityType { get; init; } = string.Empty;
+
+    [Required]
+    [MinLength(1)]
+    public string Race { get; init; } = string.Empty;
+
+    [Required]
+    [Range(typeof(int), "0", "999999", ConvertValueInInvariantCulture = true)]
+    public int Health { get; init; }
+
+    [Required]
+    [Range(typeof(int), "0", "999999", ConvertValueInInvariantCulture = true)]
+    public int Magic { get; init; }
+
+    [Required]
+    [Range(typeof(int), "0", "999999", ConvertValueInInvariantCulture = true)]
+    public int Mana { get; init; }
+
+    [Required]
+    [Range(typeof(int), "0", "999", ConvertValueInInvariantCulture = true)]
+    public int Strength { get; init; }
+
+    [Required]
+    [Range(typeof(int), "0", "999", ConvertValueInInvariantCulture = true)]
+    public int Defense { get; init; }
+
+    [MinimumValue(0)]
+    public int Speed { get; init; }
+
+    [MinimumValue(0)]
+    public int Level { get; init; }
+
+    [MinimumValue(0)]
+    public int Experience { get; init; }
+
+    public List<ResistanceRequest>? Resistances { get; init; }
+
+    public List<ProficiencyRequest>? Proficiencies { get; init; }
+}
+
 /// <summary>
 /// Mapper methods convert domain models to DTOs.
 /// Keep this translation in one place so controllers stay thin and frontend contracts stay consistent.
 /// </summary>
-public static class EntityContractMapper
+public static class EntityMapper
 {
     /// <summary>
     /// Main mapper used by query endpoints and mutation responses.
@@ -117,7 +170,7 @@ public static class EntityContractMapper
             Inventory = new EntityInventoryDto
             {
                 Gold = entity.Inventory.Gold,
-                Items = entity.Inventory.Items.Select(MapItem).ToList()
+                Items = [.. entity.Inventory.Items.Select(MapItem)]
             },
             Skills = new EntitySkillsDto
             {
@@ -169,6 +222,7 @@ public static class EntityContractMapper
         {
             Id = skill.Id,
             Name = skill.Name,
+            Description = skill.Description,
             Cost = skill.Cost,
             Element = skill.Element.ToString(),
             Proficiency = skill.Prof.ToString(),

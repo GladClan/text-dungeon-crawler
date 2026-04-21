@@ -1,6 +1,6 @@
 # File Structure (C# Backend + TypeScript Frontend)
 
-Current state of the project structure. Items marked **TODO** do not yet exist and are planned for future implementation.
+Current state of the project structure. Items marked **TODO** do not yet exist and are planned for future implementation.<br/>
 *The project was changed from a 100% Next.js typescript project to a Next.js frontend with an ASP.NET Core backend*
 
 ```txt
@@ -51,7 +51,6 @@ text_dungeon_crawler/
 │     ├─ Domain/
 │     │  ├─ Entity/
 │     │  │  ├─ DamageableEntity.cs
-│     │  │  ├─ Entity.cs
 │     │  │  ├─ EntityAI.cs                  # TODO: Algorithm base for decision-making
 │     │  │  ├─ EntityInventory.cs
 │     │  │  ├─ EntityMetadata.cs
@@ -68,11 +67,14 @@ text_dungeon_crawler/
 │     │  └─ Skills/
 │     │     └─ Skill.cs
 │     │
-│     ├─ Contracts/                          # TODO
-│     │  ├─ EntityDto.cs                     # TODO: API output models
-│     │  ├─ InventoryDto.cs                  # TODO
-│     │  ├─ SkillsDto.cs                     # TODO
-│     │  ├─ SetSpeedRequest.cs               # TODO: API input model
+│     ├─ Contracts/
+|     |  ├─ DTOs /
+│     │  |   ├─ DamageableEntityDto.cs
+│     │  |   ├─ EntityInventoryDto.cs
+│     │  |   ├─ EntitySkillsDto.cs
+│     │  |   ├─ Item.cs
+│     │  |   └─ SkillDto.cs
+│     │  ├─ EntityRequests.cs               # TODO: API input model
 │     │  └─ EntityMapper.cs                  # TODO: Domain <-> DTO mapping
 │     │
 │     ├─ Infrastructure/

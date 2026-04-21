@@ -12,4 +12,13 @@ public sealed class EntityStore
     }
 
     public bool TryGet(string id, out DamageableEntity? entity) => _entities.TryGetValue(id, out entity);
+
+    public void Add(DamageableEntity entity)
+    {
+        _entities[entity.ID] = entity;
+    }
+
+    public string[] GetAllNames() => [.. _entities.Values.Select(entity => entity.Name)];
+
+    public string[] GetAllIds() => [.. _entities.Values.Select(entity => entity.ID)];
 }
