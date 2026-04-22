@@ -7,14 +7,9 @@ namespace GameServer.Api;
 
 [ApiController]
 [Route("api/entities")]
-public sealed class DamageableEntityController : ControllerBase
+public sealed class DamageableEntityController(EntityStore store) : ControllerBase
 {
-    private readonly EntityStore _entities;
-
-    public DamageableEntityController(EntityStore store)
-    {
-        _entities = store;
-    }
+    private readonly EntityStore _entities = store;
 
     [HttpGet("names-list")]
     public ActionResult<string[]> GetAllNames()
@@ -41,7 +36,15 @@ public sealed class DamageableEntityController : ControllerBase
     public ActionResult<DamageableEntityDto> AddEntity([FromBody] DamageableEntityRequest request)
     {
         var resistances = ParseResistances(request.Resistances);
-        var proficiencies = ParseProficiencies(request.Proficiencies);
+        var proficiencies = request.Proficiencies is null
+            ? ParseProficiencies(request.Proficiencies)
+            : new Dictionary<Proficiency, double>
+                {
+                    {Proficiency.bludgeoning, 0.85d},
+                    {Proficiency.potions, 0.85d},
+                    {Proficiency.slashing, 0.65d},
+                    {Proficiency.healing, 0.6d}
+                };
 
         if (!ModelState.IsValid)
         {

@@ -42,16 +42,16 @@ text_dungeon_crawler/
 │  └─ GameServer/
 │     ├─ GameServer.csproj
 │     ├─ Program.cs                          # TODO: CORS + DI + controllers
-│     ├─ appsettings.json                    # TODO
-│     ├─ appsettings.Development.json        # TODO
+│     ├─ appsettings.json
+│     ├─ appsettings.Development.json
 │     │
-│     ├─ Api/                                # TODO
-│     │  └─ EntitiesController.cs            # TODO: GET/POST endpoints for Entity
+│     ├─ Api/
+│     │  └─ EntitiesController.cs            # In Progress: GET/POST endpoints for Entity
 │     │
 │     ├─ Domain/
 │     │  ├─ Entity/
 │     │  │  ├─ DamageableEntity.cs
-│     │  │  ├─ EntityAI.cs                  # TODO: Algorithm base for decision-making
+│     │  │  ├─ EntityAI.cs                   # TODO: Algorithm base for decision-making
 │     │  │  ├─ EntityInventory.cs
 │     │  │  ├─ EntityMetadata.cs
 │     │  │  └─ EntitySkills.cs
@@ -74,11 +74,13 @@ text_dungeon_crawler/
 │     │  |   ├─ EntitySkillsDto.cs
 │     │  |   ├─ Item.cs
 │     │  |   └─ SkillDto.cs
-│     │  ├─ EntityRequests.cs               # TODO: API input model
-│     │  └─ EntityMapper.cs                  # TODO: Domain <-> DTO mapping
+│     │  ├─ EntityRequests.cs                # In Progress: API input model
+│     │  ├─ EntityMapper.cs
+│     │  ├─ SkillMapper.cs                   # TODO: Domain <-> DTO mapping
+│     │  └─ InventoryMapper.cs               # TODO: Domain <-> DTO mapping
 │     │
 │     ├─ Infrastructure/
-│     │  └─ EntityStore.cs                   # TODO: In-memory repository/store
+│     │  └─ EntityStore.cs                   # UPDATE: In-memory repository/store
 │     │
 │     └─ Realtime/                           # TODO (optional)
 │        └─ BattleHub.cs                     # TODO: SignalR for live updates
