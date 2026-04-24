@@ -46,8 +46,25 @@ text_dungeon_crawler/
 │     ├─ appsettings.Development.json
 │     │
 │     ├─ Api/
-│     │  └─ EntitiesController.cs            # In Progress: GET/POST endpoints for Entity
+│     |  └─ Controllers/
+│     |     ├─ EntitiesController.cs           # CRUD and lookups only
+│     |     ├─ EntityCombatController.cs       # damage/heal/mana endpoints
+│     |     ├─ EntityInventoryController.cs    # inventory and gold endpoints
+│     |     └─ EntitySkillsController.cs       # skills endpoints
 │     │
+|     ├─ Application/                          # TODO: Controllers are for HTTP transport.
+|     │  ├─ Entities/                          #        Services are for the actual use-cases and implementation of the HTTP functions.
+|     │  │  ├─ IEntityService.cs               #        In essence, the controllers call the service methods, which implemet the actual logic.
+|     │  │  ├─ EntityService.cs                #        All of the files here that start with `I` are interfaces for their respective implementations
+|     │  │  ├─ ICombatService.cs
+|     │  │  ├─ CombatService.cs
+|     │  │  ├─ IInventoryService.cs
+|     │  │  ├─ InventoryService.cs
+|     │  │  ├─ ISkillService.cs
+|     │  │  └─ SkillService.cs
+|     │  └─ Common/
+|     │     └─ EntityRequestParsers.cs         # enum parsing and request normalization
+|     |
 │     ├─ Domain/
 │     │  ├─ Entity/
 │     │  │  ├─ DamageableEntity.cs
@@ -74,13 +91,19 @@ text_dungeon_crawler/
 │     │  |   ├─ EntitySkillsDto.cs
 │     │  |   ├─ Item.cs
 │     │  |   └─ SkillDto.cs
-│     │  ├─ EntityRequests.cs                # In Progress: API input model
-│     │  ├─ EntityMapper.cs
-│     │  ├─ SkillMapper.cs                   # TODO: Domain <-> DTO mapping
-│     │  └─ InventoryMapper.cs               # TODO: Domain <-> DTO mapping
+|     │  ├─ Requests/
+|     │  │  ├─ EntitiesRequests.cs
+|     │  │  ├─ CombatRequests.cs            # TODO
+|     │  │  ├─ InventoryRequests.cs
+|     │  │  └─ SkillsRequests.cs
+|     │  └─ Mappers/
+|     │     └─ EntityMapper.cs
 │     │
 │     ├─ Infrastructure/
 │     │  └─ EntityStore.cs                   # UPDATE: In-memory repository/store
+│     |  └─ Repositories/                    # TODO (optional) in place of EntityStore.cs
+│     |     ├─ IEntityRepository.cs
+│     |     └─ InMemoryEntityRepository.cs
 │     │
 │     └─ Realtime/                           # TODO (optional)
 │        └─ BattleHub.cs                     # TODO: SignalR for live updates
@@ -90,21 +113,41 @@ text_dungeon_crawler/
 └─ README.md
 ```
 
-## Still TODO
+Notes:
+- Controllers should validate input and delegate only.
+- Business rules should live in Application services and Domain classes.
+- Repository interfaces allow swapping in-memory storage for EF Core later.
 
-Next files to create for the backend API layer:
+### Example Methods by Layer
 
-```txt
-backend/GameServer/Program.cs
-backend/GameServer/appsettings.json
-backend/GameServer/appsettings.Development.json
-backend/GameServer/Api/EntitiesController.cs
-backend/GameServer/Contracts/EntityDto.cs
-backend/GameServer/Contracts/InventoryDto.cs
-backend/GameServer/Contracts/SkillsDto.cs
-backend/GameServer/Contracts/SetSpeedRequest.cs
-backend/GameServer/Contracts/EntityMapper.cs
-backend/GameServer/Infrastructure/EntityStore.cs
-src/types/entityApi.ts
-src/entityApiClient.ts
-```
+**Controllers** (HTTP transport only):
+- `GetEntity(id)` -> calls `IEntityService.GetById(id)`
+- `PostDamage(id, request)` -> calls `ICombatService.TakeDamage(...)`
+- `PostInventoryItem(id, request)` -> calls `IInventoryService.AddItem(...)`
+- `DeleteSkill(id, skillId)` -> calls `ISkillService.RemoveSkill(...)`
+
+**Application Services** (use-case orchestration):
+- `EntityService.GetById(id)` -> Repository query + DTO mapping
+- `EntityService.CreateEntity(request)` -> validates request + creates domain entity + saves
+- `CombatService.TakeDamage(entity, source, amount, type)` -> applies resistances + handles death logic + logs
+- `InventoryService.AddItem(entity, item)` -> validates capacity + updates inventory + returns updated state
+- `SkillService.LearnSkill(entity, skillId)` -> resolves skill from catalog + adds to entity + returns updated skills
+
+**Domain Entities** (game rules):
+- `DamageableEntity.Heal(source, amount)` -> applies healing resistance + updates health (no side effects)
+- `DamageableEntity.GetResistance(damageType)` -> returns resistance multiplier for type
+- `EntityInventory.AddItem(item)` -> adds to collection (pure data mutation)
+- `EntityInventory.RemoveItemById(id)` -> removes from collection + throws if not found
+- `EntitySkills.HasSkill(skill)` -> checks by ID or name
+
+**Infrastructure/Repository** (data access):
+- `IEntityRepository.GetById(id)` -> returns entity or null
+- `IEntityRepository.Add(entity)` -> stores in memory or database
+- `IEntityRepository.Remove(id)` -> deletes entity
+- `IEntityRepository.GetAll()` -> returns all entities (for listing/debugging)
+
+**Contracts** (DTOs and mappers):
+- `EntityMapper.ToDto(entity)` -> converts domain entity to API response DTO
+- `EntityMapper.ToDtos(entities)` -> batch convert for list endpoints
+- `ChangeHealthRequest` -> validated input model for combat endpoint
+- `AddItemByIdRequest` -> validated input model for inventory endpoint

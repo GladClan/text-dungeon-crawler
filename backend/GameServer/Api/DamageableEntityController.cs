@@ -1,4 +1,6 @@
 using GameServer.Contracts;
+using GameServer.Contracts.Mappers;
+using GameServer.Contracts.Requests;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +38,7 @@ public sealed class DamageableEntityController(EntityStore store) : ControllerBa
     public ActionResult<DamageableEntityDto> AddEntity([FromBody] DamageableEntityRequest request)
     {
         var resistances = ParseResistances(request.Resistances);
-        var proficiencies = request.Proficiencies is null
+        var proficiencies = (request.Proficiencies is null || request.Proficiencies.Count < 1)
             ? ParseProficiencies(request.Proficiencies)
             : new Dictionary<Proficiency, double>
                 {

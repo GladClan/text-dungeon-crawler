@@ -75,6 +75,12 @@ public sealed class EntityStore
         _entities[entity.ID] = entity;
     }
 
+    public DamageableEntity? Remove(DamageableEntity entity)
+    {
+        _entities.TryRemove(entity.ID, out var removed);
+        return removed;
+    }
+
     public string[] GetAllNames() => [.. _entities.Values.Select(entity => entity.Name)];
 
     public string[] GetAllIds() => [.. _entities.Values.Select(entity => entity.ID)];
