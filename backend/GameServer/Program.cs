@@ -1,7 +1,13 @@
+using GameServer.Application.Common;
+using GameServer.Application.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<EntityStore>();
+builder.Services.AddScoped<EntityService>();
+builder.Services.AddScoped<ResistanceParser>();
+builder.Services.AddScoped<ProficiencyParser>();
 
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")

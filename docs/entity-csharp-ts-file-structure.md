@@ -47,15 +47,15 @@ text_dungeon_crawler/
 │     │
 │     ├─ Api/
 │     |  └─ Controllers/
-│     |     ├─ EntitiesController.cs           # CRUD and lookups only
-│     |     ├─ EntityCombatController.cs       # damage/heal/mana endpoints
-│     |     ├─ EntityInventoryController.cs    # inventory and gold endpoints
-│     |     └─ EntitySkillsController.cs       # skills endpoints
+│     |     ├─ EntitiesController.cs         # CRUD and lookups only
+│     |     ├─ EntityCombatController.cs     # damage/heal/mana endpoints
+│     |     ├─ EntityInventoryController.cs  # inventory and gold endpoints
+│     |     └─ EntitySkillsController.cs     # skills endpoints
 │     │
-|     ├─ Application/                          # TODO: Controllers are for HTTP transport.
-|     │  ├─ Entities/                          #        Services are for the actual use-cases and implementation of the HTTP functions.
-|     │  │  ├─ IEntityService.cs               #        In essence, the controllers call the service methods, which implemet the actual logic.
-|     │  │  ├─ EntityService.cs                #        All of the files here that start with `I` are interfaces for their respective implementations
+|     ├─ Application/                        # TODO: Controllers are for HTTP transport.
+|     │  ├─ Entities/                        #        Services are for the actual use-cases and implementation of the HTTP functions.
+|     │  │  ├─ IEntityService.cs             #        In essence, the controllers call the service methods, which implemet the actual logic.
+|     │  │  ├─ EntityService.cs              #        All of the files here that start with `I` are interfaces for their respective implementations
 |     │  │  ├─ ICombatService.cs
 |     │  │  ├─ CombatService.cs
 |     │  │  ├─ IInventoryService.cs
@@ -63,14 +63,13 @@ text_dungeon_crawler/
 |     │  │  ├─ ISkillService.cs
 |     │  │  └─ SkillService.cs
 |     │  └─ Common/
-|     │     └─ EntityRequestParsers.cs         # enum parsing and request normalization
+|     │     └─ EntityRequestParsers.cs       # enum parsing and request normalization
 |     |
 │     ├─ Domain/
 │     │  ├─ Entity/
 │     │  │  ├─ DamageableEntity.cs
 │     │  │  ├─ EntityAI.cs                   # TODO: Algorithm base for decision-making
 │     │  │  ├─ EntityInventory.cs
-│     │  │  ├─ EntityMetadata.cs
 │     │  │  └─ EntitySkills.cs
 │     │  ├─ Enums/
 │     │  │  ├─ DamageType.cs

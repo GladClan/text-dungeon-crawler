@@ -22,6 +22,7 @@ export default function Home() {
           width={180}
           height={180}
           priority
+          unoptimized
         />
         <ol style={styles.ol}>
           <li style={{marginBottom: "8px"}}>
@@ -32,6 +33,7 @@ export default function Home() {
         <ul style={{...styles.ol, display: "flex", flexDirection: "column"}}>
           <Link href={'/story'}>Go see what's up</Link>
           <Link href={'/party'}>Check out the gang</Link>
+          <Link href={'/rendering-demo'}>SSR vs Static demo</Link>
           <Link href={'/battle'} onClick={() => (
             setEnemies(toVictory),
             setGameState(gamestate.Battle)
