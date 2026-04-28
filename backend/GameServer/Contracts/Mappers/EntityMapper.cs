@@ -1,5 +1,7 @@
+using GameServer.Contracts.DTOs;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Items;
+using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
 
 namespace GameServer.Contracts.Mappers;
@@ -54,6 +56,16 @@ public static class EntityMapper
     public static List<DamageableEntityDto> ToDtos(this IEnumerable<DamageableEntity> entities)
     {
         return [.. entities.Select(ToDto)];
+    }
+
+    /// <summary>
+    /// Converts resistance dictionaries into the public DTO shape used by the API.
+    /// </summary>
+    public static List<ResistanceDto> ToResistanceDtos(this IDictionary<DamageType, double>? source)
+    {
+        return source is null
+            ? []
+            : [.. source.Select(kvp => new ResistanceDto(kvp.Key.ToString(), kvp.Value))];
     }
 
     private static Dictionary<string, double> ToStringKeyDictionary<TEnum>(Dictionary<TEnum, double> source)

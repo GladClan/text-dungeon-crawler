@@ -98,3 +98,25 @@ public sealed class ChangeManaRequest
     [Range(typeof(double), "-999999", "999999", ConvertValueInInvariantCulture = true)]
     public double Amount { get; init; }
 }
+
+public sealed class FixStatsRequest
+{
+    [Required]
+    [Range(typeof(int), "0", "999999", ConvertValueInInvariantCulture = true)]
+    public int Health { get; init; }
+    [Required]
+    [Range(typeof(int), "0", "999", ConvertValueInInvariantCulture = true)]
+    public double Magic { get; init; }
+    [Required]
+    [Range(typeof(int), "0", "999999", ConvertValueInInvariantCulture = true)]
+    public int Mana { get; init; }
+    [Required]
+    [Range(typeof(int), "0", "999", ConvertValueInInvariantCulture = true)]
+    public int Strength { get; init; }
+    [Required]
+    [Range(typeof(int), "0", "999", ConvertValueInInvariantCulture = true)]
+    public int Defense { get; init; }
+    [Required]
+    [MinimumValue(0)]
+    public int Speed { get; init; }
+}

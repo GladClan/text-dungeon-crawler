@@ -1,4 +1,4 @@
-namespace GameServer.Contracts;
+namespace GameServer.Contracts.DTOs;
 
 public sealed class EntitySkillsDto
 {

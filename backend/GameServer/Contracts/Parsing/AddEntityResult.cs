@@ -1,3 +1,5 @@
+using GameServer.Contracts.DTOs;
+
 namespace GameServer.Contracts.Parsing;
 
 public sealed class AddEntityResult

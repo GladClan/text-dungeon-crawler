@@ -5,7 +5,6 @@ namespace GameServer.Domain.Entities;
 
 public class DamageableEntity
 {
-    
     private static int _entityCounter = 0;
     public string ID { get; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -171,26 +170,6 @@ public class DamageableEntity
     public double GetResistance(DamageType d)
     {
         return Resistances.TryGetValue(d, out var value) ? value : 0d;
-    }
-
-    public bool Hide()
-    {
-        if (IsHidden)
-        {
-            return false;
-        }
-        IsHidden = true;
-        return true;
-    }
-
-    public bool Reveal()
-    {
-        if (!IsHidden)
-        {
-            return false;
-        }
-        IsHidden = false;
-        return true;
     }
 
     public DamageableEntity Clone()

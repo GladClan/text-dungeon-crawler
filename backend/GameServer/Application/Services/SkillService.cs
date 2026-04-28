@@ -1,0 +1,14 @@
+/*
+getSkills
+hasSkill
+getSkillByName
+getSkillById
+addSkill
+removeSkillByName
+removeSkillById
+allSkills
+clear
+isEmpty
+addSkills
+clone
+*/
