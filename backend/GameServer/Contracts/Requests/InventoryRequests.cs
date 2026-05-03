@@ -1,7 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using Gameserver.DataAnnotations;
 
 namespace GameServer.Contracts.Requests;
 
+public sealed class InventoryRequest
+{
+    [MinimumValue(0)]
+    public int Gold { get; init; } = 0;
+    public List<AddItemByIdRequest> Items { get; init; } = [];
+}
 
 public sealed class AddItemByIdRequest
 {

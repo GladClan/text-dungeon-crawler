@@ -3,7 +3,6 @@ using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameServer.Api.Controllers;
@@ -44,21 +43,6 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         {
             return Ok(result);
         }
-    }
-
-    [HttpGet("{id}/get-resistance")]
-    public ActionResult<ResistanceDto> GetResistance(string id, [FromBody] string damageType)
-    {
-        var result = _service.GetResistance(id, damageType);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        if (result.Resistance.Length == 0 && result.Value == 0)
-        {
-            return ValidationProblem($"{damageType} is not a valid Damage Type");
-        }
-        return Ok(result);
     }
 
     [HttpGet("{id}/get-all-resistances")]
@@ -157,7 +141,7 @@ public sealed class EntitiesController(EntityService entityService) : Controller
     [HttpPatch("{id}/set-resistance")]
     public ActionResult<ResistanceDto> SetResistance(string id, [FromBody] ResistanceRequest request)
     {
-        var result = _service.SetResistance(id, request);
+        var result = _service.SetResistanceMultiplier(id, request);
         if (result is null)
         {
             return NotFound(IdNotFound(id));

@@ -52,10 +52,10 @@ text_dungeon_crawler/
 │     |     ├─ EntityInventoryController.cs  # inventory and gold endpoints
 │     |     └─ EntitySkillsController.cs     # skills endpoints
 │     │
-|     ├─ Application/                        # TODO: Controllers are for HTTP transport.
-|     │  ├─ Entities/                        #        Services are for the actual use-cases and implementation of the HTTP functions.
-|     │  │  ├─ IEntityService.cs             #        In essence, the controllers call the service methods, which implemet the actual logic.
-|     │  │  ├─ EntityService.cs              #        All of the files here that start with `I` are interfaces for their respective implementations
+|     ├─ Application/                        # TODO: Controllers for HTTP transport.
+|     │  ├─ Entities/
+|     │  │  ├─ IEntityService.cs             #        All of the files here that start with `I` are interfaces for their respective implementations
+|     │  │  ├─ EntityService.cs              
 |     │  │  ├─ ICombatService.cs
 |     │  │  ├─ CombatService.cs
 |     │  │  ├─ IInventoryService.cs
@@ -63,7 +63,9 @@ text_dungeon_crawler/
 |     │  │  ├─ ISkillService.cs
 |     │  │  └─ SkillService.cs
 |     │  └─ Common/
-|     │     └─ EntityRequestParsers.cs       # enum parsing and request normalization
+|     │     ├─ OrdinalDateString.cs
+|     │     ├─ ProficiencyParser.cs
+|     │     └─ ResistanceParser.cs
 |     |
 │     ├─ Domain/
 │     │  ├─ Entity/
@@ -77,6 +79,10 @@ text_dungeon_crawler/
 │     │  ├─ Exceptions/
 │     │  │  └─ EntityExceptions.cs
 │     │  ├─ Items/
+|     │  │  ├─ ItemCasesEquippable/
+│     │  |  |  └─ ...                       # TODO: Library for the different equipment
+|     │  │  ├─ ItemCasesUseable/
+│     │  |  |  └─ ...                       # TODO: Library for the different items
 │     │  │  ├─ Equippable.cs
 │     │  │  ├─ Item.cs
 │     │  │  └─ Useable.cs
@@ -94,7 +100,7 @@ text_dungeon_crawler/
 |     │  │  ├─ EntitiesRequests.cs
 |     │  │  ├─ CombatRequests.cs            # TODO
 |     │  │  ├─ InventoryRequests.cs
-|     │  │  └─ SkillsRequests.cs
+|     │  │  └─ SkillsRequests.cs            # TODO
 |     │  └─ Mappers/
 |     │     └─ EntityMapper.cs
 │     │

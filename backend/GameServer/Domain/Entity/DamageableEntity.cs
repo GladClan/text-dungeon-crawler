@@ -162,14 +162,14 @@ public class DamageableEntity
         // Proficiencies decrease?
     }
 
-    public double GetProficiency(Proficiency p)
+    public double GetProficiencyMultiplier(Proficiency p)
     {
         return Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
     }
 
-    public double GetResistance(DamageType d)
+    public double GetResistanceMultiplier(DamageType d)
     {
-        return Resistances.TryGetValue(d, out var value) ? value : 0d;
+        return Resistances.TryGetValue(d, out var value) ? value : 1d;
     }
 
     public DamageableEntity Clone()
@@ -190,7 +190,10 @@ public class DamageableEntity
             new Dictionary<Proficiency, double>(Proficiencies)
         )
         {
-            Inventory = Inventory.Clone(),
+            Inventory = new EntityInventory(
+                items: Inventory.Items,
+                gold: Inventory.Gold
+            ),
             Skills = Skills.Clone(),
             Speed = Speed,
             IsHidden = IsHidden,

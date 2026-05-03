@@ -36,16 +36,12 @@ public static class EntityMapper
             Visible = entity.Visible,
             IsHidden = entity.IsHidden,
             Speed = entity.Speed,
-            Resistances = ToStringKeyDictionary(entity.Resistances),
-            Proficiencies = ToStringKeyDictionary(entity.Proficiencies),
-            Inventory = new EntityInventoryDto
-            {
-                Gold = entity.Inventory.Gold,
-                Items = [.. entity.Inventory.Items.Select(MapItem)]
-            },
+            Resistances = entity.Resistances.ToStringKeyDictionary(),
+            Proficiencies = entity.Proficiencies.ToStringKeyDictionary(),
+            Inventory = entity.Inventory.ToDto(),
             Skills = new EntitySkillsDto
             {
-                Skills = entity.Skills.Skills.Select(MapSkill).ToList()
+                Skills = [.. entity.Skills.Skills.Select(MapSkill)]
             }
         };
     }
@@ -68,33 +64,13 @@ public static class EntityMapper
             : [.. source.Select(kvp => new ResistanceDto(kvp.Key.ToString(), kvp.Value))];
     }
 
-    private static Dictionary<string, double> ToStringKeyDictionary<TEnum>(Dictionary<TEnum, double> source)
+    public static Dictionary<string, double> ToStringKeyDictionary<TEnum>(this Dictionary<TEnum, double> source)
         where TEnum : struct, Enum
     {
         return source.ToDictionary(
             kvp => kvp.Key.ToString(),
             kvp => kvp.Value,
             StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static ItemDto MapItem(Item item)
-    {
-        var useable = item as Useable;
-        var equippable = item as Equippable;
-
-        return new ItemDto
-        {
-            Id = item.Id,
-            Type = item.Type,
-            Name = item.Name,
-            Value = item.Value,
-            Description = item.Description,
-            Consumable = item.Consumable,
-            Element = useable?.Element.ToString(),
-            Proficiency = useable?.Prof.ToString(),
-            ArmorTypeLimit = equippable?.ArmorTypeLimit,
-            Equipped = equippable?.Equipped
-        };
     }
 
     private static SkillDto MapSkill(Skill skill)

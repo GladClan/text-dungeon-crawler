@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Primitives;
-
 namespace GameServer.Contracts.DTOs;
 
 public sealed class DamageableEntityDto

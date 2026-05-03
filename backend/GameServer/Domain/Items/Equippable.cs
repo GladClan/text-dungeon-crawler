@@ -4,7 +4,7 @@ namespace GameServer.Domain.Items;
 
 abstract class Equippable : Item
 {
-    public int ArmorTypeLimit { get; protected set; }
+    public int ArmorTypeLimit { get; init; }
     public bool Equipped { get; protected set; }
     
     public abstract void OnEquip(DamageableEntity target);

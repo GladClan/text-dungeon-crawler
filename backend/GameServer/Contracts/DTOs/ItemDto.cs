@@ -2,13 +2,15 @@ namespace GameServer.Contracts.DTOs;
 
 public sealed class ItemDto
 {
-    public int Id { get; init; }
+    public string Id { get; init; } = string.Empty;
     public string Type { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
+    public string Tag { get; init; } = string.Empty;
     public int Value { get; init; }
     public string Description { get; init; } = string.Empty;
+    public string? ItemEffect { get; init; } = string.Empty;
     public bool Consumable { get; init; }
-
+    public bool Sellable { get; init; }
     public string? Element { get; init; }
     public string? Proficiency { get; init; }
     public int? ArmorTypeLimit { get; init; }

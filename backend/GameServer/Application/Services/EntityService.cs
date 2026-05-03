@@ -162,20 +162,6 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return target.ToDto();
     }
 
-    public ResistanceDto? GetResistance(string id, string damageType)
-    {
-        if (!TryGetEntity(id, out var target))
-        {
-            return null;
-        }
-        if (!TryParseDamageType(damageType, out var result))
-        {
-            return new(string.Empty, 0);
-        }
-        double value = target.GetResistance(result);
-        return new(damageType.ToString(), value);
-    }
-
     public List<ResistanceDto>? GetAllResistances(string id)
     {
         if (!TryGetEntity(id, out var target))
@@ -206,7 +192,7 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return resistanceResult;
     }
 
-    public ResistanceDto? SetResistance(string id, ResistanceRequest request){
+    public ResistanceDto? SetResistanceMultiplier(string id, ResistanceRequest request){
         if (!TryGetEntity(id, out var target))
         {
             return null;
@@ -229,7 +215,14 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         {
             return new(string.Empty, 0);
         }
-        target.Resistances[damageType] += request.Value;
+        if (target.Resistances.TryGetValue(damageType, out var currentValue))
+        {
+            target.Resistances[damageType] = currentValue + request.Value;
+        }
+        else
+        {
+            target.Resistances[damageType] = 1 + request.Value;
+        }
         return new(damageType.ToString(), target.Resistances[damageType]);
     }
 
