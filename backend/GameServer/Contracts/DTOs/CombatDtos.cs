@@ -1,15 +1,50 @@
+
 namespace GameServer.Contracts.DTOs;
+
+public sealed class ProficiencyDto
+{
+    public ProficiencyDto()
+    {
+        Proficiency = string.Empty;
+        Error = string.Empty;
+    }
+    public ProficiencyDto(string proficiency, double value)
+    {
+        Proficiency = proficiency;
+        Value = value;
+        Error = string.Empty;
+    }
+    public ProficiencyDto(string error)
+    {
+        Error = error;
+        Proficiency = string.Empty;
+    }
+    public string Proficiency { get; init; } = string.Empty;
+    public double Value { get; init; }
+    public string Error { get; init; }
+}
 
 public sealed class ResistanceDto
 {
-    public ResistanceDto(){}
+    public ResistanceDto()
+    {
+        Resistance = string.Empty;
+        Error = string.Empty;
+    }
     public ResistanceDto(string resistance, double value)
     {
         Resistance = resistance;
         Value = value;
+        Error = string.Empty;
+    }
+    public ResistanceDto(string error)
+    {
+        Resistance = string.Empty;
+        Error = error;
     }
     public string Resistance { get; init; } = string.Empty;
     public double Value { get; init; }
+    public string Error { get; init; }
 }
 
 public sealed class DamageResultDto
@@ -27,10 +62,9 @@ public sealed class DamageResultDto
         Fatal = fatal;
         Error = string.Empty;
     }
-    public DamageResultDto(double sent, double actual, string error)
+    public DamageResultDto(double sent, string error)
     {
         DamageSent = sent;
-        DamageActual = actual;
         Error = error;
     }
     public double DamageSent { get; init; }

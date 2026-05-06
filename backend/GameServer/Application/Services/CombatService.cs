@@ -10,7 +10,6 @@ namespace Gameserver.Application.Services;
 public sealed class CombatService(EntityStore entityStore)
 {
         private readonly EntityStore _entities = entityStore;
-        private readonly int _defenseConstant = 40;
         private readonly double _levelStackMultiplier = 1.2;
         
         private static int GetExperienceForNextLevel(int level)
@@ -24,6 +23,19 @@ public sealed class CombatService(EntityStore entityStore)
                 return _entities.TryGet(id, out target) && target is not null;
         }
 
+        public ProficiencyDto? GetProficiencyMultiplier(string id, string proficiency)
+        {
+                if (!TryGetEntity(id, out var target))
+                {
+                        return null;
+                }
+                if (!Enum.TryParse(proficiency, true, out Proficiency profEnum))
+                {
+                        return new($"{proficiency} is not a valid proficiency");
+                }
+                return target.GetProficiencyMultiplier(profEnum);
+        }
+
         public ResistanceDto? GetResistanceMultiplier(string id, string damageType)
         {
                 if (!TryGetEntity(id, out var target))
@@ -32,73 +44,25 @@ public sealed class CombatService(EntityStore entityStore)
                 }
                 if (!Enum.TryParse(damageType, true, out DamageType dtEnum))
                 {
-                        return new(string.Empty, 0);
+                        return new($"{damageType} is not a valid damage type");
                 }
-                var result = target.Resistances.TryGetValue(dtEnum, out var value) ? value : 1d;
-                if (dtEnum == DamageType.crushing || dtEnum == DamageType.slashing || dtEnum == DamageType.piercing)
-                {
-                        result += Math.Abs(result) * (target.Defense / _defenseConstant);
-                }
-                return new(dtEnum.ToString(), result);
+                return target.GetResistanceMultiplier(dtEnum);
         }
 
-        private static bool DidEntityDie(DamageableEntity entity)
-        {
-                if (entity.CurrentHealth <= 0)
-                {
-                        entity.CurrentHealth = 0;
-                        entity.IsEntityAlive = false;
-                        entity.ProficiencyEntries = [];
-                        entity.Experience = 0;
-                        // Proficiencies decrease?
-                        // Level decreases?
-                        // Resistance to necro or radiant increases?
-                        return true;
-                }
-                return false;
-        }
-        
         public DamageResultDto? TakeDamage(DamageRequest request)
         {
                 if (!TryGetEntity(request.SourceId, out var source) || !TryGetEntity(request.TargetId, out var target))
                 {
                         return null;
                 }
-                ResistanceDto? resistance = GetResistanceMultiplier(target.ID, request.DamageType);
-                if (resistance is null)
+                if (!Enum.TryParse(request.DamageType, out DamageType dtEnum))
                 {
                         return new DamageResultDto(
                                 sent: request.DamageSent,
-                                actual: 0d,
                                 error: $"Invalid damage type: {request.DamageType}"
                         );
                 }
-                if (!source.IsEntityAlive)
-                {
-                        return new DamageResultDto(
-                                sent: request.DamageSent,
-                                actual: 0d,
-                                error: $"{source.Name} is not alive and cannot deal damage."
-                        );
-                }
-                if (!target.IsEntityAlive)
-                {
-                        return new DamageResultDto(
-                                sent: request.DamageSent,
-                                actual: 0d,
-                                error: $"{target.Name} is not alive and cannot take damage."
-                        );
-                }
-                double actual = (double)(request.DamageSent * resistance.Value);
-                target.CurrentHealth -= actual;
-                bool fatal = DidEntityDie(target);
-                return new DamageResultDto(
-                        sent: request.DamageSent,
-                        actual: actual,
-                        result: target.CurrentHealth,
-                        blocked: request.DamageSent - actual,
-                        fatal: fatal
-                );
+                return target.TakeDamage(source, request.DamageSent, dtEnum);
         }
 
         public HealResultDto? Heal(HealRequest request)
@@ -107,34 +71,7 @@ public sealed class CombatService(EntityStore entityStore)
                 {
                         return null;
                 }
-                ResistanceDto? resistance = GetResistanceMultiplier(request.TargetId, DamageType.healing.ToString());
-                if (resistance is null)
-                {
-                        return null;
-                }
-                if (!source.IsEntityAlive)
-                {
-                        return new HealResultDto(
-                                sent: request.AmountToHeal,
-                                error: $"{source.Name} is not alive and cannot heal {target.Name}."
-                        );
-                }
-                if (!target.IsEntityAlive)
-                {
-                        return new HealResultDto(
-                                sent: request.AmountToHeal,
-                                error: $"{target.Name} is not alive and cannot be healed."
-                        );
-                }
-                double actual = (double)(request.AmountToHeal * resistance.Value);
-                target.CurrentHealth += actual;
-                bool isAlive = DidEntityDie(target);
-                return new HealResultDto(
-                        sent: request.AmountToHeal,
-                        actual: actual,
-                        result: target.CurrentHealth,
-                        fatal: isAlive
-                );
+                return target.Heal(source, request.AmountToHeal);
         }
 
         public ManaChangeDto? ChangeMana(ManaRequest request)
@@ -143,21 +80,7 @@ public sealed class CombatService(EntityStore entityStore)
                 {
                         return null;
                 }
-                double actual = request.Amount;
-                if (request.Amount < -target.CurrentMana)
-                {
-                        actual = -target.CurrentMana;
-                } else
-                if (request.Amount > target.MaxMana - target.CurrentMana)
-                {
-                        actual = target.MaxMana - target.CurrentMana;
-                }
-                target.CurrentMana += actual;
-                return new(
-                        amountSent: request.Amount,
-                        amountActual: actual,
-                        newMana: target.CurrentMana
-                );
+                return target.ChangeMana(request.Amount);
         }
 
         public LevelUpDto? AddExperience(AddExperienceRequest request)
@@ -221,7 +144,7 @@ public sealed class CombatService(EntityStore entityStore)
                 return LevelUpStack(stack + 1, target);
         }
 
-        public StringDoubleDto? AddProficiencyEntry(AddProficiencyEntryRequest request)
+        public StringDoubleDto? AddProficiencyEntry(AddProficiencyEntryRequest request, int amount = 1)
         {
                 if (!TryGetEntity(request.TargetId, out var target))
                 {
@@ -235,15 +158,7 @@ public sealed class CombatService(EntityStore entityStore)
                                 $"Cannot convert {request.Proficiency} to Proficiency enum."
                         );
                 }
-                if (target.ProficiencyEntries.TryGetValue(profEnum, out _))
-                {
-                        target.ProficiencyEntries[profEnum] ++;
-                }
-                else
-                {
-                        target.ProficiencyEntries[profEnum] = 1;
-                }
-                return new(profEnum.ToString(), target.ProficiencyEntries[profEnum]);
+                return target.AddProficiencyEntry(profEnum, amount);
         }
 
         public double GetProficiency(DamageableEntity target, Proficiency proficiency)
@@ -253,6 +168,15 @@ public sealed class CombatService(EntityStore entityStore)
                         return target.Proficiencies[proficiency];
                 }
                 return 0.5d;
+        }
+
+        public string? GetDeathMessage(string id)
+        {
+                if (!TryGetEntity(id, out var target))
+                {
+                        return null;
+                }
+                return target.DeathMessage;
         }
 
         public ManaChangeDto? SetCurrentMana(ManaRequest request)
@@ -279,32 +203,3 @@ public sealed class CombatService(EntityStore entityStore)
 
 // Maybe some of these methods should go into an EntityStatsService file? Such as that last method--SetCurrentMana
 
-// hasProficiency
-// setProficiency
-
-// setVisible
-// isVisible
-// isHidden
-// setIsHidden
-
-// getExperience
-// setExperience
-// getLevel
-// setLevel
-
-// getStats
-// getMaxHealth
-// setMaxHealth
-// getHealth
-// setHealth
-// getMaxMana
-// setMaxMana
-// getMana
-// setMana
-// getMagic
-// setMagic
-// getStrength
-// setStrength
-// getDefense
-// setDefense
-// getAllProficiencies

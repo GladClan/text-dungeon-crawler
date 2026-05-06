@@ -2,7 +2,7 @@ using GameServer.Domain.Entities;
 
 namespace GameServer.Domain.Items;
 
-abstract class Equippable : Item
+public abstract class Equippable : Item
 {
     public int ArmorTypeLimit { get; init; }
     public bool Equipped { get; protected set; }

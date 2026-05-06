@@ -31,6 +31,7 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return names;
 
     }
+
     public string[] GetAllIds()
     {
         var ids = _entities.GetAllIds();
@@ -171,6 +172,15 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return target.Resistances.ToResistanceDtos();
     }
 
+    public List<ProficiencyDto>? GetAllProficiencies(string id)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        return target.Proficiencies.ToProficiencyDtos();
+    }
+
     public EnumDictionaryParseResult<DamageType>? SetAllResistances(string id, List<ResistanceRequest> resistances)
     {
         if (!TryGetEntity(id, out var target))
@@ -192,6 +202,27 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return resistanceResult;
     }
 
+    public EnumDictionaryParseResult<Proficiency>? SetAllProficiencies(string id, List<ProficiencyRequest> requestList)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        var proficiencyResult = _proficiencyParser.Parse(requestList);
+        if (!(proficiencyResult.Errors.Count > 0))
+        {
+            if (proficiencyResult.Parsed is null)
+            {
+                target.Proficiencies.Clear();
+            }
+            else
+            {
+                target.Proficiencies = proficiencyResult.Parsed;
+            }
+        }
+        return proficiencyResult;
+    }
+
     public ResistanceDto? SetResistanceMultiplier(string id, ResistanceRequest request){
         if (!TryGetEntity(id, out var target))
         {
@@ -205,25 +236,47 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return new(damageType.ToString(), request.Value);
     }
 
-    public ResistanceDto? AddResistance(string id, ResistanceRequest request)
+    public ProficiencyDto? SetProficiency(string id, ProficiencyRequest request)
     {
         if (!TryGetEntity(id, out var target))
         {
             return null;
         }
-        if (!TryParseDamageType(request.Type, out var damageType))
+        if (!Enum.TryParse(request.Type, out Proficiency profEnum))
+        {
+            return new($"{request.Type} is not a valid proficiency");
+        }
+        target.Proficiencies[profEnum] = request.Value;
+        return new(
+            profEnum.ToString(),
+            target.Proficiencies[profEnum]
+        );
+    }
+
+    public ResistanceDto? IncreaseResistance(string id, ResistanceRequest request)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        if (!TryParseDamageType(request.Type, out var dtEnum))
         {
             return new(string.Empty, 0);
         }
-        if (target.Resistances.TryGetValue(damageType, out var currentValue))
+        return target.IncreaseResistance(dtEnum, request.Value);
+    }
+
+    public ProficiencyDto? IncreaseProficiency(string id, ProficiencyRequest request)
+    {
+        if (!TryGetEntity(id, out var target))
         {
-            target.Resistances[damageType] = currentValue + request.Value;
+            return null;
         }
-        else
+        if (!Enum.TryParse(request.Type, out Proficiency profEnum))
         {
-            target.Resistances[damageType] = 1 + request.Value;
+            return new($"{request.Type} is not a valid proficiency");
         }
-        return new(damageType.ToString(), target.Resistances[damageType]);
+        return target.IncreaseProficiency(profEnum, request.Value);
     }
 
     public bool? IsHidden(string id)
@@ -241,14 +294,7 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         {
             return null;
         }
-        if (target.IsHidden)
-        {
-            target.IsHidden = false;
-        }
-        else
-        {
-            target.IsHidden = true;
-        }
+        target.IsHidden = !target.IsHidden;
         return target.IsHidden;
     }
 

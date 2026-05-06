@@ -3,12 +3,12 @@ using GameServer.Domain.Enums;
 
 namespace GameServer.Domain.Items;
 
-abstract class Useable : Item
+public abstract class Useable : Item
 {
     public DamageType Element { get; protected set; }
     public Proficiency Prof { get; protected set; }
     public abstract string ItemEffect(DamageableEntity target, DamageableEntity source);
-    public bool CanUse(DamageableEntity target)
+    public virtual bool CanUse(DamageableEntity target)
     {
         return true;
     }

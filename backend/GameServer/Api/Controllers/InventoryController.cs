@@ -78,7 +78,7 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         return Ok(item);
     }
 
-    [HttpGet("item-tag/{itemTag}")]
+    [HttpGet("item-tag/{tag}")]
     public ActionResult<ItemDto> GetItemByTag(string id, string tag)
     {
         var item = _service.GetItemById(id, tag);

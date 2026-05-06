@@ -156,7 +156,7 @@ public sealed class EntitiesController(EntityService entityService) : Controller
     [HttpPatch("{id}/change-resistance")]
     public ActionResult<ResistanceDto> ChangeResistance(string id, [FromBody] ResistanceRequest request)
     {
-        var result = _service.AddResistance(id, request);
+        var result = _service.IncreaseResistance(id, request);
         if (result is null)
         {
             return NotFound(IdNotFound(id));

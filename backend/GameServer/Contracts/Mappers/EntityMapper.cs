@@ -64,6 +64,13 @@ public static class EntityMapper
             : [.. source.Select(kvp => new ResistanceDto(kvp.Key.ToString(), kvp.Value))];
     }
 
+    public static List<ProficiencyDto> ToProficiencyDtos(this IDictionary<Proficiency, double>? source)
+    {
+        return source is null
+            ? []
+            : [..source.Select(kvp => new ProficiencyDto(kvp.Key.ToString(), kvp.Value))];
+    }
+
     public static Dictionary<string, double> ToStringKeyDictionary<TEnum>(this Dictionary<TEnum, double> source)
         where TEnum : struct, Enum
     {

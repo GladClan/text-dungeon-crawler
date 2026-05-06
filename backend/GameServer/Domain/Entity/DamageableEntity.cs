@@ -1,3 +1,4 @@
+using GameServer.Contracts.DTOs;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Exceptions;
 
@@ -5,6 +6,7 @@ namespace GameServer.Domain.Entities;
 
 public class DamageableEntity
 {
+    private readonly int _defenseConstant = 40;
     private static int _entityCounter = 0;
     public string ID { get; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -29,8 +31,9 @@ public class DamageableEntity
     public EntityInventory Inventory { get; set; } = new();
     public EntitySkills Skills { get; set; } = new();
     // public EntityAI AI { get; set; }
+    public string DeathMessage { get; set; } = string.Empty;
 
-    DamageableEntity() {}
+    public DamageableEntity() {}
     public DamageableEntity(
         string name,
         string entityType,
@@ -44,7 +47,8 @@ public class DamageableEntity
         int level = 0,
         int experience = 0,
         Dictionary<DamageType, double>? resistances = null,
-        Dictionary<Proficiency, double>? proficiencies = null
+        Dictionary<Proficiency, double>? proficiencies = null,
+        string deathMessage = ""
     )
     {
         Name = name;
@@ -70,134 +74,184 @@ public class DamageableEntity
             {Proficiency.slashing, 0.65d},
             {Proficiency.healing, 0.6d}
         };
+        DeathMessage = deathMessage;
     }
 
-    public void FixResistances(Dictionary<DamageType, double> resDict) {
-        Resistances = [];
-        foreach (DamageType key in resDict.Keys)
-        {
-            Resistances[key] = resDict[key];
-        }
-    }
-
-    public void FixProficiencies(Dictionary<Proficiency, double> profDict)
-    {
-        Proficiencies = [];
-        foreach (Proficiency key in profDict.Keys)
-        {
-            Proficiencies[key] = profDict[key];
-        }
-    }
-
-    public double IncreaseResistance(DamageType key, double val)
-    {
-        Resistances[key] += val;
-        return Resistances[key];
-    }
-
-    public double DecreaseResistance(DamageType key, double val)
-    {
-        Resistances[key] -= val;
-        return Resistances[key];
-    }
-
-    public double Heal(DamageableEntity source, double amount)
+    public HealResultDto Heal(DamageableEntity source, double amount)
     {
         if (!IsEntityAlive)
         {
-            throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose health");
+            return new HealResultDto(
+                    sent: amount,
+                    error: $"{Name} is not alive and cannot be healed."
+            );
+        }
+        if (!source.IsEntityAlive)
+        {
+            return new HealResultDto(
+                    sent: amount,
+                    error: $"{source.Name} is not alive and cannot heal {Name}."
+            );
         }
         // apply healing resistance if exists
-        double multiplier = Resistances.TryGetValue(DamageType.healing, out var value) ? value : 1;
-        double actual = Math.Min(amount * multiplier, MaxHealth - CurrentHealth);
-        CurrentHealth += actual;
-        return actual;
+        var healingResistance = GetResistanceMultiplier(DamageType.healing);
+        double actual = amount * healingResistance.Value;
+        CurrentHealth += Math.Min(actual, MaxHealth - CurrentHealth);
+        bool wasFatal = DidEntityDie();
+        return new HealResultDto(
+                sent: amount,
+                actual: actual,
+                result: CurrentHealth,
+                fatal: wasFatal
+        );
     }
 
-    public double TakeDamage(DamageableEntity source, double amount)
+    public DamageResultDto TakeDamage(DamageableEntity source, double amount, DamageType damageType)
     {
         if (!IsEntityAlive)
         {
-            throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose health");
+            return new DamageResultDto(
+                sent: amount,
+                error: $"{Name} is not alive and cannot take damage."
+            );
         }
-        double actual = Math.Min(amount, CurrentHealth);
-        CurrentHealth += actual;
+        if (!source.IsEntityAlive)
+        {
+            return new(
+                sent: amount,
+                error: $"{source.Name} is not alive and cannot deal damage."
+            );
+        }
+        var resistanceDto = GetResistanceMultiplier(damageType);
+        double actual = amount * resistanceDto.Value;
+        CurrentHealth -= actual;
+        if (CurrentHealth > MaxHealth)
+        {
+            CurrentHealth = MaxHealth;
+        }
+        bool wasFatal = DidEntityDie();
+        return new(
+            sent: amount,
+            actual: actual,
+            result: CurrentHealth,
+            blocked: amount - actual,
+            fatal: wasFatal
+        );
+    }
+
+    public bool DidEntityDie()
+    {
         if (CurrentHealth <= 0)
         {
-            OnDeath();
+                OnDeath();
+                return true;
         }
-        return actual;
-    }
-
-    public double ExpendMana(double amount)
-    {
-        if (!IsEntityAlive || amount > CurrentMana)
-        {
-            throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose mana");
-        }
-        CurrentMana -= amount;
-        return CurrentMana;
-    }
-
-    public double GainMana(double amount)
-    {
-        if (!IsEntityAlive)
-        {
-            throw new EntityNotAliveException($"Entity {Name} is dead and cannot gain or lose mana");
-        }
-        double actual = Math.Min(amount, MaxMana - CurrentMana);
-        CurrentMana += actual;
-        return actual;
+        return false;
     }
 
     private void OnDeath()
     {
-        IsEntityAlive =false;
+        IsEntityAlive = false;
+        if (CurrentHealth < 0)
+        {
+            CurrentHealth = 0;
+        }
         foreach (Proficiency key in ProficiencyEntries.Keys)
         {
             ProficiencyEntries[key] = 0;
         }
-        Experience =0;
+        Experience = 0;
         // level decreases?
         // Proficiencies decrease?
+        // Resistance to necro or radiant increases?
     }
 
-    public double GetProficiencyMultiplier(Proficiency p)
+    public ManaChangeDto ChangeMana(double amount)
     {
-        return Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
-    }
-
-    public double GetResistanceMultiplier(DamageType d)
-    {
-        return Resistances.TryGetValue(d, out var value) ? value : 1d;
-    }
-
-    public DamageableEntity Clone()
-    {
-        return new DamageableEntity(
-            Name,
-            EntityType,
-            Race,
-            MaxHealth,
-            MaxMana,
-            (int)Magic,
-            (int)Strength,
-            (int)Defense,
-            (int)Speed,
-            Level,
-            Experience,
-            new Dictionary<DamageType, double>(Resistances),
-            new Dictionary<Proficiency, double>(Proficiencies)
-        )
+        if (!IsEntityAlive)
         {
-            Inventory = new EntityInventory(
-                items: Inventory.Items,
-                gold: Inventory.Gold
-            ),
-            Skills = Skills.Clone(),
-            Speed = Speed,
-            IsHidden = IsHidden,
-        };
+            return new(
+                amountSent: amount,
+                error: $"{Name} is not alive and caoont gain mana"
+            );
+        }
+        double actual = amount;
+        if (actual > MaxMana - CurrentMana)
+        {
+            actual = MaxMana - CurrentMana;
+        }
+        else if (amount < -CurrentMana)
+        {
+            actual = -CurrentMana;
+        }
+        CurrentMana += amount;
+        return new(
+            amountSent: amount,
+            amountActual: actual,
+            newMana: CurrentMana
+        );
+    }
+
+    public ProficiencyDto GetProficiencyMultiplier(Proficiency p)
+    {
+        var result = Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
+        return new(
+            proficiency: p.ToString(),
+            value: result
+        );
+    }
+
+    public ResistanceDto GetResistanceMultiplier(DamageType dtEnum)
+    {
+        var result = Resistances.TryGetValue(dtEnum, out var value) ? value : 1d;
+        if (dtEnum == DamageType.crushing || dtEnum == DamageType.slashing || dtEnum == DamageType.piercing)
+        {
+                result += Math.Abs(result) * (Defense / _defenseConstant);
+        } else 
+        if (dtEnum != DamageType.damage && Resistances.TryGetValue(DamageType.spellstrike, out double magicRes))
+            {
+                result += magicRes;
+            }
+        return new(dtEnum.ToString(), result);
+    }
+
+    public ResistanceDto IncreaseResistance(DamageType dtEnum, double amount)
+    {
+        if (Resistances.TryGetValue(dtEnum, out _))
+        {
+            Resistances[dtEnum] += amount;
+        }
+        else
+        {
+            Resistances[dtEnum] = 1 + amount;
+        }
+        return new ResistanceDto(dtEnum.ToString(), Resistances[dtEnum]);
+    }
+
+    public ProficiencyDto IncreaseProficiency(Proficiency profEnum, double amount)
+    {
+        if (Proficiencies.TryGetValue(profEnum, out _))
+        {
+            Proficiencies[profEnum] += amount;
+        }
+        else
+        {
+            Proficiencies[profEnum] = amount;
+        }
+        return new(profEnum.ToString(), Proficiencies[profEnum]);
+    }
+
+    public StringDoubleDto AddProficiencyEntry(Proficiency proficiency, int amount = 1)
+    {
+        if (ProficiencyEntries.TryGetValue(proficiency, out _))
+        {
+            ProficiencyEntries[proficiency] += amount;
+        }
+        else
+        {
+            ProficiencyEntries[proficiency] = amount;
+        }
+        return new(proficiency.ToString(), ProficiencyEntries[proficiency]);
     }
 
     private string GenerateEntityId()
@@ -209,7 +263,3 @@ public class DamageableEntity
         return $"{prefix}_{timestamp}_{counter}";
     }
 }
-
-/**
-
-*/
