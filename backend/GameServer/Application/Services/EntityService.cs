@@ -306,16 +306,6 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         }
         return target.Speed;
     }
-
-    public double? SetSpeed(string id, double speed)
-    {
-        if (!TryGetEntity(id, out var target))
-        {
-            return null;
-        }
-        target.Speed = speed;
-        return target.Speed;
-    }
 }
 
 // hasAI

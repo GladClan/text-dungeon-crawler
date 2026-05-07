@@ -16,7 +16,7 @@ public sealed class DamageableEntityDto
     public int Level { get; init; }
     public int Experience { get; init; }
     public bool IsEntityAlive { get; init; }
-    public bool Visible { get; init; }
+    public bool DisplayStats { get; init; }
     public bool IsHidden { get; init; }
     public double Speed { get; init; }
 

@@ -3,6 +3,7 @@ using GameServer.Domain.Entities;
 using GameServer.Domain.Items;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
+using Gameserver.Contracts.DTOs;
 
 namespace GameServer.Contracts.Mappers;
 
@@ -33,7 +34,7 @@ public static class EntityMapper
             Level = entity.Level,
             Experience = entity.Experience,
             IsEntityAlive = entity.IsEntityAlive,
-            Visible = entity.Visible,
+            DisplayStats = entity.DisplayStats,
             IsHidden = entity.IsHidden,
             Speed = entity.Speed,
             Resistances = entity.Resistances.ToStringKeyDictionary(),
@@ -91,6 +92,28 @@ public static class EntityMapper
             Element = skill.Element.ToString(),
             Proficiency = skill.Prof.ToString(),
             Level = skill.Level
+        };
+    }
+
+    public static EntityStatsDto StatsToDto(this DamageableEntity entity)
+    {
+        return new EntityStatsDto{
+            Name = entity.Name,
+            EntityType = entity.EntityType,
+            Race = entity.Race,
+            MaxHealth = entity.MaxHealth,
+            CurrentHealth = (int) entity.CurrentHealth,
+            Magic = (int) entity.Magic,
+            MaxMana = entity.MaxMana,
+            CurrentMana = (int) entity.CurrentMana,
+            Strength = (int) entity.Strength,
+            Defense = (int) entity.Defense,
+            Level = entity.Level,
+            Experience = entity.Experience,
+            IsEntityAlive = entity.IsEntityAlive,
+            DisplayStats = entity.DisplayStats,
+            IsHidden = entity.IsHidden,
+            Speed = (int) entity.Speed
         };
     }
 }

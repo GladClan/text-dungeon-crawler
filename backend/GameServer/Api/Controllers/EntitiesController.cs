@@ -214,17 +214,6 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         }
     }
 
-    [HttpPatch("{id}/set-speed")]
-    public ActionResult<double> SetSpeed(string id, [FromBody] double speed)
-    {
-        var result = _service.SetSpeed(id, speed);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        return Ok(result);
-    }
-
     private void AddParseErrors(IEnumerable<ParseIssue> errors)
     {
         foreach (ParseIssue err in errors)

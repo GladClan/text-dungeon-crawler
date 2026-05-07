@@ -22,8 +22,8 @@ public class DamageableEntity
     public int Level { get; set; }
     public int Experience { get; set; }
     public bool IsEntityAlive { get; set; }
-    public bool Visible { get; set; }
-    public bool IsHidden { get; set; } = false;
+    public bool DisplayStats { get; set; } // Whether the entity's stats will show details such as max health, strength, etc.
+    public bool IsHidden { get; set; } = false; // For whether the entity is able to be seen in the combat menu or not
     public double Speed { get; set; } = 12d;
     public Dictionary<DamageType, double> Resistances { get; set; } = [];
     public Dictionary<Proficiency, double> Proficiencies { get; set; } = [];
@@ -66,7 +66,7 @@ public class DamageableEntity
         Level = level;
         Experience = experience;
         IsEntityAlive = true;
-        Visible = true;
+        DisplayStats = true;
         Resistances = resistances ?? [];
         Proficiencies = proficiencies ?? new Dictionary<Proficiency, double>(){
             {Proficiency.bludgeoning, 0.85d},
