@@ -1,6 +1,6 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Domain.Enums;
-using GameServer.Domain.Exceptions;
+using GameServer.Domain.Skills;
 
 namespace GameServer.Domain.Entities;
 
@@ -29,7 +29,7 @@ public class DamageableEntity
     public Dictionary<Proficiency, double> Proficiencies { get; set; } = [];
     public Dictionary<Proficiency, double> ProficiencyEntries { get; set; } = [];
     public EntityInventory Inventory { get; set; } = new();
-    public EntitySkills Skills { get; set; } = new();
+    public List<Skill> Skills { get; set; } = [];
     // public EntityAI AI { get; set; }
     public string DeathMessage { get; set; } = string.Empty;
 

@@ -1,6 +1,5 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Domain.Entities;
-using GameServer.Domain.Items;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
 using Gameserver.Contracts.DTOs;
@@ -40,10 +39,7 @@ public static class EntityMapper
             Resistances = entity.Resistances.ToStringKeyDictionary(),
             Proficiencies = entity.Proficiencies.ToStringKeyDictionary(),
             Inventory = entity.Inventory.ToDto(),
-            Skills = new EntitySkillsDto
-            {
-                Skills = [.. entity.Skills.Skills.Select(MapSkill)]
-            }
+            Skills = [.. entity.Skills.Select(SkillToDto)]
         };
     }
 
@@ -81,11 +77,12 @@ public static class EntityMapper
             StringComparer.OrdinalIgnoreCase);
     }
 
-    private static SkillDto MapSkill(Skill skill)
+    public static SkillDto SkillToDto(this Skill skill)
     {
         return new SkillDto
         {
             Id = skill.Id,
+            Tag = skill.Tag,
             Name = skill.Name,
             Description = skill.Description,
             Cost = skill.Cost,

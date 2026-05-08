@@ -1,12 +1,13 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
-using GameServer.Contracts.Requests;
+using GameServer.Domain.Items;
 
 namespace GameServer.Application.Services;
 
-public sealed class InventoryService(EntityStore entityStore)
+public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIndex)
 {
     private readonly EntityStore _entities = entityStore;
+    private readonly IItemsIndex _itemsIndexer = itemIndex;
 
     public EntityInventoryDto? GetInventory(string id)
     {
@@ -44,7 +45,10 @@ public sealed class InventoryService(EntityStore entityStore)
             {
                 return item.ToDto();
             }
-            return new ItemDto();
+            return new ItemDto
+            {
+                Error = $"Item id {itemId} could not be found"
+            };
         }
         return null;
     }
@@ -58,7 +62,10 @@ public sealed class InventoryService(EntityStore entityStore)
             {
                 return item.ToDto();
             }
-            return new ItemDto();
+            return new ItemDto
+            {
+                Error = $"Item with name {name} could not be found"
+            };
         }
         return null;
     }
@@ -72,7 +79,10 @@ public sealed class InventoryService(EntityStore entityStore)
             {
                 return item.ToDto();
             }
-            return new ItemDto();
+            return new ItemDto
+            {
+                Error = $"Item with tag {tag} could not be found"
+            };
         }
         return null;
     }
@@ -88,12 +98,38 @@ public sealed class InventoryService(EntityStore entityStore)
 
     public ItemDto? AddItemById(string id, string itemId)
     {
-        throw new NotImplementedException();
+        if (_entities.TryGet(id, out var target) && target is not null)
+        {
+            var item = _itemsIndexer.GetItemById(itemId);
+            if (item.Type.Equals("error"))
+            {
+                return new ItemDto
+                {
+                    Error = $"Item id {itemId} is not a valid id."
+                };
+            }
+            target.Inventory.Items.Add(item);
+            return item.ToDto();
+        }
+        return null;
     }
 
     public ItemDto? AddItemByTag(string id, string tag)
     {
-        throw new NotImplementedException();
+        if (_entities.TryGet(id, out var target) && target is not null)
+        {
+            var item = _itemsIndexer.GetItemByTag(tag);
+            if (item.Type.Equals("error"))
+            {
+                return new ItemDto
+                {
+                    Error = $"No item exists with tag {tag}."
+                };
+            }
+            target.Inventory.Items.Add(item);
+            return item.ToDto();
+        }
+        return null;
     }
 
     public int? AddGold(string id, int amount)
@@ -139,7 +175,10 @@ public sealed class InventoryService(EntityStore entityStore)
             var result = target.Inventory.Items.Find(i => i.Id.Equals(itemId, StringComparison.OrdinalIgnoreCase));
             if (result == null)
             {
-                return new ItemDto();
+                return new ItemDto
+                {
+                    Error = $"Item id \"{id}\" could not be found in the inventory of {target.Name} ({target.ID})"
+                };
             }
             target.Inventory.Items.Remove(result);
             return result.ToDto();
@@ -163,9 +202,7 @@ public sealed class InventoryService(EntityStore entityStore)
 }
 
 // hasItem
-// clear
 // setInventory
-// toString
 // clone
 // isEmpty
 // size

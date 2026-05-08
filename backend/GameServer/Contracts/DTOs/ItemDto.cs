@@ -15,4 +15,5 @@ public sealed class ItemDto
     public string? Proficiency { get; init; }
     public int? ArmorTypeLimit { get; init; }
     public bool? Equipped { get; init; }
+    public string Error { get; init; } = string.Empty;
 }

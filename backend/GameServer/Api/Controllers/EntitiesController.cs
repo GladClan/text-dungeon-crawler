@@ -45,39 +45,6 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         }
     }
 
-    [HttpGet("{id}/get-all-resistances")]
-    public ActionResult<List<ResistanceDto>> GetAllResistances(string id)
-    {
-        var result = _service.GetAllResistances(id);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        return Ok(result);
-    }
-
-    [HttpGet("{id}/is-hidden")]
-    public ActionResult<bool> GetIsHidden(string id)
-    {
-        var result = _service.IsHidden(id);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        return Ok(result);
-    }
-
-    [HttpGet("{id}/get-speed")]
-    public ActionResult<double> GetSpeed(string id)
-    {
-        var result = _service.GetSpeed(id);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        return Ok(result);
-    }
-
     [HttpPut("new")]
     public ActionResult<DamageableEntityDto> AddEntity([FromBody] DamageableEntityRequest request)
     {
@@ -120,6 +87,28 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         return Ok(result);
     }
 
+    [HttpGet("{id}/get-all-resistances")]
+    public ActionResult<List<ResistanceDto>> GetAllResistances(string id)
+    {
+        var result = _service.GetAllResistances(id);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("{id}/get-all-proficiencies")]
+    public ActionResult<List<ProficiencyDto>> GetAllProficiencies(string id)
+    {
+        var result = _service.GetAllProficiencies(id);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        return Ok(result);
+    }
+
     [HttpPatch("{id}/set-all-resistances")]
     public ActionResult<List<ResistanceDto>> SetAllResistances(string id, [FromBody] List<ResistanceRequest> requests)
     {
@@ -138,6 +127,24 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         return result.Parsed.ToResistanceDtos();
     }
 
+    [HttpPatch("{id}/set-all-proficiencies")]
+    public ActionResult<List<ResistanceDto>> SetAllProficiencies(string id, [FromBody] List<ProficiencyRequest> requests)
+    {
+        var result = _service.SetAllProficiencies(id, requests);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        
+        AddParseErrors(result.Errors);
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        return Ok(result.Parsed.ToProficiencyDtos());
+    }
+
     [HttpPatch("{id}/set-resistance")]
     public ActionResult<ResistanceDto> SetResistance(string id, [FromBody] ResistanceRequest request)
     {
@@ -146,9 +153,24 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         {
             return NotFound(IdNotFound(id));
         }
-        if (result.Resistance.Length == 0 && result.Value == 0)
+        if (result.Error.Length > 0)
         {
-            return ValidationProblem($"{request.Type} is not a valid Damage Type");
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
+
+    [HttpPatch("{id}/set-proficiency")]
+    public ActionResult<ResistanceDto> SetProficiency(string id, [FromBody] ProficiencyRequest request)
+    {
+        var result = _service.SetProficiency(id, request);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
         }
         return Ok(result);
     }
@@ -161,9 +183,35 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         {
             return NotFound(IdNotFound(id));
         }
-        if (result.Resistance.Length == 0 && result.Value == 0)
+        if (result.Error.Length > 0)
         {
-            return ValidationProblem($"{request.Type} is not a valid Damage Type");
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
+
+    [HttpPatch("{id}/change-proficiency")]
+    public ActionResult<ResistanceDto> ChangeProficieny(string id, [FromBody] ProficiencyRequest request)
+    {
+        var result = _service.IncreaseProficiency(id, request);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("{id}/is-hidden")]
+    public ActionResult<bool> GetIsHidden(string id)
+    {
+        var result = _service.IsHidden(id);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
         }
         return Ok(result);
     }
@@ -212,6 +260,17 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         {
             return BadRequest($"DamageableEntity is not hidden: {id}");
         }
+    }
+
+    [HttpGet("{id}/get-speed")]
+    public ActionResult<double> GetSpeed(string id)
+    {
+        var result = _service.GetSpeed(id);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        return Ok(result);
     }
 
     private void AddParseErrors(IEnumerable<ParseIssue> errors)

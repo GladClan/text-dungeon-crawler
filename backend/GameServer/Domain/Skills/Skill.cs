@@ -1,12 +1,14 @@
 using GameServer.Domain.Enums;
 using GameServer.Domain.Entities;
+using GameServer.Application.Common;
 
 namespace GameServer.Domain.Skills;
 
 public abstract class Skill
 {
-    public int Id { get; }
+    public string Id { get; }
     public string Name { get; set; } = string.Empty;
+    public string Tag { get; init; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int Cost { get; set; }
     public DamageType Element { get; set; }
@@ -21,14 +23,22 @@ public abstract class Skill
 
     public Skill()
     {
+        Id = NewId();
     }
 
-    public Skill(string name, int cost, DamageType element, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
+    protected Skill(string name, string tag, int cost, DamageType element, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
     {
+        Id = NewId();
         Name = name;
+        Tag = tag;
         Cost = cost;
         Element = element;
         Prof = proficiency;
         Level = level;
+    }
+
+    private string NewId()
+    {
+        return $"{Name.Trim().PadLeft(5, '_')[..5]}-{OrdinalDateString.GetOrdinalDate(3)}";
     }
 }

@@ -56,9 +56,9 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         {
             return NotFound(IdNotFound(id));
         }
-        if (item.Name.Length == 0)
+        if (item.Error.Length > 0)
         {
-            return NotFound($"Item {itemId} could not be found. Please check the item ID and try again.");
+            return NotFound(item.Error);
         }
         return Ok(item);
     }
@@ -66,14 +66,14 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
     [HttpGet("item-name/{itemName}")]
     public ActionResult<ItemDto> GetItemByName(string id, string itemName)
     {
-        var item = _service.GetItemById(id, itemName);
+        var item = _service.GetItemByName(id, itemName);
         if (item is null)
         {
             return NotFound(IdNotFound(id));
         }
-        if (item.Name.Length == 0)
+        if (item.Error.Length > 0)
         {
-            return NotFound($"Item {itemName} could not be found. Please check the item name and try again.");
+            return NotFound(item.Error);
         }
         return Ok(item);
     }
@@ -86,9 +86,9 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         {
             return NotFound(IdNotFound(id));
         }
-        if (item.Name.Length == 0)
+        if (item.Error.Length > 0)
         {
-            return NotFound($"Item {tag} could not be found. Please check the item tag and try again.");
+            return NotFound(item.Error);
         }
         return Ok(item);
     }
@@ -112,9 +112,9 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         {
             return NotFound(IdNotFound(id));
         }
-        if (item.Name.Length == 0)
+        if (item.Error.Length > 0)
         {
-            return NotFound($"Item {itemId} could not be found. Please check the item ID and try again.");
+            return NotFound(item.Error);
         }
         return CreatedAtAction(nameof(_service.GetItemById), new { id = item.Id }, item);
     }
@@ -127,9 +127,9 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         {
             return NotFound(IdNotFound(id));
         }
-        if (item.Name.Length == 0)
+        if (item.Error.Length > 0)
         {
-            return NotFound($"Item {tag} could not be found. Please check the item tag and try again.");
+            return NotFound(item.Error);
         }
         return CreatedAtAction(nameof(_service.GetItemByTag), new { id = item.Id }, item);
     }
@@ -175,9 +175,9 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         {
             return NotFound(IdNotFound(id));
         }
-        if (item.Name.Length == 0)
+        if (item.Error.Length > 0)
         {
-            return NotFound($"Item {itemId} could not be found. Please check the item ID and try again.");
+            return NotFound(item.Error);
         }
         return Ok(item);
     }

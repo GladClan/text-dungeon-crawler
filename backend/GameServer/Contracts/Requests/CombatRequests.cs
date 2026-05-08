@@ -73,4 +73,6 @@ public sealed class AddProficiencyEntryRequest
     [EnumDataType(typeof(Proficiency))]
     [MinLength(1)]
     public string Proficiency { get; init; } = string.Empty;
+
+    public int Amount { get; init; }
 }

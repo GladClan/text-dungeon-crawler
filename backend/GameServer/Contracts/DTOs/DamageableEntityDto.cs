@@ -24,5 +24,5 @@ public sealed class DamageableEntityDto
     public Dictionary<string, double> Proficiencies { get; init; } = [];
 
     public EntityInventoryDto Inventory { get; init; } = new();
-    public EntitySkillsDto Skills { get; init; } = new();
+    public List<SkillDto> Skills { get; init; } = new();
 }

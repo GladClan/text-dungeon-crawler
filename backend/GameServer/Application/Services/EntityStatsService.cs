@@ -33,7 +33,6 @@ public sealed class EntityStatsService(EntityStore entityStore)
         target.Experience = newValue;
         return new IntPairDto(old, target.Experience);
     }
-
     public IntPairDto? SetEntityLevel(string id, int newValue)
     {
         if (!TryGetEntity(id, out var target))
@@ -125,6 +124,14 @@ public sealed class EntityStatsService(EntityStore entityStore)
         return new((int) old, target.Level);
     }
 
+    public bool? StatsDisplayed(string id)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        return target.DisplayStats;
+    }
     public bool? ToggleDisplayStats(string id)
     {
         if (!TryGetEntity(id, out var target))

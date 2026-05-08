@@ -261,7 +261,10 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         }
         if (!TryParseDamageType(request.Type, out var dtEnum))
         {
-            return new(string.Empty, 0);
+            return new ResistanceDto
+            {
+                Error = $"{request.Type} is not a valid resistance"
+            };
         }
         return target.IncreaseResistance(dtEnum, request.Value);
     }

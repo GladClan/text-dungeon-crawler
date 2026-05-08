@@ -11,6 +11,7 @@ public sealed class CombatService(EntityStore entityStore)
 {
         private readonly EntityStore _entities = entityStore;
         private readonly double _levelStackMultiplier = 1.2;
+        private readonly int _proficiencyEntryAddition = 1;
         
         private static int GetExperienceForNextLevel(int level)
         {
@@ -144,7 +145,16 @@ public sealed class CombatService(EntityStore entityStore)
                 return LevelUpStack(stack + 1, target);
         }
 
-        public StringDoubleDto? AddProficiencyEntry(AddProficiencyEntryRequest request, int amount = 1)
+        public int? GetExperienceForNextLevel(string id)
+        {
+                if (!TryGetEntity(id, out var target))
+                {
+                        return null;
+                }
+                return GetExperienceForNextLevel(target.Level);
+        }
+
+        public StringDoubleDto? AddProficiencyEntry(AddProficiencyEntryRequest request)
         {
                 if (!TryGetEntity(request.TargetId, out var target))
                 {
@@ -158,16 +168,7 @@ public sealed class CombatService(EntityStore entityStore)
                                 $"Cannot convert {request.Proficiency} to Proficiency enum."
                         );
                 }
-                return target.AddProficiencyEntry(profEnum, amount);
-        }
-
-        public double GetProficiency(DamageableEntity target, Proficiency proficiency)
-        {
-                if (target.ProficiencyEntries.TryGetValue(proficiency, out _))
-                {
-                        return target.Proficiencies[proficiency];
-                }
-                return 0.5d;
+                return target.AddProficiencyEntry(profEnum, request.Amount > 0 ? request.Amount : _proficiencyEntryAddition);
         }
 
         public string? GetDeathMessage(string id)
@@ -178,28 +179,4 @@ public sealed class CombatService(EntityStore entityStore)
                 }
                 return target.DeathMessage;
         }
-
-        public ManaChangeDto? SetCurrentMana(ManaRequest request)
-        {
-                if (!TryGetEntity(request.TargetId, out var target))
-                {
-                        return null;
-                }
-                if (request.Amount > target.MaxMana || request.Amount < 0)
-                {
-                        return new(
-                                amountSent: request.Amount,
-                                error: $"Invalid value: {request.Amount}. Amount must be within the mana capacity of {target.Name}: 0 - {target.MaxMana}"
-                        );
-                }
-                target.CurrentMana = request.Amount;
-                return new(
-                        amountSent: request.Amount,
-                        amountActual: request.Amount,
-                        newMana: target.CurrentMana
-                );
-        }
 }
-
-// Maybe some of these methods should go into an EntityStatsService file? Such as that last method--SetCurrentMana
-
