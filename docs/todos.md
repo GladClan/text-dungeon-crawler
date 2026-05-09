@@ -1,6 +1,5 @@
 # ToDos
 
-- Implement endpoints for methods in [`SkillService.cs`](../backend/GameServer/Application/Services/SkillService.cs)
 - !!**Add methods in `SkillService` and `InventoryService` to be able to use items and skills, including equipping and unequipping.**
 - Implement added methods in their [respective controllers](../backend/GameServer/Api/Controllers/InventoryController.cs).
 

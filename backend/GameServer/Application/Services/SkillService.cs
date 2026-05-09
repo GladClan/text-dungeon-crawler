@@ -135,7 +135,7 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
         {
             foreach (Skill s in source.Skills)
             {
-                if (!target.Skills.Any(v => v.Tag.Equals(s.Tag, StringComparison.OrdinalIgnoreCase)))
+                if (!target.Skills.Any(v => v.Tag.Equals(s.Tag, StringComparison.OrdinalIgnoreCase)) && s.IsLearnable(target))
                 {
                     target.Skills.Add(s);
                 }
