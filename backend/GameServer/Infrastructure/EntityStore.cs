@@ -84,4 +84,9 @@ public sealed class EntityStore
     public string[] GetAllNames() => [.. _entities.Values.Select(entity => entity.Name)];
 
     public string[] GetAllIds() => [.. _entities.Values.Select(entity => entity.ID)];
+
+    public List<DamageableEntity> GetParty(string partyId)
+    {
+        return [.. _entities.Values.Where(e => e.PartyId.Equals(partyId, StringComparison.InvariantCultureIgnoreCase))];
+    }
 }

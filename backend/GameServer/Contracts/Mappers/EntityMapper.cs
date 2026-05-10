@@ -23,6 +23,8 @@ public static class EntityMapper
             Id = entity.ID,
             Name = entity.Name,
             EntityType = entity.EntityType,
+            Race = entity.Race,
+            PartyId = entity.PartyId,
             MaxHealth = entity.MaxHealth,
             CurrentHealth = entity.CurrentHealth,
             MaxMana = entity.MaxMana,

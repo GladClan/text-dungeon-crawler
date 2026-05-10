@@ -38,6 +38,12 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         return ids;
     }
 
+    public List<DamageableEntityDto> GetParty(string partyId)
+    {
+        var result = _entities.GetParty(partyId);
+        return result.ToDtos();
+    }
+
     public DamageableEntityDto? GetById(string id)
     {
         if (!TryGetEntity(id, out var entity))

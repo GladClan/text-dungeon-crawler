@@ -15,8 +15,8 @@ public abstract class Equippable : Item
     {
     }
 
-    public Equippable(string type, string name, int cost, string description, bool consumable, bool sellable, int armorTypeLimit, bool equipped)
-     : base(type, name, cost, description, consumable, sellable)
+    public Equippable(string type, string name, int cost, string description, bool consumable, bool sellable, int armorTypeLimit, bool equipped, string shopType, int rarity, int collection)
+     : base(type, name, cost, description, consumable, sellable, shopType, rarity, collection)
     {
         ArmorTypeLimit = armorTypeLimit;
         Equipped = equipped;

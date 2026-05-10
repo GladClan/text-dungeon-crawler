@@ -19,7 +19,10 @@ public sealed class ErrorItem : Useable
         consumable: true,
         sellable: false,
         element: DamageType.damage,
-        proficiency: Proficiency.hand) { }
+        proficiency: Proficiency.hand,
+        shopType: "error",
+        rarity: 1000,
+        collection: 99) { }
 
     public override EffectDto ItemEffect(DamageableEntity target, DamageableEntity source)
     {

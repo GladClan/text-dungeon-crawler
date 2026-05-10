@@ -32,6 +32,13 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         return Ok(ids);
     }
 
+    [HttpGet("/party/{partyId}")]
+    public ActionResult<List<DamageableEntityDto>> GetParty(string partyId)
+    {
+        var result = _service.GetParty(partyId);
+        return result;
+    }
+
     [HttpGet("{id}")]
     public ActionResult<DamageableEntityDto> GetById(string id)
     {

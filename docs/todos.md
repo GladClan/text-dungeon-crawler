@@ -1,9 +1,5 @@
 # ToDos
 
-- !!**Add methods in `SkillService` and `InventoryService` to be able to use items and skills, including equipping and unequipping.**
-    - Returns `EffectDto`
-- Implement added methods in their [respective controllers](../backend/GameServer/Api/Controllers/InventoryController.cs).
-
 ## Battle Page
 
 - ❌When going to the battle page, there will be a parameter for whether the party is surrounded (just front/back.. sides would be too complicated)

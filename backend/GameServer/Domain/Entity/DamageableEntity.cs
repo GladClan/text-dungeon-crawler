@@ -12,6 +12,7 @@ public class DamageableEntity
     public string Name { get; set; } = string.Empty;
     public string EntityType { get; set; } = string.Empty;
     public string Race { get; set; } = string.Empty;
+    public string PartyId { get; set; } = string.Empty;
     public int MaxHealth { get; set; }
     public double CurrentHealth { get; set; }
     public double Magic { get; set; }

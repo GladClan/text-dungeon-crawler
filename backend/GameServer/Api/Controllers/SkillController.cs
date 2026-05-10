@@ -67,7 +67,7 @@ public sealed class SkillController(SkillService skillService) : ControllerBase
         }
         if (result.Error.Length > 0)
         {
-            return NotFound(result.Error);
+            return ValidationProblem(result.Error);
         }
         return Ok(result);
     }
@@ -82,7 +82,7 @@ public sealed class SkillController(SkillService skillService) : ControllerBase
         }
         if (result.Error.Length > 0)
         {
-            return NotFound(result.Error);
+            return ValidationProblem(result.Error);
         }
         return Ok(result);
     }

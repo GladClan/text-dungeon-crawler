@@ -6,6 +6,7 @@ public sealed class DamageableEntityDto
     public string Name { get; init; } = string.Empty;
     public string EntityType { get; init; } = string.Empty;
     public string Race { get; init; } = string.Empty;
+    public string PartyId { get; init; } = string.Empty;
     public int MaxHealth { get; init; }
     public double CurrentHealth { get; init; }
     public double Magic { get; init; }

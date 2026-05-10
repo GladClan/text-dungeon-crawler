@@ -12,12 +12,15 @@ public abstract class Item
     public string Description { get; set; } = string.Empty;
     public bool Consumable { get; set; }
     public bool Sellable { get; set; }
+    public string ShopType { get; set; } = string.Empty;
+    public int Rarity { get; set; }
+    public int Collection { get; set; }
 
     public Item()
     {
         Id = NewId();
     }
-    public Item(string type, string name, int value, string description, bool consumable, bool sellable)
+    public Item(string type, string name, int value, string description, bool consumable, bool sellable, string shopType, int rarity, int collection)
     {
         Id = NewId();
         Type = type;
@@ -26,6 +29,9 @@ public abstract class Item
         Description = description;
         Consumable = consumable;
         Sellable = sellable;
+        ShopType = shopType;
+        Rarity = rarity;
+        Collection = collection;
     }
 
     private string NewId()

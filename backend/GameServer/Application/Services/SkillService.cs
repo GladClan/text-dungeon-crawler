@@ -64,8 +64,18 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
                     Error = $"No skill exists with id: {skillId}"
                 };
             }
-            target.Skills.Add(result);
-            return result.SkillToDto();
+            if (result.IsLearnable(target))
+            {
+                target.Skills.Add(result);
+                return result.SkillToDto();
+            }
+            else
+            {
+                return new SkillDto
+                {
+                    Error = $"{target.Name} cannot learn {result.Name}"
+                };
+            }
         }
         return null;
     }
@@ -82,8 +92,18 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
                     Error = $"No skill exists with tag: {tag}"
                 };
             }
-            target.Skills.Add(result);
-            return result.SkillToDto();
+            if (result.IsLearnable(target))
+            {
+                target.Skills.Add(result);
+                return result.SkillToDto();
+            }
+            else
+            {
+                return new SkillDto
+                {
+                    Error = $"{target.Name} cannot learn {result.Name}"
+                };
+            }
         }
         return null;
     }
