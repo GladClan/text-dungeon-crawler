@@ -4,6 +4,7 @@ using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
+using GameServer.Domain.Items;
 
 namespace Gameserver.Application.Services;
 
@@ -66,7 +67,7 @@ public sealed class CombatService(EntityStore entityStore)
                 return target.TakeDamage(source, request.DamageSent, dtEnum);
         }
 
-        public HealResultDto? Heal(HealRequest request)
+        public DamageResultDto? Heal(HealRequest request)
         {
                 if (!TryGetEntity(request.SourceId, out var source) || !TryGetEntity(request.TargetId, out var target))
                 {
@@ -75,7 +76,7 @@ public sealed class CombatService(EntityStore entityStore)
                 return target.Heal(source, request.AmountToHeal);
         }
 
-        public ManaChangeDto? ChangeMana(ManaRequest request)
+        public DamageResultDto? ChangeMana(ManaRequest request)
         {
                 if (!TryGetEntity(request.TargetId, out var target))
                 {
@@ -178,5 +179,73 @@ public sealed class CombatService(EntityStore entityStore)
                         return null;
                 }
                 return target.DeathMessage;
+        }
+
+        public EffectDto? UseItem(string id, string itemId, string targetId = "")
+        {
+                if (_entities.TryGet(id, out var target) && target is not null)
+                {
+                        var item = target.Inventory.Items.FirstOrDefault(i => i.Id.Equals(itemId, StringComparison.InvariantCultureIgnoreCase));
+                        if (item is not null)
+                        {
+                                if (item is Equippable equippable)
+                                {
+                                        if (equippable.Equipped)
+                                        {
+                                                return equippable.OnUnequip(target);
+                                        }
+                                        else
+                                        {
+                                                return equippable.OnEquip(target);
+                                        }
+                                }
+                                else if (item is Useable useable)
+                                {
+                                        if (useable.CanUse(target))
+                                        {
+                                                if (_entities.TryGet(targetId, out var other) && other is not null)
+                                                {
+                                                        return useable.ItemEffect(target, other);
+                                                }
+                                                else
+                                                {
+                                                        return new EffectDto
+                                                        {
+                                                                Error = $"Target {targetId} could not be found. {target.Name} isn't about to use it on themselves!"
+                                                        };
+                                                }
+                                        }
+                                else
+                                {
+                                        return new EffectDto
+                                        {
+                                                Error = $"{target.Name} cannot use {item.Name}"
+                                        };
+                                }
+                                }
+                        }
+                        return new EffectDto
+                        {
+                                Error = $"Item id {itemId} could not be found"
+                        };
+                }
+                return null;
+        }
+
+        public EffectDto? UseSkill(string id, string skillId, string targetId)
+        {
+                if (!TryGetEntity(id, out var source) || !TryGetEntity(targetId, out var target))
+                {
+                        return null;
+                }
+                var skill = source.Skills.FirstOrDefault(s => s.Id.Equals(skillId, StringComparison.InvariantCultureIgnoreCase));
+                if (skill is null)
+                {
+                        return new EffectDto
+                        {
+                                Error = $"Could not find skill id: {skillId} in the skills of {source.Name} ({source.ID})"
+                        };
+                }
+                return skill.SkillEffect(target, source);
         }
 }

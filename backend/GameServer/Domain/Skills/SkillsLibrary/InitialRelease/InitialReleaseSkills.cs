@@ -1,4 +1,5 @@
 using GameServer.Contracts.DTOs;
+using GameServer.Contracts.Mappers;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 
@@ -23,21 +24,24 @@ public sealed class ErrorSkill : Skill
         _damage += 10;
     }
 
-    public override string SkillEffect(DamageableEntity target, DamageableEntity source)
+    public override EffectDto SkillEffect(DamageableEntity target, DamageableEntity source)
     {
         _useage++;
         DamageResultDto first, second, third;
         int damage = 0;
         first = target.TakeDamage(source, _damage, Element);
-        damage += (int) first.DamageActual;
+        DamageResultDto final = first;
+        damage += (int) first.AmountActual;
         if (Level > 3)
         {
             second = target.TakeDamage(source, _damage / 2, Element);
-            damage += (int) second.DamageActual;
+            damage += (int) second.AmountActual;
+            final = first.MergeResults(second);
             if (Level > 7)
             {
                 third = target.TakeDamage(source, _damage / 3, Element);
-                damage += (int) third.DamageActual;
+                damage += (int) third.AmountActual;
+                final = final.MergeResults(third);
             }
         }
         if (_useage > Level * 10)
@@ -45,6 +49,10 @@ public sealed class ErrorSkill : Skill
             LevelUpSkill();
             _useage = 0;
         }
-        return $"{target.Name} takes {damage} {Element} damage from a mysterious, buzzing cloud summoned by {source.Name}";
+        return new EffectDto
+        {
+            Message = $"{target.Name} takes {damage} {Element} damage from a mysterious, buzzing cloud summoned by {source.Name}",
+            Result = final
+        };
     }
 }

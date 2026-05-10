@@ -1,6 +1,7 @@
 using GameServer.Domain.Enums;
 using GameServer.Domain.Entities;
 using GameServer.Application.Common;
+using GameServer.Contracts.DTOs;
 
 namespace GameServer.Domain.Skills;
 
@@ -14,7 +15,7 @@ public abstract class Skill
     public DamageType Element { get; set; }
     public Proficiency Prof { get; set; }
     public int Level { get; set; }
-    public abstract string SkillEffect(DamageableEntity target, DamageableEntity source);
+    public abstract EffectDto SkillEffect(DamageableEntity target, DamageableEntity source);
     public abstract void LevelUpSkill();
     public bool IsLearnable (DamageableEntity target)
     {

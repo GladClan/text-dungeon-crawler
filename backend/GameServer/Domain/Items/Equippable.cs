@@ -1,3 +1,4 @@
+using GameServer.Contracts.DTOs;
 using GameServer.Domain.Entities;
 
 namespace GameServer.Domain.Items;
@@ -7,8 +8,8 @@ public abstract class Equippable : Item
     public int ArmorTypeLimit { get; init; }
     public bool Equipped { get; protected set; }
     
-    public abstract void OnEquip(DamageableEntity target);
-    public abstract void OnUnequip(DamageableEntity target);
+    public abstract EffectDto OnEquip(DamageableEntity target);
+    public abstract EffectDto OnUnequip(DamageableEntity target);
 
     public Equippable()
     {

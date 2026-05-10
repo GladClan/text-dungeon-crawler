@@ -1,3 +1,4 @@
+using GameServer.Contracts.DTOs;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 
@@ -7,7 +8,7 @@ public abstract class Useable : Item
 {
     public DamageType Element { get; protected set; }
     public Proficiency Prof { get; protected set; }
-    public abstract string ItemEffect(DamageableEntity target, DamageableEntity source);
+    public abstract EffectDto ItemEffect(DamageableEntity target, DamageableEntity source);
     public virtual bool CanUse(DamageableEntity target)
     {
         return true;

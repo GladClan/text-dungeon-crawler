@@ -76,3 +76,17 @@ public sealed class AddProficiencyEntryRequest
 
     public int Amount { get; init; }
 }
+
+public sealed class UseItemOrSkill
+{
+    [Required]
+    [MinLength(1)]
+    public string SourceId { get; init; } = string.Empty;
+    
+    [Required]
+    [MinLength(1)]
+    public string ItemOrSkillId { get; init; } = string.Empty;
+    
+    public string TargetId { get; init; } = string.Empty;
+
+}

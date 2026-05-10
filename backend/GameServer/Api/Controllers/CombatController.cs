@@ -62,7 +62,7 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
     }
 
     [HttpPatch("heal")]
-    public ActionResult<HealResultDto> Heal([FromBody] HealRequest request)
+    public ActionResult<DamageResultDto> Heal([FromBody] HealRequest request)
     {
         var result = _service.Heal(request);
         if (result is null)
@@ -77,7 +77,7 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
     }
 
     [HttpPatch("change-mana")]
-    public ActionResult<HealResultDto> ChangeMana([FromBody] ManaRequest request)
+    public ActionResult<DamageResultDto> ChangeMana([FromBody] ManaRequest request)
     {
         var result = _service.ChangeMana(request);
         if (result is null)
@@ -131,6 +131,36 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
         if (result is null)
         {
             return NotFound(IdNotFound(id));
+        }
+        return Ok(result);
+    }
+
+    [HttpPatch("use-item")]
+    public ActionResult<EffectDto> UseItem([FromBody] UseItemOrSkill request)
+    {
+        var result = _service.UseItem(request.SourceId, request.ItemOrSkillId, request.TargetId);
+        if (result is null)
+        {
+            return NotFound(IdNotFound($"{request.SourceId} or {request.TargetId}"));
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
+
+    [HttpPatch("use-skill")]
+    public ActionResult<EffectDto> UseSkill([FromBody] UseItemOrSkill request)
+    {
+        var result = _service.UseItem(request.SourceId, request.ItemOrSkillId, request.TargetId);
+        if (result is null)
+        {
+            return NotFound(IdNotFound($"{request.SourceId} or {request.TargetId}"));
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
         }
         return Ok(result);
     }

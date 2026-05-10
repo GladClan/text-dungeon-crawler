@@ -77,18 +77,18 @@ public class DamageableEntity
         DeathMessage = deathMessage;
     }
 
-    public HealResultDto Heal(DamageableEntity source, double amount)
+    public DamageResultDto Heal(DamageableEntity source, double amount)
     {
         if (!IsEntityAlive)
         {
-            return new HealResultDto(
+            return new DamageResultDto(
                     sent: amount,
                     error: $"{Name} is not alive and cannot be healed."
             );
         }
         if (!source.IsEntityAlive)
         {
-            return new HealResultDto(
+            return new DamageResultDto(
                     sent: amount,
                     error: $"{source.Name} is not alive and cannot heal {Name}."
             );
@@ -98,7 +98,8 @@ public class DamageableEntity
         double actual = amount * healingResistance.Value;
         CurrentHealth += Math.Min(actual, MaxHealth - CurrentHealth);
         bool wasFatal = DidEntityDie();
-        return new HealResultDto(
+        return new(
+                damage_healing_mana: 2,
                 sent: amount,
                 actual: actual,
                 result: CurrentHealth,
@@ -131,10 +132,10 @@ public class DamageableEntity
         }
         bool wasFatal = DidEntityDie();
         return new(
+            damage_healing_mana: 1,
             sent: amount,
             actual: actual,
             result: CurrentHealth,
-            blocked: amount - actual,
             fatal: wasFatal
         );
     }
@@ -166,12 +167,12 @@ public class DamageableEntity
         // Resistance to necro or radiant increases?
     }
 
-    public ManaChangeDto ChangeMana(double amount)
+    public DamageResultDto ChangeMana(double amount)
     {
         if (!IsEntityAlive)
         {
             return new(
-                amountSent: amount,
+                sent: amount,
                 error: $"{Name} is not alive and caoont gain mana"
             );
         }
@@ -186,9 +187,11 @@ public class DamageableEntity
         }
         CurrentMana += amount;
         return new(
-            amountSent: amount,
-            amountActual: actual,
-            newMana: CurrentMana
+            damage_healing_mana: 3,
+            sent: amount,
+            actual: actual,
+            result: CurrentMana,
+            fatal: false
         );
     }
 
