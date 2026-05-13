@@ -19,12 +19,15 @@ public sealed class ErrorItem : Useable
         consumable: true,
         sellable: false,
         element: DamageType.damage,
+        multiTarget: false,
+        targetsLimit: 1,
         proficiency: Proficiency.hand,
         shopType: "error",
         rarity: 1000,
-        collection: 99) { }
+        collection: 99
+    ) { }
 
-    public override EffectDto ItemEffect(DamageableEntity target, DamageableEntity source)
+    public override EffectDto ItemEffect(DamageableEntity target, List<DamageableEntity>? subTargets, DamageableEntity source)
     {
         var result = target.TakeDamage(new DamageableEntity(), 1000d, Element);
         return new EffectDto

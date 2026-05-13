@@ -97,21 +97,31 @@ public sealed class EffectDto
     {
         Message = string.Empty;
         Error = string.Empty;
+        SourceId = string.Empty;
+        TargetId = string.Empty;
     }
 
-    public EffectDto(string message, DamageResultDto result)
+    public EffectDto(string message, DamageResultDto result, string sourceId, string targetId, bool wasMagic)
     {
         Message = message;
         Result = result;
         Error = string.Empty;
+        SourceId = sourceId;
+        TargetId = targetId;
+        WasMagic = wasMagic;
     }
 
     public EffectDto(string error)
     {
         Message = string.Empty;
         Error = error;
+        SourceId = string.Empty;
+        TargetId = string.Empty;
     }
     public string Message { get; init; }
     public DamageResultDto? Result { get; init; }
+    public string SourceId { get; init; }
+    public string TargetId { get; init; }
+    public bool WasMagic { get; init; }
     public string Error { get; init; }
 }

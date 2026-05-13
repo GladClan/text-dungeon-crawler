@@ -16,7 +16,7 @@ public class ItemsIndexInitialRelease : IItemsIndex
         // Find all concrete types that inherit from Item in the InitialRelease namespace
         var concreteItemTypes = assembly.GetTypes()
             .Where(t => 
-                t.Namespace == "GameServer.Domain.Items.ItemsLibrary.InitialRelease" &&
+                t.Namespace == "GameServer.Domain.Items.ItemsLibrary" &&
                 !t.IsAbstract &&
                 itemType.IsAssignableFrom(t));
 

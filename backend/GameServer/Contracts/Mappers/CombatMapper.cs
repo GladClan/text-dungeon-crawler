@@ -6,7 +6,7 @@ public static class CombatMapper
 {
     public static DamageResultDto MergeResults(this DamageResultDto first, DamageResultDto second)
     {
-        int damage_healing_mana = 0;
+        int damage_healing_mana;
         if (first.AmountActual + second.AmountActual > 0)
         {
             damage_healing_mana = 2;
@@ -21,7 +21,9 @@ public static class CombatMapper
             AmountSent = first.AmountSent + second.AmountSent,
             AmountActual = first.AmountActual + second.AmountActual,
             NewValue = second.NewValue,
-            Fatal = first.Fatal || second.Fatal
+            Fatal = first.Fatal || second.Fatal,
+            SourceId = second.SourceId,
+            TargetId = second.TargetId
         };
     }
 }

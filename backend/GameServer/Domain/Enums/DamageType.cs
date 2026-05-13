@@ -21,3 +21,11 @@ public enum DamageType
     terra,
     soaking,
 }
+
+public enum Damage_Healing_Mana
+{
+    Damage = 1,
+    Healing= 2,
+    Mana = 3,
+    Other = 4
+}

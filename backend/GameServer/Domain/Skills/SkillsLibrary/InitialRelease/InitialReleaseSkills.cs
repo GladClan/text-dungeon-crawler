@@ -15,6 +15,8 @@ public sealed class ErrorSkill : Skill
         cost: 0,
         element: DamageType.damage,
         proficiency: Proficiency.spellstrike,
+        multiTarget: false,
+        targetsLimit: 1,
         level: 1
     ) { }
 
@@ -24,22 +26,22 @@ public sealed class ErrorSkill : Skill
         _damage += 10;
     }
 
-    public override EffectDto SkillEffect(DamageableEntity target, DamageableEntity source)
+    public override EffectDto SkillEffect(DamageableEntity mainTarget, List<DamageableEntity>? subTargets, DamageableEntity source)
     {
         _useage++;
         DamageResultDto first, second, third;
         int damage = 0;
-        first = target.TakeDamage(source, _damage, Element);
+        first = mainTarget.TakeDamage(source, _damage, Element);
         DamageResultDto final = first;
         damage += (int) first.AmountActual;
         if (Level > 3)
         {
-            second = target.TakeDamage(source, _damage / 2, Element);
+            second = mainTarget.TakeDamage(source, _damage / 2, Element);
             damage += (int) second.AmountActual;
             final = first.MergeResults(second);
             if (Level > 7)
             {
-                third = target.TakeDamage(source, _damage / 3, Element);
+                third = mainTarget.TakeDamage(source, _damage / 3, Element);
                 damage += (int) third.AmountActual;
                 final = final.MergeResults(third);
             }
@@ -51,7 +53,7 @@ public sealed class ErrorSkill : Skill
         }
         return new EffectDto
         {
-            Message = $"{target.Name} takes {damage} {Element} damage from a mysterious, buzzing cloud summoned by {source.Name}",
+            Message = $"{mainTarget.Name} takes {damage} {Element} damage from a mysterious, buzzing cloud summoned by {source.Name}",
             Result = final
         };
     }

@@ -8,7 +8,9 @@ public abstract class Useable : Item
 {
     public DamageType Element { get; protected set; }
     public Proficiency Prof { get; protected set; }
-    public abstract EffectDto ItemEffect(DamageableEntity target, DamageableEntity source);
+    public abstract EffectDto ItemEffect(DamageableEntity target, List<DamageableEntity>? subTargets, DamageableEntity source);
+    public bool MultiTarget { get; set; }
+    public int TargetsLimit { get; set; }
     public virtual bool CanUse(DamageableEntity target)
     {
         return true;
@@ -18,10 +20,12 @@ public abstract class Useable : Item
     {
     }
 
-    public Useable(string type, string name, int cost, string description, bool consumable, bool sellable, DamageType element, Proficiency proficiency, string shopType, int rarity, int collection)
+    public Useable(string type, string name, int cost, string description, bool consumable, bool sellable, DamageType element, bool multiTarget, int targetsLimit, Proficiency proficiency, string shopType, int rarity, int collection)
      : base(type, name, cost, description, consumable, sellable, shopType, rarity, collection)
     {
         Element = element;
         Prof = proficiency;
+        MultiTarget = multiTarget;
+        TargetsLimit = targetsLimit;
     }
 }
