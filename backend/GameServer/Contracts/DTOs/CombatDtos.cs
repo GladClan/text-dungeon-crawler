@@ -51,10 +51,14 @@ public sealed class DamageResultDto
 {
     public DamageResultDto()
     {
+        SourceId = string.Empty;
+        TargetId = string.Empty;
         Error = string.Empty;
     }
-    public DamageResultDto(int damage_healing_mana, double sent, double actual, double result, bool fatal)
+    public DamageResultDto(string sourceId, string targetId, int damage_healing_mana, double sent, double actual, double result, bool fatal)
     {
+        SourceId = sourceId;
+        TargetId = targetId;
         Damage_Healing_Mana = damage_healing_mana;
         AmountSent = sent;
         AmountActual = actual;
@@ -64,9 +68,13 @@ public sealed class DamageResultDto
     }
     public DamageResultDto(double sent, string error)
     {
+        SourceId = string.Empty;
+        TargetId = string.Empty;
         AmountSent = sent;
         Error = error;
     }
+    public string SourceId { get; init; }
+    public string TargetId { get; init; }
     public int Damage_Healing_Mana { get; init; }
     public double AmountSent { get; init; }
     public double AmountActual { get; init; }
@@ -97,17 +105,13 @@ public sealed class EffectDto
     {
         Message = string.Empty;
         Error = string.Empty;
-        SourceId = string.Empty;
-        TargetId = string.Empty;
     }
 
-    public EffectDto(string message, DamageResultDto result, string sourceId, string targetId, bool wasMagic)
+    public EffectDto(string message, List<DamageResultDto> results, bool wasMagic, List<string>? otherTargets = null)
     {
         Message = message;
-        Result = result;
+        Results = results;
         Error = string.Empty;
-        SourceId = sourceId;
-        TargetId = targetId;
         WasMagic = wasMagic;
     }
 
@@ -115,13 +119,9 @@ public sealed class EffectDto
     {
         Message = string.Empty;
         Error = error;
-        SourceId = string.Empty;
-        TargetId = string.Empty;
     }
     public string Message { get; init; }
-    public DamageResultDto? Result { get; init; }
-    public string SourceId { get; init; }
-    public string TargetId { get; init; }
+    public List<DamageResultDto>? Results { get; init; }
     public bool WasMagic { get; init; }
-    public string Error { get; init; }
+    public string Error { get; set; }
 }

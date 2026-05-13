@@ -11,7 +11,7 @@ public class BattleLog()
 
     public bool AddEntry(EffectDto request)
     {
-        if (request.Result is null)
+        if (request.Results is null)
         {
             return false;
         }
@@ -25,11 +25,11 @@ public class BattleLog()
         }
         Entries.Add(new BattleLogEntry
         {
-            Damage_Healing_Mana = (Damage_Healing_Mana)request.Result.Damage_Healing_Mana,
-            AmountSent = request.Result.AmountSent,
-            AmountActual = request.Result.AmountActual,
-            NewValue = request.Result.NewValue,
-            Fatal = request.Result.Fatal,
+            Damage_Healing_Mana = (Damage_Healing_Mana)request.Results.Damage_Healing_Mana,
+            AmountSent = request.Results.AmountSent,
+            AmountActual = request.Results.AmountActual,
+            NewValue = request.Results.NewValue,
+            Fatal = request.Results.Fatal,
             WasMagic = request.WasMagic,
             SourceId = request.SourceId,
             TargetId = request.TargetId,

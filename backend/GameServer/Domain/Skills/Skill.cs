@@ -2,6 +2,7 @@ using GameServer.Domain.Enums;
 using GameServer.Domain.Entities;
 using GameServer.Application.Common;
 using GameServer.Contracts.DTOs;
+using GameServer.Domain.Battle;
 
 namespace GameServer.Domain.Skills;
 
@@ -17,7 +18,7 @@ public abstract class Skill
     public bool MultiTarget { get; set; }
     public int TargetsLimit { get; set; }
     public int Level { get; set; }
-    public abstract EffectDto SkillEffect(DamageableEntity mainTarget, List<DamageableEntity>? subTargets, DamageableEntity source);
+    public abstract EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle);
     public abstract void LevelUpSkill();
     public bool IsLearnable (DamageableEntity target)
     {

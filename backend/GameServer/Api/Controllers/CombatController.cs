@@ -138,10 +138,10 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
     [HttpPatch("use-item")]
     public ActionResult<EffectDto> UseItem([FromBody] UseItemOrSkill request)
     {
-        var result = _service.UseItem(request.SourceId, request.ItemOrSkillId, request.TargetId);
+        var result = _service.UseItem(request.SourceId, request.ItemOrSkillId, request.TargetId, request.SubTargetIds);
         if (result is null)
         {
-            return NotFound(IdNotFound($"{request.SourceId} or {request.TargetId}"));
+            return NotFound($"Invalid ID sent. Please verify the ids sent and try again. Ids: {string.Join(", ", [.. request.SourceId, request.TargetId, ..request.SubTargetIds])}");
         }
         if (result.Error.Length > 0)
         {
@@ -153,10 +153,10 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
     [HttpPatch("use-skill")]
     public ActionResult<EffectDto> UseSkill([FromBody] UseItemOrSkill request)
     {
-        var result = _service.UseItem(request.SourceId, request.ItemOrSkillId, request.TargetId);
+        var result = _service.UseSkill(request.SourceId, request.ItemOrSkillId, request.TargetId, request.SubTargetIds);
         if (result is null)
         {
-            return NotFound(IdNotFound($"{request.SourceId} or {request.TargetId}"));
+            return NotFound($"Invalid ID sent. Please verify the ids sent and try again. Ids: {string.Join(", ", [.. request.SourceId, request.TargetId, ..request.SubTargetIds])}");
         }
         if (result.Error.Length > 0)
         {

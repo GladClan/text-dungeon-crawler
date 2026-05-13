@@ -1,4 +1,5 @@
 using GameServer.Contracts.DTOs;
+using GameServer.Domain.Battle;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 
@@ -8,7 +9,7 @@ public abstract class Useable : Item
 {
     public DamageType Element { get; protected set; }
     public Proficiency Prof { get; protected set; }
-    public abstract EffectDto ItemEffect(DamageableEntity target, List<DamageableEntity>? subTargets, DamageableEntity source);
+    public abstract EffectDto ItemEffect(DamageableEntity target, DamageableEntity source, List<DamageableEntity>? subTargets, BattleTracker battle);
     public bool MultiTarget { get; set; }
     public int TargetsLimit { get; set; }
     public virtual bool CanUse(DamageableEntity target)

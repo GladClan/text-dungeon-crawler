@@ -100,11 +100,13 @@ public class DamageableEntity
         CurrentHealth += Math.Min(actual, MaxHealth - CurrentHealth);
         bool wasFatal = DidEntityDie();
         return new(
-                damage_healing_mana: 2,
-                sent: amount,
-                actual: actual,
-                result: CurrentHealth,
-                fatal: wasFatal
+            source.ID,
+            ID,
+            damage_healing_mana: 2,
+            sent: amount,
+            actual: actual,
+            result: CurrentHealth,
+            fatal: wasFatal
         );
     }
 
@@ -133,6 +135,8 @@ public class DamageableEntity
         }
         bool wasFatal = DidEntityDie();
         return new(
+            source.ID,
+            ID,
             damage_healing_mana: 1,
             sent: amount,
             actual: actual,
@@ -188,6 +192,8 @@ public class DamageableEntity
         }
         CurrentMana += amount;
         return new(
+            "",
+            ID,
             damage_healing_mana: 3,
             sent: amount,
             actual: actual,

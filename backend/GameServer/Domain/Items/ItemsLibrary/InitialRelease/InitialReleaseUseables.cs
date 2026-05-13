@@ -1,4 +1,5 @@
 using GameServer.Contracts.DTOs;
+using GameServer.Domain.Battle;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 
@@ -27,13 +28,13 @@ public sealed class ErrorItem : Useable
         collection: 99
     ) { }
 
-    public override EffectDto ItemEffect(DamageableEntity target, List<DamageableEntity>? subTargets, DamageableEntity source)
+    public override EffectDto ItemEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
     {
-        var result = target.TakeDamage(new DamageableEntity(), 1000d, Element);
+        var result = mainTarget.TakeDamage(new DamageableEntity(), 1000d, Element);
         return new EffectDto
         {
-            Message = $"{target.Name} takes {result.AmountActual} damage from a mysterious, buzzing cloud, summoned by {source.Name}",
-            Result = result
+            Message = $"{mainTarget.Name} takes {result.AmountActual} damage from a mysterious, buzzing cloud, summoned by {source.Name}",
+            Results = [result]
         };
     }
 }

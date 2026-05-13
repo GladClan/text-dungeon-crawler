@@ -1,5 +1,7 @@
+using System.Xml;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
+using GameServer.Domain.Battle;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 
@@ -15,8 +17,8 @@ public sealed class ErrorSkill : Skill
         cost: 0,
         element: DamageType.damage,
         proficiency: Proficiency.spellstrike,
-        multiTarget: false,
-        targetsLimit: 1,
+        multiTarget: true,
+        targetsLimit: 100,
         level: 1
     ) { }
 
@@ -26,24 +28,18 @@ public sealed class ErrorSkill : Skill
         _damage += 10;
     }
 
-    public override EffectDto SkillEffect(DamageableEntity mainTarget, List<DamageableEntity>? subTargets, DamageableEntity source)
+    public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
     {
         _useage++;
-        DamageResultDto first, second, third;
-        int damage = 0;
-        first = mainTarget.TakeDamage(source, _damage, Element);
-        DamageResultDto final = first;
-        damage += (int) first.AmountActual;
-        if (Level > 3)
+        List<DamageResultDto> results = [];
+        DoEffect(results, mainTarget, source);
+        string subMessage = "";
+        if (subTargets is not null)
         {
-            second = mainTarget.TakeDamage(source, _damage / 2, Element);
-            damage += (int) second.AmountActual;
-            final = first.MergeResults(second);
-            if (Level > 7)
+            foreach (DamageableEntity target in subTargets)
             {
-                third = mainTarget.TakeDamage(source, _damage / 3, Element);
-                damage += (int) third.AmountActual;
-                final = final.MergeResults(third);
+                DoEffect(results, target, source);
+                subMessage += $"\n{target.Name} is enveloped.";
             }
         }
         if (_useage > Level * 10)
@@ -51,10 +47,31 @@ public sealed class ErrorSkill : Skill
             LevelUpSkill();
             _useage = 0;
         }
+        double damage = 0;
+        foreach (var dto in results)
+        {
+            damage += dto.AmountActual;
+        }
+        string message = (subTargets is null) ? $"{mainTarget.Name} takes {damage} {Element} damage from a mysterious, buzzing cloud summoned by {source.Name}"
+            : $"{source.Name} summons a mysterious, buzzing cloud which envelops {mainTarget.Name} and others, dealing {damage} {Element} damage.{subMessage}";
+        
         return new EffectDto
         {
-            Message = $"{mainTarget.Name} takes {damage} {Element} damage from a mysterious, buzzing cloud summoned by {source.Name}",
-            Result = final
+            Message = message,
+            Results = [.. results]
         };
+    }
+
+    private void DoEffect(List<DamageResultDto> resultDtos, DamageableEntity target, DamageableEntity source)
+    {
+        resultDtos.Add(target.TakeDamage(source, _damage, Element));
+        if (Level > 3)
+        {
+            resultDtos.Add(target.TakeDamage(source, _damage / 2, Element));
+            if (Level > 7)
+            {
+                resultDtos.Add(target.TakeDamage(source, _damage / 3, Element));
+            }
+        }
     }
 }

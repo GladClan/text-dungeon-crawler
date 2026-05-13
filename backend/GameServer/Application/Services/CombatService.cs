@@ -2,15 +2,18 @@ using System.Diagnostics.CodeAnalysis;
 using Gameserver.Contracts.Requests;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
+using GameServer.Domain.Battle;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Items;
+using Microsoft.VisualBasic;
 
 namespace Gameserver.Application.Services;
 
-public sealed class CombatService(EntityStore entityStore)
+public sealed class CombatService(EntityStore entityStore, BattleTracker battleTracker)
 {
         private readonly EntityStore _entities = entityStore;
+        private readonly BattleTracker _battle = battleTracker;
         private readonly double _levelStackMultiplier = 1.2;
         private readonly int _proficiencyEntryAddition = 1;
         
@@ -181,47 +184,68 @@ public sealed class CombatService(EntityStore entityStore)
                 return target.DeathMessage;
         }
 
-        public EffectDto? UseItem(string id, string itemId, string targetId = "")
+        public EffectDto? UseItem(string id, string itemId, string targetId = "", List<string>? subTargetIds = null)
         {
-                if (_entities.TryGet(id, out var target) && target is not null)
+                if (_entities.TryGet(id, out var source) && source is not null)
                 {
-                        var item = target.Inventory.Items.FirstOrDefault(i => i.Id.Equals(itemId, StringComparison.InvariantCultureIgnoreCase));
+                        var item = source.Inventory.Items.FirstOrDefault(i => i.Id.Equals(itemId, StringComparison.InvariantCultureIgnoreCase));
                         if (item is not null)
                         {
                                 if (item is Equippable equippable)
                                 {
                                         if (equippable.Equipped)
                                         {
-                                                return equippable.OnUnequip(target);
+                                                return equippable.OnUnequip(source);
                                         }
                                         else
                                         {
-                                                return equippable.OnEquip(target);
+                                                return equippable.OnEquip(source);
                                         }
                                 }
                                 else if (item is Useable useable)
                                 {
-                                        if (useable.CanUse(target))
+                                        if (useable.CanUse(source))
                                         {
-                                                if (_entities.TryGet(targetId, out var other) && other is not null)
+                                                if (_entities.TryGet(targetId, out var target) && target is not null)
                                                 {
-                                                        return useable.ItemEffect(target, other);
+                                                        List<DamageableEntity>? targets = null;
+                                                        if (subTargetIds is not null)
+                                                        {
+                                                                string error = "";
+                                                                foreach (string tId in subTargetIds)
+                                                                {
+                                                                        targets ??= [];
+                                                                        if (_entities.TryGet(tId, out var entity) && entity is not null)
+                                                                        {
+                                                                                targets.Add(entity);
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                              error += $"Target {tId} could not be found. {source.Name} might be sad that they're missing out.\n";
+                                                                        }
+                                                                }
+                                                                if (error.Length > 0)
+                                                                {
+                                                                        return new(error);
+                                                                }
+                                                        }
+                                                        return useable.ItemEffect(target, source, targets, _battle);
                                                 }
                                                 else
                                                 {
                                                         return new EffectDto
                                                         {
-                                                                Error = $"Target {targetId} could not be found. {target.Name} isn't about to use it on themselves!"
+                                                                Error = $"Target {targetId} could not be found. {source.Name} isn't about to use it on themselves!"
                                                         };
                                                 }
                                         }
-                                else
-                                {
-                                        return new EffectDto
+                                        else
                                         {
-                                                Error = $"{target.Name} cannot use {item.Name}"
-                                        };
-                                }
+                                                return new EffectDto
+                                                {
+                                                        Error = $"{source.Name} cannot use {item.Name}"
+                                                };
+                                        }
                                 }
                         }
                         return new EffectDto
@@ -232,7 +256,7 @@ public sealed class CombatService(EntityStore entityStore)
                 return null;
         }
 
-        public EffectDto? UseSkill(string id, string skillId, string targetId)
+        public EffectDto? UseSkill(string id, string skillId, string targetId, List<string>? subTargetIds = null)
         {
                 if (!TryGetEntity(id, out var source) || !TryGetEntity(targetId, out var target))
                 {
@@ -246,6 +270,27 @@ public sealed class CombatService(EntityStore entityStore)
                                 Error = $"Could not find skill id: {skillId} in the skills of {source.Name} ({source.ID})"
                         };
                 }
-                return skill.SkillEffect(target, source);
+                List<DamageableEntity>? targets = null;
+                if (subTargetIds is not null)
+                {
+                        string error = "";
+                        foreach (string tId in subTargetIds)
+                        {
+                                targets ??= [];
+                                if (_entities.TryGet(tId, out var entity) && entity is not null)
+                                {
+                                        targets.Add(entity);
+                                }
+                                else
+                                {
+                                        error += $"Target {tId} could not be found. {source.Name} might be sad that they're missing out.\n";
+                                }
+                        }
+                        if (error.Length > 0)
+                        {
+                                return new(error);
+                        }
+                }
+                return skill.SkillEffect(source, target, targets, _battle);
         }
 }

@@ -89,4 +89,6 @@ public sealed class UseItemOrSkill
     
     public string TargetId { get; init; } = string.Empty;
 
+    public List<string> SubTargetIds { get; init; } = [];
+
 }
