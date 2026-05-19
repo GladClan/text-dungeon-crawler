@@ -27,6 +27,7 @@ public static class EntityMapper
             PartyId = entity.PartyId,
             MaxHealth = entity.MaxHealth,
             CurrentHealth = entity.CurrentHealth,
+            HealthBuffer = entity.HealthBuffer,
             MaxMana = entity.MaxMana,
             CurrentMana = entity.CurrentMana,
             Magic = entity.Magic,

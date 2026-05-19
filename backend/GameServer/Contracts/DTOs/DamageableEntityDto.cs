@@ -9,6 +9,7 @@ public sealed class DamageableEntityDto
     public string PartyId { get; init; } = string.Empty;
     public int MaxHealth { get; init; }
     public double CurrentHealth { get; init; }
+    public double HealthBuffer { get; init; }
     public double Magic { get; init; }
     public int MaxMana { get; init; }
     public double CurrentMana { get; init; }
@@ -25,5 +26,5 @@ public sealed class DamageableEntityDto
     public Dictionary<string, double> Proficiencies { get; init; } = [];
 
     public EntityInventoryDto Inventory { get; init; } = new();
-    public List<SkillDto> Skills { get; init; } = new();
+    public List<SkillDto> Skills { get; init; } = [];
 }

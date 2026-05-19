@@ -64,7 +64,7 @@ public sealed class StatBuffEffect(
                 entity.CurrentHealth += amount;
                 return true;
             case StatType.CurrentHealth:
-                entity.CurrentHealth += amount;
+                entity.TakeDamage(new DamageableEntity(), amount, resistance ?? DamageType.damage);
                 return true;
             case StatType.Magic: 
                 entity.Magic += amount;
@@ -74,8 +74,8 @@ public sealed class StatBuffEffect(
                 entity.CurrentMana += amount;
                 return true;
             case StatType.CurrentMana: 
-                entity.CurrentMana += amount;
-                return true;
+                entity.ChangeMana(amount);
+                return false;
             case StatType.Strength: 
                 entity.Strength += amount;
                 return true;

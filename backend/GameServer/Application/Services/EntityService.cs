@@ -5,15 +5,16 @@ using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
+using GameServer.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GameServer.Application.Services;
 
-public sealed class EntityService(EntityStore entityStore, ResistanceParser resistanceParser, ProficiencyParser proficiencyParser)
+public sealed class EntityService(EntityStore entityStore, InventoryService inventoryService, SkillService skillService)
 {
     private readonly EntityStore _entities = entityStore;
-    private readonly ResistanceParser _resistanceParser = resistanceParser;
-    private readonly ProficiencyParser _proficiencyParser = proficiencyParser;
+    private readonly InventoryService _inventoryService = inventoryService;
+    private readonly SkillService _skillService = skillService;
 
     private bool TryGetEntity(string id, [NotNullWhen(true)] out DamageableEntity? target)
     {
@@ -57,10 +58,10 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
     {
         AddEntityResult result = new();
 
-        var resistanceResult = _resistanceParser.Parse(request.Resistances);
+        var resistanceResult = request.Resistances.Parse();
         result.AddErrors(resistanceResult.Errors);
 
-        var proficiencyResult = _proficiencyParser.Parse(request.Proficiencies);
+        var proficiencyResult = request.Proficiencies.Parse();
         result.AddErrors(proficiencyResult.Errors);
 
         var proficiencies = (request.Proficiencies is null || request.Proficiencies.Count < 1)
@@ -91,6 +92,28 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
                 proficiencies
             );
 
+            if (request.ItemTags is not null)
+            {
+                foreach (string tag in request.ItemTags)
+                {
+                    var item = _inventoryService.NewItemByTag(tag);
+                    if (item is not null)
+                    {
+                        entity.Inventory.Items.Add(item);
+                    }
+                }
+            }
+            if (request.SkilTags is not null)
+            {
+                foreach (string tag in request.SkilTags)
+                {
+                    var skill = _skillService.NewSkillByTag(tag);
+                    if (skill is not null)
+                    {
+                        entity.Skills.Add(skill);
+                    }
+                }
+            }
             _entities.Add(entity);
             result.Entity = entity.ToDto();
         }
@@ -193,7 +216,7 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         {
             return null;
         }
-        var resistanceResult = _resistanceParser.Parse(resistances);
+        var resistanceResult = resistances.Parse();
         if (!(resistanceResult.Errors.Count > 0))
         {
             if (resistanceResult.Parsed is null)
@@ -214,7 +237,7 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
         {
             return null;
         }
-        var proficiencyResult = _proficiencyParser.Parse(requestList);
+        var proficiencyResult = requestList.Parse();
         if (!(proficiencyResult.Errors.Count > 0))
         {
             if (proficiencyResult.Parsed is null)
@@ -314,6 +337,12 @@ public sealed class EntityService(EntityStore entityStore, ResistanceParser resi
             return null;
         }
         return target.Speed;
+    }
+
+    public DamageableEntity? GetDamageableEntityObject(string id)
+    {
+        TryGetEntity(id, out var target);
+        return target;
     }
 }
 

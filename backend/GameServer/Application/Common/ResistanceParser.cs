@@ -4,9 +4,9 @@ using GameServer.Domain.Enums;
 
 namespace GameServer.Application.Common;
 
-public sealed class ResistanceParser
+public static class ResistanceParser
 {
-    public EnumDictionaryParseResult<DamageType> Parse(List<ResistanceRequest>? entries)
+    public static EnumDictionaryParseResult<DamageType> Parse(this List<ResistanceRequest>? entries)
     {
         if (entries is null)
         {

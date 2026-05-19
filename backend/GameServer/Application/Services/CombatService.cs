@@ -6,7 +6,7 @@ using GameServer.Domain.Battle;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Items;
-using Microsoft.VisualBasic;
+using GameServer.Infrastructure;
 
 namespace Gameserver.Application.Services;
 
@@ -77,6 +77,16 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
                         return null;
                 }
                 return target.Heal(source, request.AmountToHeal);
+        }
+
+        public DamageResultDto? AddHealthBuffer(HealRequest request)
+        {
+                if (!TryGetEntity(request.SourceId, out var source) || !TryGetEntity(request.TargetId, out var target))
+                {
+                        return null;
+                }
+                return target.AddHealthBuffer(source, request.AmountToHeal);
+
         }
 
         public DamageResultDto? ChangeMana(ManaRequest request)

@@ -17,6 +17,7 @@ public abstract class Skill
     public Proficiency Prof { get; set; }
     public bool MultiTarget { get; set; }
     public int TargetsLimit { get; set; }
+    public ActionType SkillType { get; init; }
     public int Level { get; set; }
     public abstract EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle);
     public abstract void LevelUpSkill();
@@ -30,16 +31,18 @@ public abstract class Skill
         Id = NewId();
     }
 
-    protected Skill(string name, string tag, int cost, DamageType element, bool multiTarget, int targetsLimit, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
+    protected Skill(string name, string tag, string description, int cost, DamageType element, bool multiTarget, int targetsLimit, ActionType skillType, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
     {
         Id = NewId();
         Name = name;
         Tag = tag;
+        Description = description;
         Cost = cost;
         Element = element;
         Prof = proficiency;
         MultiTarget = multiTarget;
         TargetsLimit = targetsLimit;
+        SkillType = skillType;
         Level = level;
     }
 

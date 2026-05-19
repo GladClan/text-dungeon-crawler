@@ -45,6 +45,9 @@ next-env.d.ts
 /backend/**/obj/
 /backend/**/TestResults/
 
+# Automatically-generated cached language service data
+*.lscache
+
 # Visual Studio / .NET user files
 /.vs/
 *.suo

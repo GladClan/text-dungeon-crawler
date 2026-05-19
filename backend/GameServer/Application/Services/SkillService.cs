@@ -1,6 +1,7 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Domain.Skills;
+using GameServer.Infrastructure;
 
 namespace GameServer.Application.Services;
 
@@ -52,34 +53,6 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
         return null;
     }
 
-    public SkillDto? AddSkillById(string id, string skillId)
-    {
-        if (_entities.TryGet(id, out var target) && target is not null)
-        {
-            Skill result = _skillsIndexer.GetSkillById(skillId);
-            if (result.Tag.Equals("error"))
-            {
-                return new SkillDto
-                {
-                    Error = $"No skill exists with id: {skillId}"
-                };
-            }
-            if (result.IsLearnable(target))
-            {
-                target.Skills.Add(result);
-                return result.SkillToDto();
-            }
-            else
-            {
-                return new SkillDto
-                {
-                    Error = $"{target.Name} cannot learn {result.Name}"
-                };
-            }
-        }
-        return null;
-    }
-
     public SkillDto? AddSkillByTag(string id, string tag)
     {
         if (_entities.TryGet(id, out var target) && target is not null)
@@ -106,6 +79,16 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             }
         }
         return null;
+    }
+
+    public Skill? NewSkillByTag(string tag)
+    {
+        var skill = _skillsIndexer.GetSkillByTag(tag);
+        if (skill.Tag == "error")
+        {
+            return null;
+        }
+        return skill;
     }
 
     public SkillDto? RemoveSkillById(string id, string skillId)

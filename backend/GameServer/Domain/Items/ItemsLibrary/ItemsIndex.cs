@@ -1,9 +1,8 @@
 using GameServer.Domain.Items.ItemsLibrary.InitialRelease;
-using System.Reflection;
 
 namespace GameServer.Domain.Items.ItemsLibrary;
 
-public class ItemsIndexInitialRelease : IItemsIndex
+public class ItemsIndex : IItemsIndex
 {
     private static readonly List<Item> ItemCatalog = InitializeItems();
 
@@ -11,7 +10,7 @@ public class ItemsIndexInitialRelease : IItemsIndex
     {
         var items = new List<Item>();
         var itemType = typeof(Item);
-        var assembly = typeof(ItemsIndexInitialRelease).Assembly;
+        var assembly = typeof(ItemsIndex).Assembly;
 
         // Find all concrete types that inherit from Item in the InitialRelease namespace
         var concreteItemTypes = assembly.GetTypes()

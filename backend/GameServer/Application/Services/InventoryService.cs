@@ -1,6 +1,7 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Domain.Items;
+using GameServer.Infrastructure;
 
 namespace GameServer.Application.Services;
 
@@ -96,24 +97,6 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
         return null;
     }
 
-    public ItemDto? AddItemById(string id, string itemId)
-    {
-        if (_entities.TryGet(id, out var target) && target is not null)
-        {
-            var item = _itemsIndexer.GetItemById(itemId);
-            if (item.Type.Equals("error"))
-            {
-                return new ItemDto
-                {
-                    Error = $"Item id {itemId} is not a valid id."
-                };
-            }
-            target.Inventory.Items.Add(item);
-            return item.ToDto();
-        }
-        return null;
-    }
-
     public ItemDto? AddItemByTag(string id, string tag)
     {
         if (_entities.TryGet(id, out var target) && target is not null)
@@ -130,6 +113,16 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             return item.ToDto();
         }
         return null;
+    }
+
+    public Item? NewItemByTag(string tag)
+    {
+        var item = _itemsIndexer.GetItemByTag(tag);
+        if (item.Tag == "error")
+        {
+            return null;
+        }
+        return item;
     }
 
     public int? AddGold(string id, int amount)

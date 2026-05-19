@@ -1,3 +1,4 @@
+using GameServer.Application.Common;
 using GameServer.Contracts.DTOs;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
@@ -15,6 +16,7 @@ public class DamageableEntity
     public string PartyId { get; set; } = string.Empty;
     public int MaxHealth { get; set; }
     public double CurrentHealth { get; set; }
+    public double HealthBuffer { get; set; }
     public double Magic { get; set; }
     public int MaxMana { get; set; }
     public double CurrentMana { get; set; }
@@ -110,6 +112,34 @@ public class DamageableEntity
         );
     }
 
+    public DamageResultDto AddHealthBuffer(DamageableEntity source, double amount)
+    {
+        if (!IsEntityAlive)
+        {
+            return new(
+                sent: amount,
+                error: $"{Name} is not alive and cannot be healed."
+            );
+        }
+        if (!source.IsEntityAlive)
+        {
+            return new DamageResultDto(
+                    sent: amount,
+                    error: $"{source.Name} is not alive and cannot add health buffer to {Name}."
+            );
+        }
+        HealthBuffer += amount;
+        return new(
+            source.ID,
+            ID,
+            damage_healing_mana: 4,
+            sent: amount,
+            actual: amount,
+            result: HealthBuffer,
+            fatal: !IsEntityAlive
+        );
+    }
+
     public DamageResultDto TakeDamage(DamageableEntity source, double amount, DamageType damageType)
     {
         if (!IsEntityAlive)
@@ -128,7 +158,12 @@ public class DamageableEntity
         }
         var resistanceDto = GetResistanceMultiplier(damageType);
         double actual = amount * resistanceDto.Value;
-        CurrentHealth -= actual;
+        HealthBuffer -= actual;
+        if (HealthBuffer < 0)
+        {
+            CurrentHealth += HealthBuffer;
+            HealthBuffer = 0;
+        }
         if (CurrentHealth > MaxHealth)
         {
             CurrentHealth = MaxHealth;
@@ -267,7 +302,7 @@ public class DamageableEntity
     private string GenerateEntityId()
     {
         string counter = Interlocked.Increment(ref _entityCounter).ToString("D3");
-        string timestamp = DateTime.Now.ToString("MMddyyyyHHmmss");
+        string timestamp = OrdinalDateString.GetOrdinalDate(3);
         string prefix = EntityType.PadRight(3, '_')[..3].ToLowerInvariant();
 
         return $"{prefix}_{timestamp}_{counter}";

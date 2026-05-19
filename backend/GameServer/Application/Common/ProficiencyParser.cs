@@ -4,9 +4,9 @@ using GameServer.Domain.Enums;
 
 namespace GameServer.Application.Common;
 
-public sealed class ProficiencyParser
+public static class ProficiencyParser
 {
-    public EnumDictionaryParseResult<Proficiency> Parse(List<ProficiencyRequest>? entries)
+    public static EnumDictionaryParseResult<Proficiency> Parse(this List<ProficiencyRequest>? entries)
     {
         if (entries is null)
         {

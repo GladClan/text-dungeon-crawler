@@ -76,6 +76,21 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
         return Ok(result);
     }
 
+    [HttpPatch("health-buffer")]
+    public ActionResult<DamageResultDto> AddHealthBuffer([FromBody] HealRequest request)
+    {
+        var result = _service.AddHealthBuffer(request);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(request.SourceId + " or " + request.TargetId));
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
+
     [HttpPatch("change-mana")]
     public ActionResult<DamageResultDto> ChangeMana([FromBody] ManaRequest request)
     {

@@ -7,9 +7,11 @@ public enum Proficiency
     bludgeoning,
     piercing,
     spellstrike,
+    spellcasting,
     potions,
     bow,
     healing,
     stealth,
-    nobility
+    nobility,
+    destiny
 }

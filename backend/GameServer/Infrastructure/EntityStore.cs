@@ -2,6 +2,8 @@ using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 using System.Collections.Concurrent;
 
+namespace GameServer.Infrastructure;
+
 public sealed class EntityStore
 {
     private readonly ConcurrentDictionary<string, DamageableEntity> _entities = new();

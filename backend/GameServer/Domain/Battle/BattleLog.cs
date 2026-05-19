@@ -15,25 +15,20 @@ public class BattleLog()
         {
             return false;
         }
-        if (!_damageableEntityIds.Contains(request.SourceId))
+        foreach (var result in request.Results)
         {
-            _damageableEntityIds.Add(request.SourceId);
+            Entries.Add(new BattleLogEntry
+            {
+                Damage_Healing_Mana = (Damage_Healing_Mana)result.Damage_Healing_Mana,
+                AmountSent = result.AmountSent,
+                AmountActual = result.AmountActual,
+                NewValue = result.NewValue,
+                Fatal = result.Fatal,
+                WasMagic = request.WasMagic,
+                SourceId = result.SourceId,
+                TargetId = result.TargetId,
+            });
         }
-        if (!_damageableEntityIds.Contains(request.TargetId))
-        {
-            _damageableEntityIds.Add(request.TargetId);
-        }
-        Entries.Add(new BattleLogEntry
-        {
-            Damage_Healing_Mana = (Damage_Healing_Mana)request.Results.Damage_Healing_Mana,
-            AmountSent = request.Results.AmountSent,
-            AmountActual = request.Results.AmountActual,
-            NewValue = request.Results.NewValue,
-            Fatal = request.Results.Fatal,
-            WasMagic = request.WasMagic,
-            SourceId = request.SourceId,
-            TargetId = request.TargetId,
-        });
         return true;
     }
 
@@ -42,16 +37,45 @@ public class BattleLog()
         return [.. Entries.Where(e => e.SourceId.Equals(id, StringComparison.InvariantCultureIgnoreCase))];
     }
 
-    public string? GetHighestSingleDamage()
+    public string? GetHighestSingleDamage(int nthEntry = 0)
     {
         string? result = null;
         double max = double.MinValue;
+        if (nthEntry == 0)
+        {
+            foreach (BattleLogEntry e in Entries)
+            {
+                if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.AmountActual > max)
+                {
+                    max = e.AmountActual;
+                    result = e.SourceId;
+                }
+            }
+            return result;
+        }
+        else
+        {
+            var sorted = Entries.OrderByDescending(e => e.AmountActual);
+            return nthEntry < sorted.Count() ? sorted.ElementAt(nthEntry).SourceId : null;
+        }
+    }
+
+    public string? GetHasAttackedSource(string id, int nthEntry = 0)
+    {
+        string? result = null;
         foreach (BattleLogEntry e in Entries)
         {
-            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.AmountActual > max)
+            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.TargetId.Equals(id, StringComparison.InvariantCultureIgnoreCase) && e.AmountActual > 0)
             {
-                max = e.AmountActual;
-                result = e.SourceId;
+                if (nthEntry <= 0)
+                {
+                    return e.SourceId;
+                }
+                else
+                {
+                    result = "";
+                    nthEntry--;
+                }
             }
         }
         return result;
@@ -102,7 +126,7 @@ public class BattleLog()
         return result;
     }
 
-    public string? GetMostHealer()
+    public string? GetMostHealer(int nthEntry = 0)
     {
         Dictionary<string, int> frequencyMap = [];
         int max = int.MinValue;
@@ -126,7 +150,21 @@ public class BattleLog()
                 }
             }
         }
-        return result;
+        if (nthEntry == 0)
+        {
+            return result;
+        }
+        else
+        {
+            if (nthEntry < frequencyMap.Count)
+            {
+                return frequencyMap.OrderByDescending(e => e.Value).ElementAt(nthEntry).Key;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 
     public string? GetFirstFatalDamage()

@@ -43,6 +43,10 @@ public sealed class DamageableEntityRequest
     public string Race { get; init; } = string.Empty;
 
     [Required]
+    [MinLength(1)]    
+    public string PartyId { get; init; } = string.Empty;
+
+    [Required]
     [Range(typeof(int), "0", "999999", ConvertValueInInvariantCulture = true)]
     public int Health { get; init; }
 
@@ -72,8 +76,9 @@ public sealed class DamageableEntityRequest
     public int Experience { get; init; }
 
     public List<ResistanceRequest>? Resistances { get; init; }
-
     public List<ProficiencyRequest>? Proficiencies { get; init; }
+    public List<string> ItemTags { get; init; } = [];
+    public List<string> SkilTags { get; init; } = [];
 }
 
 public sealed class SetSpeedRequest
