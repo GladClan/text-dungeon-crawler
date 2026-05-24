@@ -280,6 +280,32 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         return Ok(result);
     }
 
+    [HttpDelete("{id}/remove-dead-party-members")]
+    public ActionResult<List<DamageableEntityDto>> RemoveDeadPartyMembers(string id, [FromBody] string partyId)
+    {
+        var result = _service.RemoveEntitiesNotAliveInParty(partyId);
+        if (result is null)
+        {
+            return NotFound($"Could not find party {partyId}");
+        }
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}/remove-dead-part-member")]
+    public ActionResult<DamageableEntityDto> RemoveDeadPartyMember(string id)
+    {
+        var result = _service.RemoveEntityNotAlive(id);
+        if (result is null)
+        {
+            return NotFound($"Entity could not be found or is still alive: {id}");
+        }
+        if (result.Error.Length > 0)
+        {
+            return BadRequest(result.Error);
+        }
+        return result;
+    }
+
     private void AddParseErrors(IEnumerable<ParseIssue> errors)
     {
         foreach (ParseIssue err in errors)

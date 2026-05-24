@@ -5,6 +5,7 @@ using GameServer.Contracts.Mappers;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Battle;
+using GameServer.Domain.Enums;
 using GameServer.Domain.Statistics;
 using GameServer.Infrastructure;
 
@@ -15,7 +16,7 @@ public sealed class EventServices(StatisticsTracker statisticsTracker, EntitySer
     private readonly EntityStore _entities = entityStore;
     private readonly EntityService _service = entityService;
     private readonly StatisticsTracker _statistics = statisticsTracker;
-    private BattleTracker CurrentBattle;
+    private BattleTracker? CurrentBattle;
 
     public BattleDto CommenceBattle(BattleStartRequest request)
     {
@@ -46,7 +47,7 @@ public sealed class EventServices(StatisticsTracker statisticsTracker, EntitySer
             }
         }
         var party = _service.GetParty(request.PartyId);
-        CurrentBattle = new(_statistics, _entities, request.PartyId, request.OpponentPartyId ?? $"temp-{OrdinalDateString.GetOrdinalDate(4)}");
+        CurrentBattle = new(_statistics, _service, request.PartyId, request.OpponentPartyId ?? $"temp-{OrdinalDateString.GetOrdinalDate(4)}");
         var initiative = CurrentBattle.GetInitiativeOrder();
         return new BattleDto
         {
@@ -56,17 +57,67 @@ public sealed class EventServices(StatisticsTracker statisticsTracker, EntitySer
         };
     }
 
-    public BattleDto? EndBattle()
+    public BattleEndDto? EndBattle()
     {
         if (CurrentBattle is null)
         {
             return null;
         }
         var errors = CurrentBattle.OnBattleEnd();
-        var result = new BattleDto
+
+        // Add experience to entities and record level ups
+        var enemyParty = _entities.GetParty(CurrentBattle.OpponentPartyId);
+        var party = _entities.GetParty(CurrentBattle.PartyId);
+        var livingParty = party.Where(m => m.IsEntityAlive);
+        List<LevelUpDto> expGained = [];
+        foreach (var e in enemyParty)
         {
+            if (!e.IsEntityAlive)
+            {
+                foreach (var m in livingParty)
+                {
+                    var gain = m.AddExperience(e.Experience);
+                    expGained.Add(gain);
+                }
+            }
+        }
+        var enemiesAlive = enemyParty.Where(m => m.IsEntityAlive);
+        foreach (var e in enemiesAlive)
+        {
+            foreach (var m in party)
+            {
+                if (!m.IsEntityAlive)
+                {
+                    _ = e.AddExperience(m.Experience * m.Level);
+                }
+            }
+        }
+        var result = new BattleEndDto
+        {
+            Victory = livingParty.Any(),
             Error = errors is null ? string.Empty : string.Join("\n", errors),
-            EntityDtos = _entities.GetParty(CurrentBattle.OpponentPartyId).ToDtos()
+            Party = party.ToDtos(),
+            Opponents = enemyParty.ToDtos(),
+            LevelUps = expGained
         };
+        _service.RemoveEntitiesNotAliveInParty(CurrentBattle.OpponentPartyId);
+        CurrentBattle = null;
+        return result;
+    }
+
+    public ChallengeResultDto? ChallengeEntitySkill(string id, double value, Proficiency proficiency)
+    {
+        if (_entities.TryGet(id, out var target) && target is not null)
+        {
+            Random random = new();
+            double chance = random.NextDouble();
+            double result = target.GetProficiencyMultiplier(proficiency).Value * chance;
+            return new ChallengeResultDto
+            {
+                Success = result > value,
+                Margin = value - result
+            };
+        }
+        return null;
     }
 }

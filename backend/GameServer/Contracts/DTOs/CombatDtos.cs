@@ -83,13 +83,14 @@ public sealed class DamageResultDto
     public string Error { get; init; }
 }
 
-public sealed class LevelUpDto(int levelAtStart = 0, int levelAfter = 0, Dictionary<string, double>? proficienciesAtStart = null)
+public sealed class LevelUpDto()
 {
-    public int LevelAtStart { get; set; } = levelAtStart;
-    public int LevelAfter { get; set; } = levelAfter;
-    public Dictionary<string, double> ProficienciesAtStart { get; set; } = proficienciesAtStart ?? [];
-    
-    public Dictionary<string, double> ProficienciesAfter { get; set; } = [];
+    public int ExpAtStart { get; init; }
+    public int ExpAfter { get; init; }
+    public int LevelAtStart { get; set; }
+    public int LevelAfter { get; set; }
+    public Dictionary<string, double> ProficienciesAtStart { get; set; } = [];
+    public Dictionary<string, double> ProficienciesAfter { get; init; } = [];
 }
 
 public sealed class StringDoubleDto(string key, double value, string error = "")
@@ -107,7 +108,7 @@ public sealed class EffectDto
         Error = string.Empty;
     }
 
-    public EffectDto(string message, List<DamageResultDto> results, bool wasMagic, List<string>? otherTargets = null)
+    public EffectDto(string message, List<DamageResultDto> results, bool wasMagic)
     {
         Message = message;
         Results = results;

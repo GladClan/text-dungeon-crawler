@@ -123,18 +123,22 @@ public sealed class PoisonBite : Skill
         _useage++;
         if (source.GetProficiencyMultiplier(Proficiency.potions).Value > (_random.Next(200) / 100d))
         {
-            battle.AddContinuousEffect(
+            bool success = battle.AddContinuousEffect(
                 new StatusEffect(
-                    mainTarget.ID,
-                    $"{mainTarget.Name} suffered poison damage from {source.Name}'s bite!",
-                    StatType.CurrentHealth,
-                    _damage / 2 * source.GetProficiencyMultiplier(Proficiency.potions).Value,
-                    _duration,
-                    DamageType.poisoning
+                    tag: Tag,
+                    targetId: mainTarget.ID,
+                    message: $"{mainTarget.Name} suffered poison damage from {source.Name}'s bite!",
+                    stat: StatType.CurrentHealth,
+                    delta: _damage / 2 * source.GetProficiencyMultiplier(Proficiency.potions).Value,
+                    duration: _duration,
+                    damageType: DamageType.poisoning
                 )
             );
-            message += $"\n{mainTarget.Name} was poisoned!";
-            _poisonCount++;
+            if (success)
+            {
+                message += $"\n{mainTarget.Name} was poisoned!";
+                _poisonCount++;
+            }
         }
         if (_useage > Level * 9 / source.GetProficiencyMultiplier(Proficiency.piercing).Value)
         {
@@ -232,9 +236,9 @@ public sealed class SummonSpiders : Skill
             var result = battle.AddEntityToBattle(request);
             if (result.Entity is not null)
             {
-                
-                battle.AddContinuousEffect(
+                bool success = battle.AddContinuousEffect(
                     new StatBuffEffect(
+                        tag: Tag,
                         targetId: result.Entity.Id,
                         message: $"The spell of {source.Name} runs out. The {OrdinalNumber(i+1)} spider they summoned withers away.",
                         stat: StatType.CurrentHealth,

@@ -4,6 +4,7 @@ using GameServer.Domain.Enums;
 namespace GameServer.Domain.Battle;
 
 public sealed class StatBuffEffect(
+    string tag,
     string targetId,
     string message,
     StatType stat,
@@ -15,6 +16,7 @@ public sealed class StatBuffEffect(
     Proficiency? proficiency = null
 ) : IBattleEffect
 {
+    public string Tag { get; init; } = tag;
     public string EntityId { get; init; } = targetId;
     public string Message { get; set; } = message;
     public int RemainingTurns { get; set; } = duration;

@@ -5,6 +5,7 @@ namespace GameServer.Domain.Battle;
 public interface IBattleEffect
 {
     string EntityId { get; init; }
+    string Tag { get; init; }
     bool Apply(DamageableEntity target);
     bool Revert(DamageableEntity target);
     string Message { get; set; }

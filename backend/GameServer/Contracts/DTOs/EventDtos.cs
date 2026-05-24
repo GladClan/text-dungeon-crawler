@@ -26,7 +26,24 @@ public sealed class InitiativeDto
 
 public sealed class TurnoverDto
 {
+    public int CurrentTurn { get; init; }
     public List<string> Messages { get; init; } = [];
     public List<InitiativeDto> InitiativeOrder { get; init; } = [];
+    public string Error { get; init; } = string.Empty;
+}
+
+public sealed class BattleEndDto
+{
+    public bool Victory { get; set; }
+    public List<DamageableEntityDto> Party { get; init; } = [];
+    public List<DamageableEntityDto> Opponents { get; init; } = [];
+    public List<LevelUpDto> LevelUps { get; init; } = [];
+    public string Error { get; init; } = string.Empty;
+}
+
+public sealed class ChallengeResultDto
+{
+    public bool Success { get; init; }
+    public double Margin { get; init; }
     public string Error { get; init; } = string.Empty;
 }

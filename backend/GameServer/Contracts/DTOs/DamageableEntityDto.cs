@@ -27,4 +27,6 @@ public sealed class DamageableEntityDto
 
     public EntityInventoryDto Inventory { get; init; } = new();
     public List<SkillDto> Skills { get; init; } = [];
+
+    public string Error { get; init; } = string.Empty;
 }

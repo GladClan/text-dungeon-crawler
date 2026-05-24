@@ -344,6 +344,45 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
         TryGetEntity(id, out var target);
         return target;
     }
+
+    public List<DamageableEntityDto> RemoveEntitiesNotAliveInParty(string partyId)
+    {
+        List<DamageableEntityDto> result = [];
+        if (partyId.Length > 0)
+        {
+            var targets = _entities.GetParty(partyId);
+            foreach (var e in targets)
+            {
+                if (!e.IsEntityAlive)
+                {
+                    result.Add(e.ToDto());
+                    _entities.Remove(e);
+                }
+            }
+        }
+        return result;
+    }
+
+    public DamageableEntityDto? RemoveEntityNotAlive(string id)
+    {
+        if (TryGetEntity(id, out var target) && !target.IsEntityAlive)
+        {
+            if (!target.IsEntityAlive)
+            {
+                DamageableEntityDto result = target.ToDto();
+                _entities.Remove(target);
+                return result;
+            }
+            else
+            {
+                return new DamageableEntityDto
+                {
+                    Error = $"{target.Name} is still alive! Don't throw them away just like that!"
+                };
+            }
+        }
+        return null;
+    }
 }
 
 // hasAI

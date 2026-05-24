@@ -21,8 +21,8 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
     public readonly BattleLog Log = new();
     private readonly List<IBattleEffect> _battleEffects = [];
     public List<InitiativeDto> InitiativeOrder = [];
-    private int _turns = 0;
-    private int _rounds = 0;
+    private int _turn = 0;
+    private int _round = 0;
     
     public bool AddLogEntry(EffectDto request)
     {
@@ -84,11 +84,11 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
                 error += $"Could not find entity id: {g.Key}\n";
             }
         }
-        _turns++;
-        if (_turns > InitiativeOrder.Count)
+        _turn++;
+        if (_turn > InitiativeOrder.Count)
         {
-            _turns = 0;
-            _rounds++;
+            _turn = 0;
+            _round++;
             InitiativeOrder = GetInitiativeOrder();
         }
         if (!_service.GetParty(PartyId).Any(e => e.IsEntityAlive) || !_service.GetParty(OpponentPartyId).Any(e => e.IsEntityAlive))
@@ -97,6 +97,7 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
         }
         return new TurnoverDto
         {
+            CurrentTurn = _turn,
             Messages = results,
             InitiativeOrder = InitiativeOrder,
             Error = error
@@ -133,8 +134,18 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
 
     public bool AddContinuousEffect(IBattleEffect battleEffect)
     {
-        _battleEffects.Add(battleEffect);
-        return true;
+        if (_battleEffects.Any(
+                e => e.Tag.Equals(battleEffect.Tag, StringComparison.InvariantCultureIgnoreCase) &&
+                e.EntityId.Equals(battleEffect.EntityId, StringComparison.InvariantCultureIgnoreCase)
+            ))
+        {
+            return false;
+        }
+        else
+        {
+            _battleEffects.Add(battleEffect);
+            return true;
+        }
     }
 
     public DamageableEntity? GetEntity(string id)
@@ -153,5 +164,43 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
         var party = _service.GetParty(partyId);
         var result = party.FirstOrDefault(m => (m.CurrentHealth / m.MaxHealth * 100) <= criticalPercentage);
         return result?.Id;
+    }
+
+    public bool RemoveAllContinuousEffects(string targetId)
+    {
+        bool result = false;
+        var target = GetEntity(targetId);
+        if (target is not null)
+        {
+            foreach (var effect in _battleEffects)
+            {
+                if (effect.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    effect.Revert(target);
+                    _battleEffects.Remove(effect);
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    public bool RemoveContinuousEffect(string targetId, string effectTag)
+    {
+        var targetEffect = _battleEffects.FirstOrDefault(e =>
+            e.Tag.Equals(effectTag, StringComparison.InvariantCultureIgnoreCase) &&
+            e.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase));
+        if (targetEffect is null)
+        {
+            return false;
+        }
+        var targetEntity = GetEntity(targetId);
+        if (targetEntity is null)
+        {
+            return false;
+        }
+        targetEffect.Revert(targetEntity);
+        _battleEffects.Remove(targetEffect);
+        return true;
     }
 }

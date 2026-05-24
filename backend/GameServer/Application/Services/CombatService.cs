@@ -14,7 +14,6 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
 {
         private readonly EntityStore _entities = entityStore;
         private readonly BattleTracker _battle = battleTracker;
-        private readonly double _levelStackMultiplier = 1.2;
         private readonly int _proficiencyEntryAddition = 1;
         
         private static int GetExperienceForNextLevel(int level)
@@ -104,59 +103,7 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
                 {
                         return null;
                 }
-                target.Experience += request.Amount;
-                if (target.Experience >= GetExperienceForNextLevel(target.Level))
-                {
-                        return LevelUp(target);
-                }
-                return new();
-        }
-
-        private LevelUpDto LevelUp(DamageableEntity target)
-        {
-                LevelUpDto result = new(target.Level);
-                target.Experience -= GetExperienceForNextLevel(target.Level);
-                target.Level++;
-                int stackValue = 0;
-
-                if (target.Experience > GetExperienceForNextLevel(target.Level))
-                {
-                        stackValue += LevelUpStack(0, target);
-                }
-
-                result.LevelAfter = target.Level;
-                result.ProficienciesAtStart = target.Proficiencies.ToStringKeyDictionary();
-
-                foreach (var entry in target.ProficiencyEntries)
-                {
-                        double increase = stackValue * _levelStackMultiplier * entry.Value / GetExperienceForNextLevel(target.Level - 1);
-                        if (target.Proficiencies.TryGetValue(entry.Key, out _))
-                        {
-                                target.Proficiencies[entry.Key] += increase;
-                        }
-                        else
-                        {
-                                target.Proficiencies[entry.Key] = 0.5 + increase;
-                        }
-                }
-
-                result.ProficienciesAfter = target.Proficiencies.ToStringKeyDictionary();
-                target.ProficiencyEntries = [];
-                target.CurrentHealth = target.MaxHealth;
-                target.CurrentMana = target.MaxMana;
-                
-                return result;
-        }
-
-        private static int LevelUpStack(int stack, DamageableEntity target)
-        {
-                if (target.Experience < GetExperienceForNextLevel(target.Level))
-                {
-                        return stack;
-                }
-                target.Experience -= GetExperienceForNextLevel(target.Level);
-                target.Level++;
-                return LevelUpStack(stack + 1, target);
+                return target.AddExperience(request.Amount);
         }
 
         public int? GetExperienceForNextLevel(string id)

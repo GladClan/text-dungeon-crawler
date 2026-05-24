@@ -57,21 +57,6 @@ public sealed class SkillController(SkillService skillService) : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("add-skill-id/{skilId}")]
-    public ActionResult<SkillDto> AddSkillById(string id, string skilId)
-    {
-        var result = _service.AddSkillById(id, skilId);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        if (result.Error.Length > 0)
-        {
-            return ValidationProblem(result.Error);
-        }
-        return Ok(result);
-    }
-
     [HttpPost("add-skill-tag/{skillTag}")]
     public ActionResult<SkillDto> AddSkillByTag(string id, string skillTag)
     {

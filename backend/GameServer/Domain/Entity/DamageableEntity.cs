@@ -1,5 +1,6 @@
 using GameServer.Application.Common;
 using GameServer.Contracts.DTOs;
+using GameServer.Contracts.Mappers;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
 
@@ -7,6 +8,7 @@ namespace GameServer.Domain.Entities;
 
 public class DamageableEntity
 {
+    private readonly double _levelStackMultiplier = 1.2;
     private readonly int _defenseConstant = 40;
     private static int _entityCounter = 0;
     public string ID { get; } = string.Empty;
@@ -22,6 +24,8 @@ public class DamageableEntity
     public double CurrentMana { get; set; }
     public double Strength { get; set; }
     public double Defense { get; set; }
+    public List<DamageType> AttackDamageTypes { get; set; } = [DamageType.damage];
+    public bool DealsMagicDamage { get; set; }
     public int Level { get; set; }
     public int Experience { get; set; }
     public bool IsEntityAlive { get; set; }
@@ -46,6 +50,8 @@ public class DamageableEntity
         int magic,
         int strength,
         int defense,
+        List<DamageType> attackTypes,
+        bool dealsMagicDamage = false,
         int speed = 12,
         int level = 0,
         int experience = 0,
@@ -65,6 +71,8 @@ public class DamageableEntity
         CurrentMana = mana;
         Strength = strength;
         Defense = defense;
+        AttackDamageTypes = attackTypes;
+        DealsMagicDamage = dealsMagicDamage;
         Speed = speed;
         Level = level;
         Experience = experience;
@@ -177,6 +185,41 @@ public class DamageableEntity
             actual: actual,
             result: CurrentHealth,
             fatal: wasFatal
+        );
+    }
+
+    public EffectDto DefaultAttack(DamageableEntity target)
+    {
+        if (!IsEntityAlive)
+        {
+            return new EffectDto
+            {
+                Error = $"{Name} is not alive and cannot take damage."
+            };
+        }
+        if (!target.IsEntityAlive)
+        {
+            return new EffectDto
+            {
+                Error = $"{Name} is not alive and cannot deal damage."
+            };
+        }
+        List<DamageResultDto> effects = [];
+        List<string> elementStrings = [];
+        int divisor = 1;
+        foreach (DamageType dt in AttackDamageTypes)
+        {
+            double damage = DealsMagicDamage ? Magic / divisor : Strength / divisor;
+            var result = target.TakeDamage(this, damage, dt);
+            elementStrings.Add($"{result.AmountActual} {dt} damage");
+            divisor *= 2;
+        }
+        double totalDamage = effects.Sum(e => e.AmountActual);
+        string append = elementStrings.Count > 1 ? string.Join("\n", ["", ..elementStrings]) : "";
+        return new(
+            message: $"{Name} dealt {totalDamage} to {target.Name}" + append,
+            results: effects,
+            wasMagic: DealsMagicDamage
         );
     }
 
@@ -297,6 +340,76 @@ public class DamageableEntity
             ProficiencyEntries[proficiency] = amount;
         }
         return new(proficiency.ToString(), ProficiencyEntries[proficiency]);
+    }
+
+    public int GetExperienceForNextLevel(int? level = null)
+    {
+        return (int)Math.Floor(100 * Math.Pow(1.2, level ?? Level));
+    }
+
+    public LevelUpDto AddExperience(int experience)
+    {
+        int expAtStart = Experience;
+        int levelAtStart = Level;
+        var proficienciesAtStart = Proficiencies.ToStringKeyDictionary();
+        Experience += experience;
+        if (Experience >= GetExperienceForNextLevel())
+        {
+            Experience -= GetExperienceForNextLevel();
+            Level++;
+            int stackValue = 0;
+
+            if (Experience > GetExperienceForNextLevel())
+            {
+                stackValue += LevelUpStack(0);
+            }
+
+            foreach (var entry in ProficiencyEntries)
+            {
+                double increase = stackValue * _levelStackMultiplier * entry.Value / GetExperienceForNextLevel(Level - 1);
+                if (Proficiencies.TryGetValue(entry.Key, out _))
+                {
+                    Proficiencies[entry.Key] += increase;
+                }
+                else
+                {
+                    Proficiencies[entry.Key] = 0.5 + increase;
+                }
+            }
+            ProficiencyEntries = [];
+            CurrentHealth = MaxHealth;
+            CurrentMana = MaxMana;
+
+            return new LevelUpDto
+            {
+                ExpAtStart = expAtStart,
+                ExpAfter = Experience,
+                LevelAtStart = levelAtStart,
+                LevelAfter = Level,
+                ProficienciesAtStart = proficienciesAtStart,
+                ProficienciesAfter = Proficiencies.ToStringKeyDictionary()
+            };
+        }
+        else return new LevelUpDto
+        {
+            ExpAtStart = expAtStart,
+            ExpAfter = Experience,
+            LevelAtStart = Level,
+            LevelAfter = Level,
+            ProficienciesAtStart = proficienciesAtStart,
+            ProficienciesAfter = proficienciesAtStart
+        };
+    }
+
+    private int LevelUpStack(int stack)
+    {
+        if (Experience < GetExperienceForNextLevel(Level))
+        {
+                return stack;
+        }
+        Experience -= GetExperienceForNextLevel(Level);
+        Level++;
+        return LevelUpStack(stack + 1);
     }
 
     private string GenerateEntityId()

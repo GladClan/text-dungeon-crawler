@@ -104,21 +104,6 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         return Ok(count);
     }
 
-    [HttpPost("add-item-by-id/{itemId}")]
-    public ActionResult<ItemDto> AddItemById(string id, string itemId)
-    {
-        var item = _service.AddItemById(id, itemId);
-        if (item is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        if (item.Error.Length > 0)
-        {
-            return NotFound(item.Error);
-        }
-        return CreatedAtAction(nameof(_service.GetItemById), new { id = item.Id }, item);
-    }
-
     [HttpPost("add-item-by-tag/{tag}")]
     public ActionResult<ItemDto> AddItemByTag(string id, string tag)
     {

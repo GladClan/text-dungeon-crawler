@@ -5,6 +5,7 @@ namespace GameServer.Domain.Battle;
 
 
 public sealed class StatusEffect(
+    string tag,
     string targetId,
     string message,
     StatType stat,
@@ -15,6 +16,7 @@ public sealed class StatusEffect(
     double deltaChange = 0
 ) : IBattleEffect
 {
+    public string Tag { get; init; } = tag;
     public string EntityId { get; init; } = targetId;
     public string Message { get; set; } = message;
     public int RemainingTurns { get; set; } = duration;
