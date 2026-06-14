@@ -9,7 +9,7 @@ using GameServer.Domain.Enums;
 using GameServer.Domain.Statistics;
 using GameServer.Infrastructure;
 
-namespace Gameserver.Application.Services;
+namespace GameServer.Application.Services;
 
 public sealed class EventServices(StatisticsTracker statisticsTracker, EntityService entityService, EntityStore entityStore)
 {

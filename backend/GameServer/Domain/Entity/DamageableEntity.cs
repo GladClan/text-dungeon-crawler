@@ -1,6 +1,7 @@
 using GameServer.Application.Common;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
+using GameServer.Domain.Entities.EntityAI;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
 
@@ -24,8 +25,8 @@ public class DamageableEntity
     public double CurrentMana { get; set; }
     public double Strength { get; set; }
     public double Defense { get; set; }
-    public List<DamageType> AttackDamageTypes { get; set; } = [DamageType.damage];
-    public bool DealsMagicDamage { get; set; }
+    public DamageType AttackDamageType { get; set; } = DamageType.damage; //The the different damage types that the entity can deal in their default attack.
+    public bool DealsMagicDamage { get; set; } // Whether the entity's default attack deals magic damae or non-magic damage
     public int Level { get; set; }
     public int Experience { get; set; }
     public bool IsEntityAlive { get; set; }
@@ -37,8 +38,10 @@ public class DamageableEntity
     public Dictionary<Proficiency, double> ProficiencyEntries { get; set; } = [];
     public EntityInventory Inventory { get; set; } = new();
     public List<Skill> Skills { get; set; } = [];
-    // public EntityAI AI { get; set; }
+    public IEntityAI? AI { get; set; }
     public string DeathMessage { get; set; } = string.Empty;
+    public bool DoNotDeleteOnDeath { get; set; }
+    public bool PlayerControlled { get; set; }
 
     public DamageableEntity() {}
     public DamageableEntity(
@@ -50,7 +53,7 @@ public class DamageableEntity
         int magic,
         int strength,
         int defense,
-        List<DamageType> attackTypes,
+        DamageType attackType,
         bool dealsMagicDamage = false,
         int speed = 12,
         int level = 0,
@@ -71,7 +74,7 @@ public class DamageableEntity
         CurrentMana = mana;
         Strength = strength;
         Defense = defense;
-        AttackDamageTypes = attackTypes;
+        AttackDamageType = attackType;
         DealsMagicDamage = dealsMagicDamage;
         Speed = speed;
         Level = level;
@@ -204,21 +207,16 @@ public class DamageableEntity
                 Error = $"{Name} is not alive and cannot deal damage."
             };
         }
-        List<DamageResultDto> effects = [];
-        List<string> elementStrings = [];
-        int divisor = 1;
-        foreach (DamageType dt in AttackDamageTypes)
-        {
-            double damage = DealsMagicDamage ? Magic / divisor : Strength / divisor;
-            var result = target.TakeDamage(this, damage, dt);
-            elementStrings.Add($"{result.AmountActual} {dt} damage");
-            divisor *= 2;
-        }
-        double totalDamage = effects.Sum(e => e.AmountActual);
-        string append = elementStrings.Count > 1 ? string.Join("\n", ["", ..elementStrings]) : "";
+
+        var result = target.TakeDamage(
+            this,
+            DealsMagicDamage ? Magic : Strength,
+            AttackDamageType
+        );
+        
         return new(
-            message: $"{Name} dealt {totalDamage} to {target.Name}" + append,
-            results: effects,
+            message: $"{Name} dealt {result.AmountActual} {AttackDamageType} damage to {target.Name}",
+            results: [result],
             wasMagic: DealsMagicDamage
         );
     }

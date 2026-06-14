@@ -15,6 +15,8 @@ public sealed class DamageableEntityDto
     public double CurrentMana { get; init; }
     public double Strength { get; init; }
     public double Defense { get; init; }
+    public string AttackDamageType { get; init; } = string.Empty;
+    public bool DealsMagicDamage { get; init; }
     public int Level { get; init; }
     public int Experience { get; init; }
     public bool IsEntityAlive { get; init; }
@@ -27,6 +29,10 @@ public sealed class DamageableEntityDto
 
     public EntityInventoryDto Inventory { get; init; } = new();
     public List<SkillDto> Skills { get; init; } = [];
+
+    public string AI { get; init; } = string.Empty;
+    public string DeathMessage { get; init; } = string.Empty;
+    public bool PlayerControlled { get; init; }
 
     public string Error { get; init; } = string.Empty;
 }

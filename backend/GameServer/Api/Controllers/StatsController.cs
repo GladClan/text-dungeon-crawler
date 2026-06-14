@@ -1,4 +1,4 @@
-using Gameserver.Contracts.DTOs;
+using GameServer.Contracts.DTOs;
 using GameServer.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 

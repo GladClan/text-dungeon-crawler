@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Gameserver.DataAnnotations;
+using GameServer.DataAnnotations;
 using GameServer.Domain.Enums;
 
-namespace Gameserver.Contracts.Requests;
+namespace GameServer.Contracts.Requests;
 
 public sealed class DamageRequest
 {

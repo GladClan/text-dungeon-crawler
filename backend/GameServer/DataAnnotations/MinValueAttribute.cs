@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
-namespace Gameserver.DataAnnotations;
+namespace GameServer.DataAnnotations;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 public class MinimumValueAttribute : ValidationAttribute

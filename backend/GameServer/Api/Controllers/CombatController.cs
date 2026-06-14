@@ -1,5 +1,5 @@
-using Gameserver.Application.Services;
-using Gameserver.Contracts.Requests;
+using GameServer.Application.Services;
+using GameServer.Contracts.Requests;
 using GameServer.Contracts.DTOs;
 using Microsoft.AspNetCore.Mvc;
 

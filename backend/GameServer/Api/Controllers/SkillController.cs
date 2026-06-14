@@ -1,6 +1,5 @@
-using Gameserver.Contracts.DTOs;
-using GameServer.Application.Services;
 using GameServer.Contracts.DTOs;
+using GameServer.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameServer.Api.Controllers;

@@ -1,6 +1,6 @@
 namespace GameServer.Application.Common;
 
-public class OrdinalDateString()
+public static class OrdinalDateString
 {
     public static string GetOrdinalDate(int? precision, bool includeDashes = false)
     {

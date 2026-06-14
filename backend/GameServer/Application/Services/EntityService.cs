@@ -74,6 +74,14 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
                 }
             : proficiencyResult.Parsed;
         
+        if (!Enum.TryParse<DamageType>(request.AttackType, out var dtAttackType))
+        {
+            result.Errors.Add(new ParseIssue(
+                $"{request.AttackType}",
+                $"{request.AttackType} is not a valid damage type."
+            ));
+        }
+        
         if (result.IsValid())
         {
             DamageableEntity entity = new(
@@ -85,6 +93,8 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
                 request.Magic,
                 request.Strength,
                 request.Defense,
+                dtAttackType,
+                request.DealsMagicDamage,
                 request.Speed,
                 request.Level,
                 request.Experience,
@@ -151,6 +161,14 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
             proficiencies[entityProficiency] = proficiency.Value;
         }
 
+        if (!Enum.TryParse(dto.AttackDamageType, out DamageType dtAttackType))
+        {
+            result.Errors.Add(new ParseIssue(
+                $"{dto.AttackDamageType}",
+                $"{dto.AttackDamageType} is not a valid damage type."
+            ));
+        }
+
         if (errors.Count == 0)
         {
             DamageableEntity entity = new(
@@ -162,6 +180,8 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
                 (int)dto.Magic,
                 (int)dto.Strength,
                 (int)dto.Defense,
+                dtAttackType,
+                dto.DealsMagicDamage,
                 (int)dto.Speed,
                 dto.Level,
                 dto.Experience,
@@ -353,8 +373,13 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
             var targets = _entities.GetParty(partyId);
             foreach (var e in targets)
             {
-                if (!e.IsEntityAlive)
+                if (!e.IsEntityAlive && !e.DoNotDeleteOnDeath)
                 {
+                    if (e.DoNotDeleteOnDeath)
+                    {
+                        e.PartyId = $"map-{OrdinalDateString.GetOrdinalDate(3)}";
+                        result.Add(e.ToDto());
+                    }
                     result.Add(e.ToDto());
                     _entities.Remove(e);
                 }
@@ -367,18 +392,23 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
     {
         if (TryGetEntity(id, out var target) && !target.IsEntityAlive)
         {
-            if (!target.IsEntityAlive)
-            {
-                DamageableEntityDto result = target.ToDto();
-                _entities.Remove(target);
-                return result;
-            }
-            else
+            if (target.IsEntityAlive)
             {
                 return new DamageableEntityDto
                 {
                     Error = $"{target.Name} is still alive! Don't throw them away just like that!"
                 };
+            }
+            if (target.DoNotDeleteOnDeath)
+            {
+                target.PartyId = $"map-{OrdinalDateString.GetOrdinalDate(3)}";
+                return target.ToDto();
+            }
+            else
+            {
+                DamageableEntityDto result = target.ToDto();
+                _entities.Remove(target);
+                return result;
             }
         }
         return null;

@@ -7,3 +7,10 @@ public sealed class EnumDictionaryParseResult<TEnum>
 
     public IReadOnlyList<ParseIssue> Errors { get; init; } = [];
 }
+
+public sealed class EnumListParseResult<TEnum>
+    where TEnum : struct, Enum
+{
+    public List<TEnum>? Parsed { get; init; }
+    public IReadOnlyList<ParseIssue> Errors { get; init; } = [];
+}

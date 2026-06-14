@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Gameserver.Contracts.Requests;
+using GameServer.Contracts.Requests;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Domain.Battle;
@@ -8,7 +8,7 @@ using GameServer.Domain.Enums;
 using GameServer.Domain.Items;
 using GameServer.Infrastructure;
 
-namespace Gameserver.Application.Services;
+namespace GameServer.Application.Services;
 
 public sealed class CombatService(EntityStore entityStore, BattleTracker battleTracker)
 {

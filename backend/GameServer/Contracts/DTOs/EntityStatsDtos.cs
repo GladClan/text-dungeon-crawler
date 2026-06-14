@@ -1,4 +1,4 @@
-namespace Gameserver.Contracts.DTOs;
+namespace GameServer.Contracts.DTOs;
 
 public sealed class EntityStatsDto(
 )

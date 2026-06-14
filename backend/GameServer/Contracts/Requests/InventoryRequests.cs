@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Gameserver.DataAnnotations;
+using GameServer.DataAnnotations;
 
 namespace GameServer.Contracts.Requests;
 

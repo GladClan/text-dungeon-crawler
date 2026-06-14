@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Gameserver.Contracts.DTOs;
+using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Domain.Entities;
 using GameServer.Infrastructure;

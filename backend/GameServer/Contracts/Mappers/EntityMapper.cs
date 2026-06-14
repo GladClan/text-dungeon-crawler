@@ -2,7 +2,6 @@ using GameServer.Contracts.DTOs;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
-using Gameserver.Contracts.DTOs;
 
 namespace GameServer.Contracts.Mappers;
 
@@ -18,6 +17,7 @@ public static class EntityMapper
     /// </summary>
     public static DamageableEntityDto ToDto(this DamageableEntity entity)
     {
+        string ai = entity.AI is null ? "" : entity.AI.Tag;
         return new DamageableEntityDto
         {
             Id = entity.ID,
@@ -33,6 +33,8 @@ public static class EntityMapper
             Magic = entity.Magic,
             Strength = entity.Strength,
             Defense = entity.Defense,
+            AttackDamageType = entity.AttackDamageType.ToString(),
+            DealsMagicDamage = entity.DealsMagicDamage,
             Level = entity.Level,
             Experience = entity.Experience,
             IsEntityAlive = entity.IsEntityAlive,
@@ -42,7 +44,10 @@ public static class EntityMapper
             Resistances = entity.Resistances.ToStringKeyDictionary(),
             Proficiencies = entity.Proficiencies.ToStringKeyDictionary(),
             Inventory = entity.Inventory.ToDto(),
-            Skills = [.. entity.Skills.Select(SkillToDto)]
+            Skills = [.. entity.Skills.Select(SkillToDto)],
+            AI = ai,
+            DeathMessage = entity.DeathMessage,
+            PlayerControlled = entity.PlayerControlled
         };
     }
 

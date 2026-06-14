@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Gameserver.DataAnnotations;
+using GameServer.DataAnnotations;
 using GameServer.Domain.Enums;
 
 namespace GameServer.Contracts.Requests;
@@ -65,6 +65,11 @@ public sealed class DamageableEntityRequest
     [Required]
     [Range(typeof(int), "0", "999", ConvertValueInInvariantCulture = true)]
     public int Defense { get; init; }
+
+    [EnumDataType(typeof(DamageType))]
+    public string AttackType { get; init; } = string.Empty;
+
+    public bool DealsMagicDamage = false;
 
     [MinimumValue(0)]
     public int Speed { get; init; }
