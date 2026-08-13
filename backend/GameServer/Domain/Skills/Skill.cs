@@ -14,7 +14,7 @@ public abstract class Skill
     public string Description { get; set; } = string.Empty;
     public int Cost { get; set; }
     public DamageType Element { get; set; }
-    public Proficiency Prof { get; set; }
+    public Proficiency SkillProficiency { get; set; }
     public bool MultiTarget { get; set; }
     public int TargetsLimit { get; set; }
     public ActionType SkillType { get; init; }
@@ -39,12 +39,14 @@ public abstract class Skill
         Description = description;
         Cost = cost;
         Element = element;
-        Prof = proficiency;
+        SkillProficiency = proficiency;
         MultiTarget = multiTarget;
         TargetsLimit = targetsLimit;
         SkillType = skillType;
         Level = level;
     }
+
+    public abstract Skill Clone();
 
     private string NewId()
     {

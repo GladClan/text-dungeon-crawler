@@ -80,6 +80,9 @@ public sealed class DamageableEntityRequest
     [MinimumValue(0)]
     public int Experience { get; init; }
 
+    public string DefaultAttackMessageString { get; init; } = string.Empty;
+    public string DeathMessage { get; init; } = string.Empty;
+
     public List<ResistanceRequest>? Resistances { get; init; }
     public List<ProficiencyRequest>? Proficiencies { get; init; }
     public List<string> ItemTags { get; init; } = [];

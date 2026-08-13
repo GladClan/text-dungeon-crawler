@@ -364,7 +364,7 @@ public class DefaultAI: IEntityAI
         // alternates between using items and skills, makes sure there are skills or items to use
         if ((!_item_or_skill || skills.Count == 0) && items.Count > 0)
         {
-            // choose what attack to use based on how many istems and skills have been used
+            // choose what attack to use based on how many items and skills have been used
             var attackChoice = items[_optionCount % items.Count];
             List<DamageableEntity> subTargets = [];
             if (attackChoice.MultiTarget)

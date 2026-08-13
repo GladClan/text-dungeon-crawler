@@ -23,6 +23,11 @@ public sealed class ErrorSkill : Skill
         level: 1
     ) { }
 
+    public override Skill Clone()
+    {
+        return new ErrorSkill();
+    }
+
     public override void LevelUpSkill()
     {
         Level++;
@@ -32,7 +37,7 @@ public sealed class ErrorSkill : Skill
 
     public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
     {
-        source.AddProficiencyEntry(Prof);
+        source.AddProficiencyEntry(SkillProficiency);
         _useage++;
         List<DamageResultDto> results = [];
         DoEffect(results, mainTarget, source);
@@ -63,7 +68,6 @@ public sealed class ErrorSkill : Skill
             Message = message,
             Results = [.. results]
         };
-        battle.AddLogEntry(effect);
         return effect;
     }
 
@@ -89,10 +93,11 @@ public sealed class PoisonBite : Skill
     private double _damage = 5;
     private int _duration = 5;
     private double _bitingProficiency = 0.5;
+    private double _potionsProficiency = 0.5;
     public PoisonBite(): base(
         name: "Poison Bite",
         tag: "poison-bite",
-        description: "Charge target and attack with a vicious bite, potentially poisoning enemy.",
+        description: "Charge target and attack with a vicious bite, dealing 5 piercing damage, potentially poisoning enemy.",
         cost: 0,
         element: DamageType.poisoning,
         proficiency: Proficiency.piercing,
@@ -101,6 +106,11 @@ public sealed class PoisonBite : Skill
         skillType: ActionType.Attack,
         level: 1
     ) { }
+
+    public override Skill Clone()
+    {
+        return new PoisonBite();
+    }
 
     public override void LevelUpSkill()
     {
@@ -112,10 +122,28 @@ public sealed class PoisonBite : Skill
         _damage += _bitingProficiency;
     }
 
+    public void FixName()
+    {
+        double poisonChance = _potionsProficiency < 0 ?
+            1 :
+            (_potionsProficiency >= 0 && _potionsProficiency <= 2) ?
+            1 - (_potionsProficiency / 2) :
+            0;
+
+        Description = $"Charge target and attack with a vicious bite, dealing {_damage} piercing damage, potentially poisoning enemy ({poisonChance:P1}% chance).";
+    }
+
     public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
     {
-        source.AddProficiencyEntry(Prof);
-        _bitingProficiency = source.GetProficiencyMultiplier(Prof).Value;
+        source.AddProficiencyEntry(SkillProficiency);
+
+        _bitingProficiency = source.GetProficiencyMultiplier(SkillProficiency).Value;
+        if (source.GetProficiencyMultiplier(Proficiency.potions).Value != _potionsProficiency)
+        {
+            _potionsProficiency = source.GetProficiencyMultiplier(Proficiency.potions).Value;
+            FixName();
+        }
+
         double damage = _damage * _bitingProficiency * source.Strength / 2;
         List<DamageResultDto> results = [];
         results.Add(mainTarget.TakeDamage(source, damage, Element));
@@ -170,6 +198,11 @@ public sealed class SummonSpiders : Skill
         level: 1
     ) { }
 
+    public override Skill Clone()
+    {
+        return new SummonSpiders();
+    }
+
     public override void LevelUpSkill()
     {
         Level++;
@@ -202,7 +235,7 @@ public sealed class SummonSpiders : Skill
 
     public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
     {
-        source.AddProficiencyEntry(Prof);
+        source.AddProficiencyEntry(SkillProficiency);
         List<ProficiencyRequest> summonProficiencies = [
             new ProficiencyRequest
             {
@@ -229,7 +262,7 @@ public sealed class SummonSpiders : Skill
             Speed = 21,
             Level = Level,
             Proficiencies = summonProficiencies,
-            SkilTags = ["poison-bite", "poison"]
+            SkilTags = ["poison-bite"]
         };
         for (int i = 0; i < _spiderCount; i++)
         {
@@ -259,6 +292,73 @@ public sealed class SummonSpiders : Skill
             message: $"{source.Name} summoned {_spiderCount} spiders to attack with {mainTarget.Name}. The spiders ready themselves to attack.",
             results: [],
             wasMagic: true
+        );
+    }
+}
+
+public sealed class SpellShield: Skill
+{
+    private int _useage = 0;
+    private double _block = 12;
+    public SpellShield(): base(
+        name: "Spellshield",
+        tag: "spell-shield",
+        description: "Creates a shield of magic that blocks 12 damage before shattering.",
+        cost: 9,
+        element: DamageType.enchanting,
+        proficiency: Proficiency.spellcasting,
+        multiTarget: false,
+        targetsLimit: 1,
+        skillType: ActionType.Defense,
+        level: 1
+    ) { }
+
+    public override Skill Clone()
+    {
+        return new SpellShield();
+    }
+
+    public override void LevelUpSkill()
+    {
+        Level++;
+        _block += Math.Sqrt(_useage);
+        Description = $"Creates a shield of magic that blocks {_block} damage before shattering";
+    }
+
+    public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
+    {
+        source.AddProficiencyEntry(SkillProficiency);
+        _useage++;
+
+        double buffed = _block * source.GetProficiencyMultiplier(SkillProficiency).Value;
+        var result = Cast(mainTarget, source, buffed);
+
+        if (result.AmountSent > buffed && _useage > Level * 9 / source.GetProficiencyMultiplier(Proficiency.spellcasting).Value)
+        {
+            LevelUpSkill();
+        }
+
+        return new EffectDto
+        {
+            Message = $"{source.Name} casts Spellshield on {mainTarget.Name}.",
+            Results = [result],
+            WasMagic = true
+        };
+    }
+
+    private DamageResultDto Cast(DamageableEntity target, DamageableEntity source, double amount)
+    {
+        double result = amount / target.GetResistanceMultiplier(Element).Value;
+        target.AddHealthBuffer(source, amount);
+
+        return new(
+            sourceId: source.ID,
+            targetId: target.ID,
+            damage_healing_mana: (int)Damage_Healing_Mana.Other,
+            sent: amount,
+            actual: result,
+            result: target.HealthBuffer,
+            fatal: false
         );
     }
 }

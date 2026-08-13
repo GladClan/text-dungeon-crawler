@@ -7,88 +7,45 @@ public class StatisticsTracker
 {
     public int BattlesWon { get; set; }
     public int RoomsOpened { get; set; }
-    public List<DamageableEntityStatistics> PartyStats { get; set; } = [];
-
-    public bool AddEntriesToStats(List<BattleLogEntry> entries)
-    {
-        var bySource = entries.GroupBy(e => e.SourceId);
-        var byTarget = entries.GroupBy(e => e.TargetId);
-        
-        foreach (var g in bySource)
-        {
-            string id = g.Key;
-            var stats = PartyStats.FirstOrDefault(s => s.EntityId.Equals(id, StringComparison.InvariantCultureIgnoreCase));
-            if (stats == null)
-            {
-                stats = new DamageableEntityStatistics { EntityId = id };
-                PartyStats.Add(stats);
-            }
-
-            var damageEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Damage).ToList();
-            var healEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Healing).ToList();
-
-            double damageSum = damageEntries.Sum(e => e.AmountActual);
-            double healSum = healEntries.Sum(e => e.AmountActual);
-
-            stats.DamageSent += damageEntries.Sum(e => e.AmountSent);
-            stats.AverageDamageSent = damageEntries.Count != 0 ? damageEntries.Average(e => e.AmountSent) : stats.AverageDamageSent;
-
-            stats.DamageDealt += damageSum;
-            stats.AverageDamage = damageEntries.Count != 0 ? damageEntries.Average(e => e.AmountActual) : stats.AverageDamage;
-
-            stats.TimesHealed += healEntries.Count;
-            stats.AverageHealing = healEntries.Count != 0 ? healEntries.Average(e => e.AmountActual) : stats.AverageHealing;
-            
-            stats.TimesHealed += healEntries.Count;
-            stats.AverageHealing = healEntries.Count != 0 ? healEntries.Average(e => e.AmountActual) : stats.AverageHealing;
-
-            stats.TimesUsedMagic += g.Count(e => e.WasMagic);
-            stats.TimesDealtFatalDamage += g.Count(e => e.Fatal && e.Damage_Healing_Mana == Damage_Healing_Mana.Damage);
-
-            stats.EntitiesDefeated += g.Where(e => e.Fatal).Select(e => e.TargetId).Distinct().Count();
-        }
-
-        foreach (var g in byTarget)
-        {
-            var id = g.Key;
-            var stats = PartyStats.FirstOrDefault(s => s.EntityId.Equals(id, StringComparison.InvariantCultureIgnoreCase));
-            if (stats == null)
-            {
-                stats = new DamageableEntityStatistics { EntityId = id };
-                PartyStats.Add(stats);
-            }
-
-            var damageEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Damage).ToList();
-            var healEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Healing).ToList();
-
-            var damageSum = damageEntries.Sum(e => e.AmountActual);
-            var healSum = healEntries.Sum(e => e.AmountActual);
-
-            stats.DamageRecieved += damageSum;
-            stats.AverageDamageReceived = damageEntries.Count != 0 ? damageEntries.Average(e => e.AmountActual) : stats.AverageDamageReceived;
-
-            stats.HealingReceived += healSum;
-            stats.AverageHealingReceived = healEntries.Count != 0 ? healEntries.Average(e => e.AmountActual) : stats.AverageHealingReceived;
-
-            stats.TimesDied = g.Count(e => e.Fatal);
-        }
-
-        return true;
-    }
+    public int OpponentsConverted { get; set; }
+    public int AlliesFound { get; set; }
+    public int ItemsAcquired { get; set; }
+    public int TimesSentDamage { get; set; }
+    public double TotalDamageSent { get; set; }
+    public double TotalDamageDealt { get; set; }
+    public int TimesSentHealing { get; set; }
+    public double TotalHealingSent { get; set; }
+    public double TotalHealingDealt { get; set; }
+    public int TimesPartyMemberDied { get; set; }
+    public int TotalEnemiesDefeated { get; set; }
+    public int PartyMemebersLost { get; set; }
+    public int SuperdamageFrequency { get; set; } // the number of positive differences between damage sent and damage actual
+    public int SubdamageFrequency { get; set; } // the number of negative differences between damage sent and damage actual
+    public double PartySuperdamage { get; set; } // the positive difference between damage sent and damage actual
+    public double PartySubdamage { get; set; } // the negative difference between damage sent and damage actual
+    public double StrategyScore { get; set; } // subdamage divided by superdamage (%subdamage / %superdamage)
+    public List<DamageableEntityStatistics> PartyMemberStats { get; set; } = [];
 }
 
 public class DamageableEntityStatistics()
 {
     public string EntityId { get; init; } = string.Empty;
     public int TimesDied { get; set; }
+    public int TimesSentDamage { get; set; }
     public double DamageSent { get; set; }
     public double AverageDamageSent { get; set; }
     public double DamageDealt { get; set; }
-    public double AverageDamage { get; set; }
+    public double AverageDamageDealt { get; set; }
+    public double AverageActualDamage { get; set; }
+    public int TimesReceivedDamage { get; set; }
     public double DamageRecieved { get; set; }
     public double AverageDamageReceived { get; set; }
     public int TimesHealed { get; set; }
-    public double AverageHealing { get; set; }
+    public double HealingSent { get; set; }
+    public double AverageHealingSent { get; set; }
+    public double HealingDealt { get; set; }
+    public double AverageHealingDealt { get; set; }
+    public int TimesReceivedHealing { get; set; }
     public double HealingReceived { get; set; }
     public double AverageHealingReceived { get; set; }
     public int TimesDealtFatalDamage { get; set; }

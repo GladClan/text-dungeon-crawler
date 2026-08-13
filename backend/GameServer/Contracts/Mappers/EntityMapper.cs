@@ -1,5 +1,6 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Domain.Entities;
+using GameServer.Domain.Entities.BeastiaryEntity;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Skills;
 
@@ -18,6 +19,16 @@ public static class EntityMapper
     public static DamageableEntityDto ToDto(this DamageableEntity entity)
     {
         string ai = entity.AI is null ? "" : entity.AI.Tag;
+        string? description, bestiaryEntry, journalEntry, loreEntry1, loreEntry2;
+        description = bestiaryEntry = journalEntry = loreEntry1 = loreEntry2 = null;
+        if (entity is BeastiaryEntity b)
+        {
+            (description, bestiaryEntry, journalEntry, loreEntry1, loreEntry2) = (b.Description, b.BestiaryEntry, b.JournalEntry, b.LoreEntry1, b.LoreEntry2);
+        }
+        // BestiaryEntry
+        // JournalEntry
+        // LoreEntry1
+        // LoreEntry2
         return new DamageableEntityDto
         {
             Id = entity.ID,
@@ -47,7 +58,12 @@ public static class EntityMapper
             Skills = [.. entity.Skills.Select(SkillToDto)],
             AI = ai,
             DeathMessage = entity.DeathMessage,
-            PlayerControlled = entity.PlayerControlled
+            PlayerControlled = entity.PlayerControlled,
+            Description = description,
+            BestiaryEntry = bestiaryEntry,
+            JournalEntry = journalEntry,
+            LoreEntry1 = loreEntry1,
+            LoreEntry2 = loreEntry2
         };
     }
 
@@ -95,7 +111,7 @@ public static class EntityMapper
             Description = skill.Description,
             Cost = skill.Cost,
             Element = skill.Element.ToString(),
-            Proficiency = skill.Prof.ToString(),
+            Proficiency = skill.SkillProficiency.ToString(),
             Level = skill.Level
         };
     }

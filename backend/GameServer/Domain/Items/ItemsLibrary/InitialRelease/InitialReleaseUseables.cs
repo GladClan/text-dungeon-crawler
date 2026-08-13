@@ -14,6 +14,11 @@ public sealed class ErrorItem : Useable
         return true;
     }
 
+    public override Item Clone()
+    {
+        return new ErrorItem();
+    }
+
     public ErrorItem(): base(
         type: "error",
         name: "Mysterious Cloud",
@@ -65,7 +70,6 @@ public sealed class ErrorItem : Useable
             Results = results
         };
         OnUse(source.GetProficiencyMultiplier(Proficiency.destiny).Value);
-        battle.AddLogEntry(effect);
         return effect;
     }
 

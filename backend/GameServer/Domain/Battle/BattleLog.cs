@@ -1,15 +1,24 @@
 using GameServer.Contracts.DTOs;
 using GameServer.Domain.Enums;
-using GameServer.Domain.Statistics;
 
 namespace GameServer.Domain.Battle;
 
 public class BattleLog()
 {
-    public readonly List<BattleLogEntry> Entries = [];
+    private readonly List<BattleLogEntry> _entries = [];
     private readonly List<string> _damageableEntityIds = [];
 
-    public bool AddEntry(EffectDto request)
+    public List<BattleLogEntry> GetAllEntries()
+    {
+        return [.. _entries];
+    }
+
+    public List<BattleLogEntry> GetEntriesBySource(string id)
+    {
+        return [.. _entries.Where(e => e.SourceId.Equals(id, StringComparison.InvariantCultureIgnoreCase))];
+    }
+
+    public bool AddNewEntries(EffectDto request)
     {
         if (request.Results is null)
         {
@@ -17,7 +26,7 @@ public class BattleLog()
         }
         foreach (var result in request.Results)
         {
-            Entries.Add(new BattleLogEntry
+            _entries.Add(new BattleLogEntry
             {
                 Damage_Healing_Mana = (Damage_Healing_Mana)result.Damage_Healing_Mana,
                 AmountSent = result.AmountSent,
@@ -32,18 +41,13 @@ public class BattleLog()
         return true;
     }
 
-    public List<BattleLogEntry> GetEntriesBySource(string id)
-    {
-        return [.. Entries.Where(e => e.SourceId.Equals(id, StringComparison.InvariantCultureIgnoreCase))];
-    }
-
     public string? GetHighestSingleDamage(int nthEntry = 0)
     {
         string? result = null;
         double max = double.MinValue;
         if (nthEntry == 0)
         {
-            foreach (BattleLogEntry e in Entries)
+            foreach (BattleLogEntry e in _entries)
             {
                 if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.AmountActual > max)
                 {
@@ -55,17 +59,17 @@ public class BattleLog()
         }
         else
         {
-            var sorted = Entries.OrderByDescending(e => e.AmountActual);
+            var sorted = _entries.OrderByDescending(e => e.AmountActual);
             return nthEntry < sorted.Count() ? sorted.ElementAt(nthEntry).SourceId : null;
         }
     }
 
-    public string? GetHasAttackedSource(string id, int nthEntry = 0)
+    public string? GetHasAttackedSource(string sourceId, int nthEntry = 0)
     {
         string? result = null;
-        foreach (BattleLogEntry e in Entries)
+        foreach (BattleLogEntry e in _entries)
         {
-            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.TargetId.Equals(id, StringComparison.InvariantCultureIgnoreCase) && e.AmountActual > 0)
+            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.TargetId.Equals(sourceId, StringComparison.InvariantCultureIgnoreCase) && e.AmountActual > 0)
             {
                 if (nthEntry <= 0)
                 {
@@ -85,7 +89,7 @@ public class BattleLog()
     {
         string? result = null;
         double max = double.MinValue;
-        foreach (BattleLogEntry e in Entries)
+        foreach (BattleLogEntry e in _entries)
         {
             if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.AmountSent > max)
             {
@@ -99,7 +103,7 @@ public class BattleLog()
     public string? GetMostDamage()
     {
         Dictionary<string, double> frequencyMap = [];
-        foreach (BattleLogEntry e in Entries)
+        foreach (BattleLogEntry e in _entries)
         {
             if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage)
             {
@@ -131,7 +135,7 @@ public class BattleLog()
         Dictionary<string, int> frequencyMap = [];
         int max = int.MinValue;
         string? result = null;
-        foreach (BattleLogEntry e in Entries)
+        foreach (BattleLogEntry e in _entries)
         {
             if (e.Damage_Healing_Mana == Damage_Healing_Mana.Healing)
             {
@@ -169,13 +173,13 @@ public class BattleLog()
 
     public string? GetFirstFatalDamage()
     {
-        var result = Entries.FirstOrDefault(e => e.Fatal);
+        var result = _entries.FirstOrDefault(e => e.Fatal);
         return result?.SourceId;
     }
 
     public string? GetMagicUser()
     {
-        var result = Entries.FirstOrDefault(e => e.WasMagic);
+        var result = _entries.FirstOrDefault(e => e.WasMagic);
         return result?.SourceId;
     }
 
@@ -184,7 +188,7 @@ public class BattleLog()
         Dictionary<string, int> frequencyMap = [];
         int max = int.MinValue;
         string? result = null;
-        foreach (BattleLogEntry e in Entries)
+        foreach (BattleLogEntry e in _entries)
         {
             if (e.WasMagic)
             {

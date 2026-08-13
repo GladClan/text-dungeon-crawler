@@ -35,4 +35,9 @@ public sealed class DamageableEntityDto
     public bool PlayerControlled { get; init; }
 
     public string Error { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public string? BestiaryEntry { get; init; }
+    public string? JournalEntry { get; init; }
+    public string? LoreEntry1 { get; init; }
+    public string? LoreEntry2 { get; init; }
 }

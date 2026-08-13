@@ -12,11 +12,13 @@ public class SkillsIndex : ISkillsIndex
         var skills = new List<Skill>();
         var skillType = typeof(Skill);
         var assembly = typeof(SkillsIndex).Assembly;
+        string baseNamespace = typeof(SkillsIndex).Namespace ?? "";
 
         // Find all concrete types that inherit from Skill in the InitialRelease namespace
         var concreteSkillTypes = assembly.GetTypes()
             .Where(t =>
-                t.Namespace == "GameServer.Domain.Skills.SkillsLibrary" &&
+                t.Namespace is not null &&
+                t.Namespace.StartsWith(baseNamespace + ".") &&
                 !t.IsAbstract &&
                 skillType.IsAssignableFrom(t)
             );

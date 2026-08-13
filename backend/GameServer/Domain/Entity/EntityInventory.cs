@@ -19,4 +19,14 @@ public sealed class EntityInventory(List<Item> items, int gold)
     {
         return Items.Any(i => i.Name == itemName);
     }
+
+    public EntityInventory Clone()
+    {
+        var items = new List<Item>();
+        foreach (var item in Items)
+        {
+            items.Add(item.Clone());
+        }
+        return new EntityInventory(items, Gold);
+    }
 }

@@ -71,18 +71,18 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
         return null;
     }
 
-    public ItemDto? GetItemByTag(string id, string tag)
+    public ItemDto? GetItemByTag(string taretEntityId, string itemTag)
     {
-        if (_entities.TryGet(id, out var target) && target is not null)
+        if (_entities.TryGet(taretEntityId, out var target) && target is not null)
         {
-            var item = target.Inventory.Items.FirstOrDefault(i => i.Tag.Equals(tag, StringComparison.InvariantCultureIgnoreCase));
+            var item = target.Inventory.Items.FirstOrDefault(i => i.Tag.Equals(itemTag, StringComparison.InvariantCultureIgnoreCase));
             if (item is not null)
             {
                 return item.ToDto();
             }
             return new ItemDto
             {
-                Error = $"Item with tag {tag} could not be found"
+                Error = $"Item with tag {itemTag} could not be found"
             };
         }
         return null;

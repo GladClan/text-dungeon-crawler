@@ -7,145 +7,55 @@ using GameServer.Domain.Statistics;
 
 namespace GameServer.Domain.Battle;
 
-/*
-Add function to enable continuous effects and battle end effects (if an effect is temporary but the battle ends before it runs out)
-Add function to add the statistics for each character to the StatisticsTracker
-*/
-
-public class BattleTracker(StatisticsTracker statisticsTracker, EntityService entityService, string partyId, string opponentPartyId)
+public class BattleTracker(string partyId, string opponentPartyId, EntityService entityService)
 {
+    private readonly EntityService _service = entityService;
     public string PartyId { get; set; } = partyId;
     public string OpponentPartyId { get; set; } = opponentPartyId;
-    private readonly EntityService _service = entityService;
-    private readonly StatisticsTracker _statistics = statisticsTracker;
     public readonly BattleLog Log = new();
     private readonly List<IBattleEffect> _battleEffects = [];
     public List<InitiativeDto> InitiativeOrder = [];
-    private int _turn = 0;
-    private int _round = 0;
-    
-    public bool AddLogEntry(EffectDto request)
+    public int Turn = 0;
+    public int Round = 0;
+
+    public IEnumerable<IGrouping<string, IBattleEffect>> GetBattleEffectsGroupedById()
     {
-        return Log.AddEntry(request);
+        return _battleEffects.GroupBy(e => e.EntityId);
     }
 
-    public List<string> GetPartyIds(string partyId)
+    public bool RemoveBattleEffect(IBattleEffect b)
     {
-        return [.._service.GetParty(partyId).Select(e => e.PartyId)];
+        return _battleEffects.Remove(b);
     }
 
-    public List<InitiativeDto> GetInitiativeOrder()
+    public bool EntityHasBattleEffect(string targetId, string tag)
     {
-        List<InitiativeDto> result = [];
-        var party = _service.GetParty(PartyId);
-        var enemies = _service.GetParty(OpponentPartyId);
-        
-        List<DamageableEntityDto> members = [.. party, .. enemies];
-        members.Sort((a, b) => b.Speed.CompareTo(a.Speed));
-        
-        int turnCounts = members.Sum(m => 1 + (int)Math.Floor(m.Speed / 20));
-        for (int i = 0; i < turnCounts; i++)
-        {
-            result.Add(new InitiativeDto
-            {
-                Initiative = i,
-                EntityName = members[i % members.Count].Name,
-                EntityId = members[i].Id
-            });
-        }
-        InitiativeOrder = result;
-        return result;
+        return _battleEffects.Any(
+                e => e.Tag.Equals(tag, StringComparison.InvariantCultureIgnoreCase) &&
+                e.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase)
+        );
     }
 
-    public TurnoverDto NextTurn()
+    public IBattleEffect? GetBattleEffect(string targetId, string tag)
     {
-        List<string> results = [];
-        string error = "";
-        var groups = _battleEffects.GroupBy(e => e.EntityId);
-        foreach (var g in groups)
-        {
-            var target = _service.GetDamageableEntityObject(g.Key);
-            if (target is not null)
-            {
-                foreach(IBattleEffect b in g)
-                {
-                    if (!b.Apply(target))
-                    {
-                        _battleEffects.Remove(b);
-                    }
-                    else
-                    {
-                        results.Add(b.Message);
-                    }
-                }
-            }
-            else
-            {
-                error += $"Could not find entity id: {g.Key}\n";
-            }
-        }
-        _turn++;
-        if (_turn > InitiativeOrder.Count)
-        {
-            _turn = 0;
-            _round++;
-            InitiativeOrder = GetInitiativeOrder();
-        }
-        if (!_service.GetParty(PartyId).Any(e => e.IsEntityAlive) || !_service.GetParty(OpponentPartyId).Any(e => e.IsEntityAlive))
-        {
-            error += string.Join("\n", OnBattleEnd());
-        }
-        return new TurnoverDto
-        {
-            CurrentTurn = _turn,
-            Messages = results,
-            InitiativeOrder = InitiativeOrder,
-            Error = error
-        };
+        return _battleEffects.FirstOrDefault(e =>
+            e.Tag.Equals(tag, StringComparison.InvariantCultureIgnoreCase) &&
+            e.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public List<string> OnBattleEnd()
+    public bool AddContinuousEffect(IBattleEffect effect)
     {
-        List<string> errors = [];
-        var groups = _battleEffects.GroupBy(b => b.EntityId);
-        foreach (var g in groups)
+        if (!EntityHasBattleEffect(effect.EntityId, effect.Tag))
         {
-            var target = _service.GetDamageableEntityObject(g.Key);
-            if (target is not null)
-            {
-                foreach (IBattleEffect b in g)
-                {
-                    b.Revert(target);
-                }
-            }
-            else
-            {
-                errors.Add($"Could not find damageable entity {g.Key}");
-            }
-        }
-        _statistics.AddEntriesToStats(Log.Entries);
-        return errors;
-    }
-
-    public AddEntityResult AddEntityToBattle(DamageableEntityRequest request)
-    {
-        return _service.AddEntity(request);
-    }
-
-    public bool AddContinuousEffect(IBattleEffect battleEffect)
-    {
-        if (_battleEffects.Any(
-                e => e.Tag.Equals(battleEffect.Tag, StringComparison.InvariantCultureIgnoreCase) &&
-                e.EntityId.Equals(battleEffect.EntityId, StringComparison.InvariantCultureIgnoreCase)
-            ))
-        {
-            return false;
-        }
-        else
-        {
-            _battleEffects.Add(battleEffect);
+            _battleEffects.Add(effect);
             return true;
         }
+        return false;
+    }
+
+    public List<IBattleEffect> GetAllEfectsForTarget(string id)
+    {
+        return [.. _battleEffects.Where(e => e.EntityId.Equals(id, StringComparison.InvariantCultureIgnoreCase))];
     }
 
     public DamageableEntity? GetEntity(string id)
@@ -153,6 +63,7 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
         return _service.GetDamageableEntityObject(id);
     }
 
+    
     public bool ExistsPartyMemberAtCriticalHealth(string partyId, int criticalPercentage = 20)
     {
         var party = _service.GetParty(partyId);
@@ -166,41 +77,18 @@ public class BattleTracker(StatisticsTracker statisticsTracker, EntityService en
         return result?.Id;
     }
 
-    public bool RemoveAllContinuousEffects(string targetId)
+    public List<string> GetPartyIds(string partyId)
     {
-        bool result = false;
-        var target = GetEntity(targetId);
-        if (target is not null)
-        {
-            foreach (var effect in _battleEffects)
-            {
-                if (effect.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    effect.Revert(target);
-                    _battleEffects.Remove(effect);
-                    result = true;
-                }
-            }
-        }
-        return result;
+        return [.._service.GetParty(partyId).Select(e => e.PartyId)];
     }
 
-    public bool RemoveContinuousEffect(string targetId, string effectTag)
+    public AddEntityResult AddEntityToBattle(DamageableEntityRequest request)
     {
-        var targetEffect = _battleEffects.FirstOrDefault(e =>
-            e.Tag.Equals(effectTag, StringComparison.InvariantCultureIgnoreCase) &&
-            e.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase));
-        if (targetEffect is null)
-        {
-            return false;
-        }
-        var targetEntity = GetEntity(targetId);
-        if (targetEntity is null)
-        {
-            return false;
-        }
-        targetEffect.Revert(targetEntity);
-        _battleEffects.Remove(targetEffect);
-        return true;
+        return _service.AddEntityFromRequest(request);
+    }
+
+    public bool AddLogEntry(EffectDto request)
+    {
+        return Log.AddNewEntries(request);
     }
 }

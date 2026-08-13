@@ -11,11 +11,13 @@ public class ItemsIndex : IItemsIndex
         var items = new List<Item>();
         var itemType = typeof(Item);
         var assembly = typeof(ItemsIndex).Assembly;
+        string baseNamespace = typeof(ItemsIndex).Namespace ?? "";
 
         // Find all concrete types that inherit from Item in the InitialRelease namespace
         var concreteItemTypes = assembly.GetTypes()
             .Where(t => 
-                t.Namespace == "GameServer.Domain.Items.ItemsLibrary" &&
+                t.Namespace is not null &&
+                t.Namespace.StartsWith(baseNamespace + ".") &&
                 !t.IsAbstract &&
                 itemType.IsAssignableFrom(t));
 

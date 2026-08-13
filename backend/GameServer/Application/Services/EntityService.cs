@@ -4,15 +4,19 @@ using GameServer.Contracts.Mappers;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Entities;
+using GameServer.Domain.Entities.BeastiaryEntity;
+using GameServer.Domain.Entities.BeastiaryEntity.BestiaryLibrary;
 using GameServer.Domain.Enums;
 using GameServer.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
+using System.Security;
 
 namespace GameServer.Application.Services;
 
-public sealed class EntityService(EntityStore entityStore, InventoryService inventoryService, SkillService skillService)
+public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, InventoryService inventoryService, SkillService skillService)
 {
     private readonly EntityStore _entities = entityStore;
+    private readonly BestiaryIndex _index = index;
     private readonly InventoryService _inventoryService = inventoryService;
     private readonly SkillService _skillService = skillService;
 
@@ -54,7 +58,7 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
         return entity.ToDto();
     }
 
-    public AddEntityResult AddEntity(DamageableEntityRequest request)
+    public AddEntityResult AddEntityFromRequest(DamageableEntityRequest request)
     {
         AddEntityResult result = new();
 
@@ -81,25 +85,34 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
                 $"{request.AttackType} is not a valid damage type."
             ));
         }
+
+        string? attackString = null;
+        if (request.DefaultAttackMessageString.Length > 0)
+        {
+            attackString = request.DefaultAttackMessageString;
+        }
         
         if (result.IsValid())
         {
             DamageableEntity entity = new(
-                request.Name,
-                request.EntityType,
-                request.Race,
-                request.Health,
-                request.Mana,
-                request.Magic,
-                request.Strength,
-                request.Defense,
-                dtAttackType,
-                request.DealsMagicDamage,
-                request.Speed,
-                request.Level,
-                request.Experience,
-                resistanceResult.Parsed,
-                proficiencies
+                name: request.Name,
+                entityType: request.EntityType,
+                race: request.Race,
+                partyId: request.PartyId,
+                health: request.Health,
+                mana: request.Mana,
+                magic: request.Magic,
+                strength: request.Strength,
+                defense: request.Defense,
+                attackType: dtAttackType,
+                dealsMagicDamage: request.DealsMagicDamage,
+                speed: request.Speed,
+                level: request.Level,
+                experience: request.Experience,
+                resistances: resistanceResult.Parsed,
+                proficiencies: proficiencies,
+                defaultAttackMessageString: attackString,
+                deathMessage: request.DeathMessage
             );
 
             if (request.ItemTags is not null)
@@ -131,69 +144,82 @@ public sealed class EntityService(EntityStore entityStore, InventoryService inve
         return result;
     }
 
-    public AddEntityResult CloneEntity(DamageableEntityDto dto)
+    public AddEntityResult AddBeastiaryEntity(string tag)
     {
-        AddEntityResult result = new();
-        List<ParseIssue> errors = [];
-        Dictionary<DamageType, double> resistances = [];
-        Dictionary<Proficiency, double> proficiencies = [];
+        var result = new AddEntityResult();
+        var entity = _index.NewBeastiaryEntityByTag(tag);
 
-        foreach (var resistance in dto.Resistances)
+        // Make sure the result is not the error monster (i.e. is a valid beastiary entity)
+        if (entity.Tag.Equals("error", StringComparison.InvariantCultureIgnoreCase))
         {
-            if (!Enum.TryParse(resistance.Key, true, out DamageType damageType))
+            return new AddEntityResult
             {
-                result.Errors.Add(new ParseIssue(
-                    $"{resistance}",
-                    $"{resistance.Key} is not a valid damage type."
+                // If the beast does not exist, do not add it :)
+                Errors = [new(
+                    $"{nameof(_index.NewBeastiaryEntityByTag)}({tag})",
+                    $"The requested tag '{tag}' did not correspond with any valid entity."
+                )]
+            };
+        }
+
+        // Add the items to the entity's inventory from its initial items list
+        foreach (string itemTag in entity.ItemTagsForInitialInventory)
+        {
+            var item = _inventoryService.NewItemByTag(itemTag);
+            if (item is not null)
+            {
+                entity.Inventory.AddItem(item);
+            }
+            else
+            {
+                // If the item does not exist, do not add it :)
+                result.Errors.Add(new(
+                    $"{nameof(_inventoryService.NewItemByTag)}({itemTag})",
+                    $"{itemTag} is not a valid item tag"
                 ));
             }
-            resistances[damageType] = resistance.Value;
         }
-        foreach (var proficiency in dto.Proficiencies)
+
+        // Add skills to the entity's skills from its initial skills list
+        foreach (string skillTag in entity.SkillTagsForInitialSkills)
         {
-            if (!Enum.TryParse(proficiency.Key, true, out Proficiency entityProficiency))
+            var skill = _skillService.NewSkillByTag(skillTag);
+            if (skill is not null)
             {
-                result.Errors.Add(new ParseIssue(
-                    $"{proficiency}",
-                    $"{proficiency.Key} is not a valid proficiency."
+                entity.Skills.Add(skill);
+            }
+            else
+            {
+                // If the skill does not exist, do not add it :)
+                result.Errors.Add(new(
+                    $"{nameof(_skillService.NewSkillByTag)}({skillTag})",
+                    $"{skillTag} is not a valid skill tag"
                 ));
             }
-            proficiencies[entityProficiency] = proficiency.Value;
         }
-
-        if (!Enum.TryParse(dto.AttackDamageType, out DamageType dtAttackType))
+        result.Entity = entity.ToDto();
+        
+        // Check if the entity had any problems adding items or skills
+        if (result.IsValid())
         {
-            result.Errors.Add(new ParseIssue(
-                $"{dto.AttackDamageType}",
-                $"{dto.AttackDamageType} is not a valid damage type."
-            ));
-        }
-
-        if (errors.Count == 0)
-        {
-            DamageableEntity entity = new(
-                dto.Name,
-                dto.EntityType,
-                dto.Race,
-                dto.MaxHealth,
-                dto.MaxMana,
-                (int)dto.Magic,
-                (int)dto.Strength,
-                (int)dto.Defense,
-                dtAttackType,
-                dto.DealsMagicDamage,
-                (int)dto.Speed,
-                dto.Level,
-                dto.Experience,
-                resistances,
-                proficiencies
-            );
-
             _entities.Add(entity);
-            result.Entity = entity.ToDto();
         }
-
         return result;
+    }
+
+    // Because of polymorphism, this can clone BestiaryEntities or base DamageableEntities
+    public AddEntityResult? CloneEntity(string id)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        var entity = target.Clone();
+        _entities.Add(entity);
+        return new AddEntityResult
+        {
+            Entity = entity.ToDto(),
+        };
     }
 
     public DamageableEntityDto? FixStats(string id, FixStatsRequest request)

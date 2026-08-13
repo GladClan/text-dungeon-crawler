@@ -55,7 +55,20 @@ public sealed class EntitiesController(EntityService entityService) : Controller
     [HttpPut("new")]
     public ActionResult<DamageableEntityDto> AddEntity([FromBody] DamageableEntityRequest request)
     {
-        var result = _service.AddEntity(request);
+        var result = _service.AddEntityFromRequest(request);
+        AddParseErrors(result.Errors);
+
+        if (!ModelState.IsValid || result.Entity is null)
+        {
+            return ValidationProblem(ModelState);
+        }
+        return CreatedAtAction(nameof(GetById), new { id = result.Entity.Id }, result.Entity);
+    }
+
+    [HttpPut("bestiary-entity")]
+    public ActionResult<DamageableEntityDto> AddBestiaryEntity([FromBody] string tag)
+    {
+        var result = _service.AddBeastiaryEntity(tag);
         AddParseErrors(result.Errors);
 
         if (!ModelState.IsValid || result.Entity is null)
@@ -68,14 +81,13 @@ public sealed class EntitiesController(EntityService entityService) : Controller
     [HttpPut("clone/{id}")]
     public ActionResult<DamageableEntityDto> CloneEntity(string id)
     {
-        var target = _service.GetById(id);
-        if (target is null)
+        var result = _service.CloneEntity(id);
+        if (result == null)
         {
             return NotFound(IdNotFound(id));
         }
-        var result = _service.CloneEntity(target);
-        AddParseErrors(result.Errors);
 
+        AddParseErrors(result.Errors);
         if (!ModelState.IsValid || result.Entity is null)
         {
             return ValidationProblem(ModelState);

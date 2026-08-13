@@ -20,6 +20,8 @@ public abstract class Item
     {
         Id = NewId();
     }
+
+    public abstract Item Clone();
     public Item(string type, string name, int value, string description, bool consumable, bool sellable, string shopType, int rarity, int collection)
     {
         Id = NewId();

@@ -179,4 +179,19 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
         }
         return Ok(result);
     }
+
+    [HttpPatch("default-attack")]
+    public ActionResult<EffectDto> DefaultAttack([FromBody] string sourceId, string targetId)
+    {
+        var result = _service.DefaultAttack(sourceId, targetId);
+        if (result is null)
+        {
+            return NotFound($"Invalid ID sent. Please verify the ids sent and try again. Ids: {sourceId}, {targetId}");
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
 }

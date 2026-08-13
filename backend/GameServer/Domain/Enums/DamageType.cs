@@ -20,6 +20,8 @@ public enum DamageType
     aerial,
     terra,
     soaking,
+    // For skills like Spellshield
+    enchanting,
 }
 
 public enum Damage_Healing_Mana
