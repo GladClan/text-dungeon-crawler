@@ -1,3 +1,90 @@
+# Implementation notes
+
+## Proficiency
+
+Potential heirarchy rework:
+
+```
+Weapons
+├── Melee
+│   ├── Swords
+│   ├── Axes
+│   └── Spears
+└── Ranged
+    ├── Bows
+    └── Crossbows
+Magic
+├── Spellcasting
+│   ├── Fire
+│   ├── Ice
+│   └── Lightning
+└── Healing
+```
+
+| Proficiency   |  Parent        |
+| ------------- | -------------- |
+| spellstrike   | spellcasting   |
+| spellcasting  |                |
+| melee_weapons | combat         |
+| rangedWeapon  | combat         |
+| hand          | melee_weapons  |
+| slashing      | melee_weapons  |
+| bludgeoning   | melee_weapons  |
+| piercing      | ranged_weapons |
+| bow           | ranged_weapons |
+| potions       |                |
+| healing       | spellcasting   |
+| stealth       |                |
+| nobility      |                |
+| destiny       |                |
+
+## Proficiencies in natural language
+
+| Proficiency | Meaning                            |
+| ----------: | :--------------------------------- |
+|         0.5 | Untrained                          |
+|    0.6–0.75 | Novice                             |
+|    0.75–1.0 | Learning                           |
+|         1.0 | Competent / intended effectiveness |
+|    1.0–1.25 | Skilled                            |
+|    1.25–1.5 | Expert                             |
+|        1.5+ | Mastery                            |
+
+## Damage baseline
+
+A normal enemy will have around 100 HP. This should take 3-7 hits to defeat as a baseline.
+
+| Hits to defeat | Average damage per hit |
+| -------------: | ---------------------: |
+|              3 |                    ~34 |
+|              4 |                     25 |
+|              5 |                     20 |
+|              6 |                    ~17 |
+|              7 |                    ~15 |
+
+```
+Base Damage: 20
+Proficiency: 1.0
+Resistance: 1.0
+
+Final Damage: 20
+```
+
+| Proficiency | Damage | Hits vs. 100 HP |
+| ----------: | -----: | --------------: |
+|         0.5 |     10 |              10 |
+|        0.75 |     15 |               7 |
+|         1.0 |     20 |               5 |
+|        1.25 |     25 |               4 |
+|         1.5 |     30 |               4 |
+|         2.0 |     40 |               3 |
+
+With this baseline, 
+- A weaker attack might deal 15–17 at normal proficiency.
+- A standard attack might deal around 20.
+- A stronger attack might deal 25–30.
+- More powerful abilities can deal more, but should have another cost: mana, cooldown, risk, setup, etc.
+
 # ToDos
 
 ## Battle Page
@@ -57,4 +144,4 @@
 - Abomination
     - **It's really just unspeakable**
 - Benissait
-    - Holy-element ceratures made of several intertwined, revolving rings. The main reing, or sometimes several rings, have an ee on them through which the creature sees and is seen.
+    - Holy-element ceratures made of several intertwined, revolving rings. The main ring, or sometimes several rings, have an ee on them through which the creature sees and is seen.

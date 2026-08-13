@@ -136,6 +136,36 @@ public sealed class StatsController(EntityStatsService entityStatsService) : Con
         return Ok(result);
     }
 
+    [HttpGet("get-proficiency-hierarchy")]
+    public ActionResult<List<ProficiencyDto>> GetProficiencyHierarchy(string id, [FromBody] string proficiency)
+    {
+        var result = _service.GetProficiencyHierarchy(id, proficiency);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        if (result.Any(r => r.Error.Length > 0))
+        {
+            return ValidationProblem(result.First(r => r.Error.Length > 0).Error);
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("get-proficiency")]
+    public ActionResult<ProficiencyDto> GetStoredProficiency(string id, [FromBody] string proficiency)
+    {
+        var result = _service.GetStoredProficiency(id, proficiency);
+        if (result is null)
+        {
+            return NotFound(IdNotFound(id));
+        }
+        if (result.Error.Length > 0)
+        {
+            return ValidationProblem(result.Error);
+        }
+        return Ok(result);
+    }
+
     [HttpGet("stats-are-displayed")]
     public ActionResult<bool> StatsAreHidden(string id)
     {

@@ -90,7 +90,7 @@ public sealed class PoisonBite : Skill
     private static readonly Random _random = new();
     private int _useage = 0;
     private int _poisonCount = 0;
-    private double _damage = 5;
+    private double _damage = 12;
     private int _duration = 5;
     private double _bitingProficiency = 0.5;
     private double _potionsProficiency = 0.5;
@@ -299,11 +299,11 @@ public sealed class SummonSpiders : Skill
 public sealed class SpellShield: Skill
 {
     private int _useage = 0;
-    private double _block = 12;
+    private double _block = 30;
     public SpellShield(): base(
         name: "Spellshield",
         tag: "spell-shield",
-        description: "Creates a shield of magic that blocks 12 damage before shattering.",
+        description: "Creates a shield of magic that blocks 30 damage before shattering.",
         cost: 9,
         element: DamageType.enchanting,
         proficiency: Proficiency.spellcasting,

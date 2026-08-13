@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Mappers;
 using GameServer.Domain.Entities;
+using GameServer.Domain.Enums;
 using GameServer.Infrastructure;
 
 namespace GameServer.Application.Services;
@@ -124,7 +125,30 @@ public sealed class EntityStatsService(EntityStore entityStore)
         target.Speed = newValue;
         return new((int) old, target.Level);
     }
-
+    public List<ProficiencyDto>? GetProficiencyHierarchy(string id, string proficiency)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        if (!Enum.TryParse(proficiency, true, out Proficiency profEnum))
+        {
+            return [new($"{proficiency} is not a valid proficiency")];
+        }
+        return target.GetProficiencyHierarchy(profEnum);
+    }
+    public ProficiencyDto? GetStoredProficiency(string id, string proficiency)
+    {
+        if (!TryGetEntity(id, out var target))
+        {
+            return null;
+        }
+        if (!Enum.TryParse(proficiency, true, out Proficiency profEnum))
+        {
+            return new($"{proficiency} is not a valid proficiency");
+        }
+        return target.GetStoredProficiency(profEnum);
+    }
     public bool? StatsDisplayed(string id)
     {
         if (!TryGetEntity(id, out var target))

@@ -16,8 +16,8 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
         return $"Entity not found: {id}";
     }
 
-    [HttpGet("{id}/get-proficiency")]
-    public ActionResult<ProficiencyDto> GetProficiency(string id, [FromBody] string proficiency)
+    [HttpGet("{id}/get-proficiency-multiplier")]
+    public ActionResult<ProficiencyDto> GetProficiencyMultiplier(string id, [FromBody] string proficiency)
     {
         var result = _service.GetProficiencyMultiplier(id, proficiency);
         if (result is null)

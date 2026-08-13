@@ -274,12 +274,86 @@ public class DamageableEntity
         );
     }
 
-    public ProficiencyDto GetProficiencyMultiplier(Proficiency p)
+    /// <summary>
+    /// Gets the value of the target proficiency, along with the values of the parent proficiencies
+    /// </summary>
+    /// <param name="p">Target proficiency</param>
+    /// <returns cref="ProficiencyDto">A list of proficiency DTOs, starting with the target proficiency</returns>
+    public List<ProficiencyDto> GetProficiencyHierarchy(Proficiency p)
+    {
+        List<ProficiencyDto> result = [];
+        double value = Proficiencies.TryGetValue(p, out var val) ? val : 0.5d;
+        result.Add(new(
+            proficiency: p.ToString(),
+            value: value
+        ));
+        Proficiency current = p;
+        while (true)
+        {
+            if (ProficienciesHierarchies.GetParentProficiency(p) is Proficiency parentProficiency)
+            {
+                current = parentProficiency;
+                value = Proficiencies.TryGetValue(current, out var v) ? v : 0.5d;
+                result.Add(new(
+                    proficiency: current.ToString(),
+                    value: value
+                ));
+            }
+            else
+            {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the value of only the requested proficiency without investigating parentage (default 0.5)
+    /// </summary>
+    /// <param name="p">The target proficiency</param>
+    /// <returns cref="ProficiencyDto">A key-value pair with the proficiency and the value of that proficiency (default 0.5)</returns>
+    public ProficiencyDto GetStoredProficiency(Proficiency p)
     {
         var result = Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
         return new(
             proficiency: p.ToString(),
             value: result
+        );
+    }
+
+    /// <summary>
+    /// Gets the effective proficiency value.
+    /// </summary>
+    /// <param name="p">Target proficiency</param>
+    /// <returns>A key-value pair with the proficiency and the effective value of that proficiency.
+    /// If the target has no parents, it is that value. If the child has parents, it is 75% of the child, 25% of the parent, and so forth.</returns>
+    public ProficiencyDto GetProficiencyMultiplier(Proficiency p)
+    {
+        double child = Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
+        if (ProficienciesHierarchies.GetParentProficiency(p) is not null)
+        {
+            child *= 0.25d;
+        }
+        double result = 0d;
+        Proficiency current = p;
+        double parentMultiplier = 0.25;
+        while (true)
+        {
+            if (ProficienciesHierarchies.GetParentProficiency(current) is Proficiency parentProficiency)
+            {
+                current = parentProficiency;
+                double parentValue = Proficiencies.TryGetValue(current, out var val) ? val : 0.5d;
+                result += parentValue * parentMultiplier;
+                parentMultiplier *= 0.25d;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return new(
+            proficiency: p.ToString(),
+            value: child + result
         );
     }
 
@@ -326,6 +400,28 @@ public class DamageableEntity
         {
             Proficiencies[profEnum] = 0.5 + amount;
         }
+        Proficiency current = profEnum;
+        double parentMultiplier = 0.25;
+        while (true)
+        {
+            if (ProficienciesHierarchies.GetParentProficiency(current) is Proficiency parentProficiency)
+            {
+                current = parentProficiency;
+                if (Proficiencies.TryGetValue(current, out _))
+                {
+                    Proficiencies[current] += amount * parentMultiplier;
+                }
+                else
+                {
+                    Proficiencies[current] = 0.5 + (amount * parentMultiplier);
+                }
+                parentMultiplier *= 0.25d;
+            }
+            else
+            {
+                break;
+            }
+        }
         return new(profEnum.ToString(), Proficiencies[profEnum]);
     }
 
@@ -355,10 +451,11 @@ public class DamageableEntity
 
     /// <summary>
     /// Adds experience and levels up the entity if applicable
-    /// When the entity levels up, its proficiency entries are loaded and used to increase actual proficiencies, using the formula: Pg = 0.00125 * Pe / Pa^2
-    /// Pg is the proficiency gain
-    /// Pe is the value of the proficiency entry, or the proficiency entry count
-    /// Pa is the current proficiency, or proficiency actual value
+    /// When the entity levels up, its proficiency entries are loaded and used to increase actual proficiencies, using the formula: Pg = 0.00125 * s * Pe / Pa^2
+    /// Pg = the proficiency gain
+    /// s = an additional value in the case of multiple levels increased at the same time
+    /// Pe = the value of the proficiency entry, or the proficiency entry count
+    /// Pa = the current proficiency, or proficiency actual value
     /// </summary>
     /// <param name="experience">The amount of experience to add</param>
     /// <returns cref="LevelUpDto">A LevelUpDto, even if the entity did not level up</returns>
