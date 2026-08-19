@@ -45,13 +45,13 @@ Magic
 
 | Proficiency | Meaning                            |
 | ----------: | :--------------------------------- |
-|         0.5 | Untrained                          |
+|       ≤ 0.5 | Untrained                          |
 |    0.6–0.75 | Novice                             |
 |    0.75–1.0 | Learning                           |
 |         1.0 | Competent / intended effectiveness |
 |    1.0–1.25 | Skilled                            |
 |    1.25–1.5 | Expert                             |
-|        1.5+ | Mastery                            |
+|       > 1.5 | Mastery                            |
 
 ## Damage baseline
 
