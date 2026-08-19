@@ -2,7 +2,7 @@
 
 ## Proficiency
 
-Potential heirarchy rework:
+Potential heirarchy extension:
 
 ```
 Weapons
@@ -20,6 +20,8 @@ Magic
 │   └── Lightning
 └── Healing
 ```
+
+**Current hierarchy:**
 
 | Proficiency   |  Parent        |
 | ------------- | -------------- |
@@ -89,8 +91,6 @@ With this baseline,
 # ToDos
 
 ## Battle Page
-
-- ❌When going to the battle page, there will be a parameter for whether the party is surrounded (just front/back.. sides would be too complicated)
 
 - Party is displayed on the left of the battle page with their items and abilities which they can use.
     - add a flee button underneath the party, which gives the enemies the chance to attack the party as they flee.

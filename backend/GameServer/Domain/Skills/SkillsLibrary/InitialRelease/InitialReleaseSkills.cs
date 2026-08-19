@@ -918,8 +918,8 @@ public skill_name(): base(
 
 // Things involved in every skill :)
 SkillEffect
-    source.AddProficiencyEntry(SkillProficiency);
-    source.GetProficiencyMultiplier(SkillProficiency).Value;
-    + source.Magic - 10 || source.Strength - 10;
-    return new EffectDto
+    source.AddProficiencyEntry(SkillProficiency);               // Add proficiency entries for each skill used
+    source.GetProficiencyMultiplier(SkillProficiency).Value;    // Multiply damage or effect by proficiencies
+    + source.Magic - 10 || source.Strength - 10;                // Add in magic or strength bonus
+    return new EffectDto                                        // All skills return EffectDto, which includes an array of DamageResultDtos
 */

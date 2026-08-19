@@ -49,7 +49,7 @@ public class ItemsIndex : IItemsIndex
         return ItemCatalog.FirstOrDefault(i => i.Tag == tag) ?? new ErrorItem();
     }
 
-    public List<Item> GetShopItems(int itemsCount, string shopType, int rarity, int collection)
+    public List<Item> GetShopItems(int itemsCount, int shopType, int rarity, int collection)
     {
         return [..
             ItemCatalog

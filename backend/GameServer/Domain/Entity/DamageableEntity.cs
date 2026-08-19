@@ -231,6 +231,10 @@ public class DamageableEntity
         );
     }
 
+    /// <summary cref="OnDeath">
+    /// Checks if the entity's health is less than or equal to zero. If so, calls the OnDeath method.
+    /// </summary>
+    /// <returns>True if entity is alive, otherwise false</returns>
     public bool DidEntityDie()
     {
         if (CurrentHealth <= 0)
@@ -241,6 +245,10 @@ public class DamageableEntity
         return false;
     }
 
+    /// <summary>
+    /// If the entity's health is less than zero, sets entity health to zero. Also clears ProficiencyEntries and sets experience to zero<br>
+    /// <strong>To Revisit:</strong> Shuold this also decrease level or proficiencies? Increase resistance to necro or radiant damage?
+    /// </summary>
     private void OnDeath()
     {
         IsEntityAlive = false;

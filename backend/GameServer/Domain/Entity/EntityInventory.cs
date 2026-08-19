@@ -1,3 +1,4 @@
+using GameServer.Domain.Enums;
 using GameServer.Domain.Items;
 
 namespace GameServer.Domain.Entities;
@@ -8,6 +9,7 @@ public sealed class EntityInventory(List<Item> items, int gold)
 
     public int Gold { get; set; } = gold;
     public List<Item> Items { get; set; } = [.. items ?? []];
+    public Dictionary<ArmorTypes, int> EquippedArmorTypes { get; set; } = [];
 
     public EntityInventory AddItem(Item item)
     {

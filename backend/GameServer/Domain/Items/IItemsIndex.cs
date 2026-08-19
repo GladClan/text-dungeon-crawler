@@ -4,5 +4,5 @@ public interface IItemsIndex
 {
     public Item GetItemById(string Id);
     public Item GetItemByTag(string tag);
-    public List<Item> GetShopItems(int intemsCount, string shopType, int rarity, int collection);
+    public List<Item> GetShopItems(int intemsCount, int shopType, int rarity, int collection);
 }

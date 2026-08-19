@@ -20,19 +20,20 @@ public static class InventoryMapper
         var useable = item as Useable;
         var equippable = item as Equippable;
 
-        return new ItemDto
-        {
-            Id = item.Id,
-            Type = item.Type,
-            Tag = item.Tag,
-            Name = item.Name,
-            Value = item.Value,
-            Description = item.Description,
-            Consumable = item.Consumable,
-            Element = useable?.Element.ToString(),
-            Proficiency = useable?.Prof.ToString(),
-            ArmorTypeLimit = equippable?.ArmorTypeLimit,
-            Equipped = equippable?.Equipped
-        };
+        return new ItemDto(
+            id: item.Id,
+            name: item.Name,
+            tag: item.Tag,
+            value: item.Value,
+            description: item.Description,
+            consummable: item.Consumable,
+            sellable: item.Sellable,
+            element: useable?.Element.ToString(),
+            proficiency: useable?.ItemProficiency.ToString(),
+            armorType: equippable?.EquippableArmorType.ToString(),
+            armorTypeLimit: equippable?.ArmorTypeLimit,
+            equipped: equippable?.Equipped,
+            error: string.Empty
+        );
     }
 }
