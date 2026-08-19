@@ -37,6 +37,7 @@ Magic
 | stealth       |                |
 | nobility      |                |
 | destiny       |                |
+| poison        | potions        |
 
 ## Proficiencies in natural language
 

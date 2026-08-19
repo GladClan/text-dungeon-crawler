@@ -15,8 +15,10 @@ public enum Proficiency
     bludgeoning,
     piercing,
     potions,
+    poison,
     bow,
     healing,
+    enchanting,
     stealth,
     nobility,
     destiny
@@ -45,6 +47,7 @@ public static class ProficienciesHierarchies
         {
             Proficiency.spellstrike => Proficiency.spellcasting,
             Proficiency.healing => Proficiency.spellcasting,
+            Proficiency.enchanting => Proficiency.spellcasting,
 
             Proficiency.melee_weapons => Proficiency.combat,
             Proficiency.ranged_weapons => Proficiency.combat,
@@ -55,6 +58,8 @@ public static class ProficienciesHierarchies
             Proficiency.piercing => Proficiency.melee_weapons,
 
             Proficiency.bow => Proficiency.ranged_weapons,
+
+            Proficiency.poison => Proficiency.potions,
 
             _ => null
         };

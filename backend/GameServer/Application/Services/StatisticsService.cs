@@ -83,8 +83,8 @@ public sealed class StatisticsService(StatisticsTracker statistics)
                 statistics.PartyMemberStats.Add(stats);
             }
 
-            var damageEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Damage).ToList();
-            var healEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Healing).ToList();
+            var damageEntries = g.Where(e => e.ActionType == ActionType.Attack).ToList();
+            var healEntries = g.Where(e => e.ActionType == ActionType.Healing).ToList();
 
             double damageSentSum = damageEntries.Sum(e => e.AmountSent);
             double damageActualSum = damageEntries.Sum(e => e.AmountActual);
@@ -120,7 +120,7 @@ public sealed class StatisticsService(StatisticsTracker statistics)
             
             stats.TimesUsedMagic += g.Count(e => e.WasMagic);
 
-            stats.TimesDealtFatalDamage += g.Count(e => e.Fatal && e.Damage_Healing_Mana == Damage_Healing_Mana.Damage);
+            stats.TimesDealtFatalDamage += g.Count(e => e.Fatal && e.ActionType == ActionType.Attack);
 
             int enemiesDefeated = g.Where(e => e.Fatal).Select(e => e.TargetId).Distinct().Count();
             stats.EntitiesDefeated += enemiesDefeated;
@@ -137,8 +137,8 @@ public sealed class StatisticsService(StatisticsTracker statistics)
                 statistics.PartyMemberStats.Add(stats);
             }
 
-            var damageEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Damage).ToList();
-            var healEntries = g.Where(e => e.Damage_Healing_Mana == Damage_Healing_Mana.Healing).ToList();
+            var damageEntries = g.Where(e => e.ActionType == ActionType.Attack).ToList();
+            var healEntries = g.Where(e => e.ActionType == ActionType.Healing).ToList();
 
             var damageSum = damageEntries.Sum(e => e.AmountActual);
             var healSum = healEntries.Sum(e => e.AmountActual);

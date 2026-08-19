@@ -17,9 +17,10 @@ public abstract class Skill
     public Proficiency SkillProficiency { get; set; }
     public bool MultiTarget { get; set; }
     public int TargetsLimit { get; set; }
-    public ActionType SkillType { get; init; }
+    public ActionType SkillType { get; set; }
     public int Level { get; set; }
     public abstract EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle);
+    public abstract bool CanLevelUpSkill();
     public abstract void LevelUpSkill();
     public bool IsLearnable (DamageableEntity target)
     {

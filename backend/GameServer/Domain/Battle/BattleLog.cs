@@ -28,7 +28,7 @@ public class BattleLog()
         {
             _entries.Add(new BattleLogEntry
             {
-                Damage_Healing_Mana = (Damage_Healing_Mana)result.Damage_Healing_Mana,
+                ActionType = (ActionType)result.ActionType,
                 AmountSent = result.AmountSent,
                 AmountActual = result.AmountActual,
                 NewValue = result.NewValue,
@@ -49,7 +49,7 @@ public class BattleLog()
         {
             foreach (BattleLogEntry e in _entries)
             {
-                if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.AmountActual > max)
+                if (e.ActionType == ActionType.Attack && e.AmountActual > max)
                 {
                     max = e.AmountActual;
                     result = e.SourceId;
@@ -69,7 +69,7 @@ public class BattleLog()
         string? result = null;
         foreach (BattleLogEntry e in _entries)
         {
-            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.TargetId.Equals(sourceId, StringComparison.InvariantCultureIgnoreCase) && e.AmountActual > 0)
+            if (e.ActionType == ActionType.Attack && e.TargetId.Equals(sourceId, StringComparison.InvariantCultureIgnoreCase) && e.AmountActual > 0)
             {
                 if (nthEntry <= 0)
                 {
@@ -91,7 +91,7 @@ public class BattleLog()
         double max = double.MinValue;
         foreach (BattleLogEntry e in _entries)
         {
-            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage && e.AmountSent > max)
+            if (e.ActionType == ActionType.Attack && e.AmountSent > max)
             {
                 max = e.AmountSent;
                 result = e.SourceId;
@@ -105,7 +105,7 @@ public class BattleLog()
         Dictionary<string, double> frequencyMap = [];
         foreach (BattleLogEntry e in _entries)
         {
-            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Damage)
+            if (e.ActionType == ActionType.Attack)
             {
                 if (frequencyMap.TryGetValue(e.SourceId, out _))
                 {
@@ -137,7 +137,7 @@ public class BattleLog()
         string? result = null;
         foreach (BattleLogEntry e in _entries)
         {
-            if (e.Damage_Healing_Mana == Damage_Healing_Mana.Healing)
+            if (e.ActionType == ActionType.Healing)
             {
                 if (frequencyMap.TryGetValue(e.SourceId, out int val))
                 {
@@ -218,7 +218,7 @@ public class BattleLog()
 
 public class BattleLogEntry()
 {
-    public Damage_Healing_Mana Damage_Healing_Mana { get; init; }
+    public ActionType ActionType { get; init; }
     public double AmountSent { get; init; }
     public double AmountActual { get; init; }
     public double NewValue { get; init; }

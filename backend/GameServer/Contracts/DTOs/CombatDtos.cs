@@ -55,11 +55,11 @@ public sealed class DamageResultDto
         TargetId = string.Empty;
         Error = string.Empty;
     }
-    public DamageResultDto(string sourceId, string targetId, int damage_healing_mana, double sent, double actual, double result, bool fatal)
+    public DamageResultDto(string sourceId, string targetId, int actionType, double sent, double actual, double result, bool fatal)
     {
         SourceId = sourceId;
         TargetId = targetId;
-        Damage_Healing_Mana = damage_healing_mana;
+        ActionType = actionType;
         AmountSent = sent;
         AmountActual = actual;
         NewValue = result;
@@ -75,7 +75,7 @@ public sealed class DamageResultDto
     }
     public string SourceId { get; init; }
     public string TargetId { get; init; }
-    public int Damage_Healing_Mana { get; init; }
+    public int ActionType { get; init; }
     public double AmountSent { get; init; }
     public double AmountActual { get; init; }
     public double NewValue { get; init; }

@@ -141,7 +141,7 @@ public class DamageableEntity
         return new(
             source.ID,
             ID,
-            damage_healing_mana: 2,
+            actionType: (int)ActionType.Attack,
             sent: amount,
             actual: actual,
             result: CurrentHealth,
@@ -149,7 +149,7 @@ public class DamageableEntity
         );
     }
 
-    public DamageResultDto AddHealthBuffer(DamageableEntity source, double amount)
+    public DamageResultDto AddHealthBuffer(DamageableEntity source, double amount, DamageType damageType = DamageType.healing)
     {
         if (!IsEntityAlive)
         {
@@ -166,10 +166,24 @@ public class DamageableEntity
             );
         }
         HealthBuffer += amount;
+        if (HealthBuffer < 0)
+        {
+            var result = TakeDamage(source, -HealthBuffer, damageType);
+            HealthBuffer = 0;
+            return new(
+                sourceId: source.ID,
+                targetId: ID,
+                actionType: (int)ActionType.Buff,
+                sent: amount,
+                actual: HealthBuffer,
+                result: CurrentHealth,
+                fatal: !IsEntityAlive
+            );
+        }
         return new(
             source.ID,
             ID,
-            damage_healing_mana: 4,
+            actionType: (int)ActionType.Buff,
             sent: amount,
             actual: amount,
             result: HealthBuffer,
@@ -209,7 +223,7 @@ public class DamageableEntity
         return new(
             source.ID,
             ID,
-            damage_healing_mana: 1,
+            actionType: (int)ActionType.Attack,
             sent: amount,
             actual: actual,
             result: CurrentHealth,
@@ -250,7 +264,7 @@ public class DamageableEntity
         {
             return new(
                 sent: amount,
-                error: $"{Name} is not alive and caoont gain mana"
+                error: $"{Name} is not alive and cannot gain mana"
             );
         }
         double actual = amount;
@@ -266,7 +280,7 @@ public class DamageableEntity
         return new(
             "",
             ID,
-            damage_healing_mana: 3,
+            actionType: (int)ActionType.Other,
             sent: amount,
             actual: actual,
             result: CurrentMana,
@@ -290,7 +304,7 @@ public class DamageableEntity
         Proficiency current = p;
         while (true)
         {
-            if (ProficienciesHierarchies.GetParentProficiency(p) is Proficiency parentProficiency)
+            if (ProficienciesHierarchies.GetParentProficiency(current) is Proficiency parentProficiency)
             {
                 current = parentProficiency;
                 value = Proficiencies.TryGetValue(current, out var v) ? v : 0.5d;
@@ -324,9 +338,15 @@ public class DamageableEntity
     /// <summary>
     /// Gets the effective proficiency value.
     /// </summary>
+    /// <remarks>
+    /// If there is no stored value for the proficiency, the default value is 0.5. Proficiencies are not expected to be negative.<br>
+    /// If the target has no parents, it is that value. If the child has parents, it is 75% of the child, 25% of the parent, and so forth.<br>
+    /// <b>This is a multiplier value, meaning values are to be used as multipliers. A value of 0.5 decreases the effect by 1/2. A value of 2 means the efect will be twice as effective.</b>
+    /// </remarks>
     /// <param name="p">Target proficiency</param>
-    /// <returns>A key-value pair with the proficiency and the effective value of that proficiency.
-    /// If the target has no parents, it is that value. If the child has parents, it is 75% of the child, 25% of the parent, and so forth.</returns>
+    /// <returns>
+    /// A key-value pair with the proficiency and the effective value of that proficiency.
+    /// </returns>
     public ProficiencyDto GetProficiencyMultiplier(Proficiency p)
     {
         double child = Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
@@ -357,20 +377,39 @@ public class DamageableEntity
         );
     }
 
+    /// <summary>
+    /// Gets the resistance multiplier of the target DamageType, factoring in defense for physical DamageTypes and magic resistance for magical DamageTypes
+    /// </summary>
+    /// <remarks>
+    /// Expect to use values between -1 and 1, but values can exceed those parameters.<br>
+    /// <b>This is a multiplier value, meaning values are to be used as multipliers. A value of 0.1 decreases the damage by 10x. A value of -2 means the damage will be reversed, and you can expect to heal the target.</b>
+    /// </remarks>
+    /// <param name="dtEnum">The target resistance to get</param>
+    /// <returns cref="ResistanceDto">A ResistanceDto object with the resistance name and value</returns>
     public ResistanceDto GetResistanceMultiplier(DamageType dtEnum)
     {
         var result = Resistances.TryGetValue(dtEnum, out var value) ? value : 1d;
-        if (dtEnum == DamageType.crushing || dtEnum == DamageType.slashing || dtEnum == DamageType.piercing)
+        if (DamageTypeHierarchies.IsPhysicalDamage(dtEnum))
         {
-                result += Math.Abs(result) * (Defense / _defenseConstant);
+            result += Math.Abs(result) * (Defense / _defenseConstant);
         } else 
-        if (dtEnum != DamageType.damage && Resistances.TryGetValue(DamageType.spellstrike, out double magicRes))
-            {
-                result += magicRes;
-            }
+        if (
+            DamageTypeHierarchies.IsMagicDamage(dtEnum) &&
+            dtEnum != DamageType.spellstrike &&
+            Resistances.TryGetValue(DamageType.spellstrike, out double magicRes)
+        )
+        {
+            result += magicRes;
+        }
         return new(dtEnum.ToString(), result);
     }
 
+    /// <summary>
+    /// Increases the target resistance by the target amount (double as percentage, expect to use values between -1 and 1)
+    /// </summary>
+    /// <param name="dtEnum">The target resistance to change.</param>
+    /// <param name="amount">Amount to add to the resistance. If no value exists for the target resistance, the resistance value is set to 1 + amount</param>
+    /// <returns cref="ResistanceDto">A ResistanceDto with the new resistance value</returns>
     public ResistanceDto IncreaseResistance(DamageType dtEnum, double amount)
     {
         if (Resistances.TryGetValue(dtEnum, out _))
@@ -451,12 +490,14 @@ public class DamageableEntity
 
     /// <summary>
     /// Adds experience and levels up the entity if applicable
+    /// </summary>
+    /// <remarks>
     /// When the entity levels up, its proficiency entries are loaded and used to increase actual proficiencies, using the formula: Pg = 0.00125 * s * Pe / Pa^2
     /// Pg = the proficiency gain
     /// s = an additional value in the case of multiple levels increased at the same time
     /// Pe = the value of the proficiency entry, or the proficiency entry count
     /// Pa = the current proficiency, or proficiency actual value
-    /// </summary>
+    /// </remarks>
     /// <param name="experience">The amount of experience to add</param>
     /// <returns cref="LevelUpDto">A LevelUpDto, even if the entity did not level up</returns>
     public LevelUpDto AddExperience(int experience)
