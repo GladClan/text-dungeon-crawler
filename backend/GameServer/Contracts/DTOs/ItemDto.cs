@@ -46,4 +46,18 @@ public sealed class ItemDto
         Equipped = equipped;
         Error = error;
     }
+    public ItemDto(
+        string error
+    )
+    {
+        Error = error;
+
+        Id = string.Empty;
+        Name = string.Empty;
+        Tag = string.Empty;
+        Value = 0;
+        Description = string.Empty;
+        Consumable = false;
+        Sellable = false;
+    }
 }

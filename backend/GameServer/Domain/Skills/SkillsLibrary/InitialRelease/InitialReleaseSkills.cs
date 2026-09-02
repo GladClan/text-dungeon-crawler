@@ -106,6 +106,7 @@ public sealed class ErrorSkill : Skill
 /// <summary>
 /// Charge a target and attack with a vicious bite, dealing piercing damage, potentially poisoning the enemy (based on potions proficiency)
 /// </summary>
+/// <param cref="tag">Tag: "poison-bite"</param>
 public sealed class PoisonBite : Skill
 {
     private static readonly Random _random = new();
@@ -227,6 +228,7 @@ public sealed class PoisonBite : Skill
 /// <summary>
 /// Summons a swarm of giant spiders that obey the target, lasting for several rounds before disappearing.
 /// </summary>
+/// <param cref="tag">Tag: "summon-spiders"</param>
 public sealed class SummonSpiders : Skill
 {
     private int _useage = 0;
@@ -378,6 +380,7 @@ public sealed class SummonSpiders : Skill
 /// <summary>
 /// Creates a shield of magic that blocks damage for a single target before shattering.
 /// </summary>
+/// <param cref="tag">Tag: "spell-shield"</param>
 public sealed class SpellShield: Skill
 {
     private int _useage = 0;
@@ -489,6 +492,7 @@ public sealed class SpellShield: Skill
 /// <summary>
 /// Absorbs health from the target and adds it to the caster
 /// </summary>
+/// <param cref="tag">Tag: "absorb"</param>
 public sealed class Absorb: Skill
 {
     double _damage = 10;
@@ -590,6 +594,7 @@ public sealed class Absorb: Skill
 /// <summary>
 /// Creates a blade of wind travelling in an expanding arc. Deals wind damage to any creature in its path (max targets set by TargetsLimit).
 /// </summary>
+/// <param cref="tag">Tag: "aeroblade"</param>
 public sealed class Aeroblade: Skill
 {
     double _useage = 0;
@@ -674,10 +679,11 @@ public sealed class Aeroblade: Skill
 }
 
 /// <summary>
-/// Attempt to steal from a target.<br>
-/// Can be leveled up to increase chance of stealing.<br>
+/// Attempt to steal from a target.<br/>
+/// Can be leveled up to increase chance of stealing.<br/>
 /// Can also level up into Mug or Magnet - introducing damage and multiple targets, respectively.
 /// </summary>
+/// <param cref="tag">Tag: "steal"</param>
 public sealed class Steal: Skill
 {
     private static readonly Random random = new();
@@ -900,6 +906,213 @@ public sealed class Steal: Skill
         );
     }
 }
+
+/// <summary>
+/// A simple spell that deals devastating daamge to a single target. Damage starts at 27 and can be leveled up three times to a max of 36.
+/// </summary>
+/// <param cref="tag">Tag: "shatter"</param>
+public sealed class Shatter : Skill
+{
+    private double _damage;
+    public Shatter(int _level = 1): base(
+        name: "Shatter",
+        tag: "shatter",
+        description: $"A simple spell that devastates a single target with {22 + _level * 3} damage.",
+        cost: 10,
+        element: DamageType.physical,
+        proficiency: Proficiency.spellstrike,
+        multiTarget: false,
+        targetsLimit: 1,
+        skillType: ActionType.Attack,
+        level: _level
+    )
+    {
+        _damage = 24 + Level * 3;
+    }
+    
+    public override bool CanLevelUpSkill()
+    {
+        return Level < 4;
+    }
+
+    public override Skill Clone()
+    {
+        return new Shatter(Level);
+    }
+
+    public override void LevelUpSkill()
+    {
+        Level++;
+        _damage += 3;
+        Cost++;
+    }
+
+    public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
+    {
+        source.AddProficiencyEntry(SkillProficiency);
+        double buffed = (_damage * source.GetProficiencyMultiplier(SkillProficiency).Value) + source.Magic - 10;
+
+        var result = mainTarget.TakeDamage(source, buffed, Element);
+
+        return new(
+            message: $"{source.Name} casts {Name}. The air istelf surrounding {mainTarget.Name} seems to flex and crumble, and {mainTarget.Name} takes {_damage} damage.",
+            results: [result],
+            wasMagic: true
+        );
+    }
+}
+
+/// <summary>
+/// A basic fire spell that deals 20 fire damage to a single target. Can be leveled up (max level 4) to increase the damage and the targets limit.
+/// </summary>
+/// <param cref="tag">Tag: "firecast"</param>
+public sealed class Firecast : Skill
+{
+    private double _damage;
+    private int _uses;
+    private double _damageTotal;
+
+    public Firecast(int level, double damage = 20, int uses = 0, double damageTotal = 0, int targetsLimit = 1): base(
+        name: "Firecast",
+        tag: "firecast",
+        description: "Shoots a stream of flame at a single target, dealing 20 fire damage.",
+        cost: 9,
+        element: DamageType.burning,
+        proficiency: Proficiency.firecasting,
+        multiTarget: targetsLimit > 1,
+        targetsLimit: targetsLimit,
+        skillType: ActionType.Attack,
+        level: level
+    )
+    {
+        _damage = damage;
+        _uses = uses;
+        _damageTotal = damageTotal;
+    }
+
+    public override bool CanLevelUpSkill()
+    {
+        return Level < 4 &&
+            _uses > Level * 5 &&
+            _damageTotal > _uses * 20;
+    }
+
+    public override Skill Clone()
+    {
+        return new Firecast(Level, _damage, _uses, _damageTotal, TargetsLimit);
+    }
+
+    public override void LevelUpSkill()
+    {
+        if (!CanLevelUpSkill())
+        {
+            return;
+        }
+        Level++;
+        _damage += Level;
+        if (Level > 3)
+        {
+            MultiTarget = true;
+            TargetsLimit += 2;
+        }
+        Description = $"Shoots a stream of flame at a single target, dealing {_damage} fire damage." + 
+            (MultiTarget ? $"\nThe flame spreads enough to cover up to {TargetsLimit - 1} additional targets." : "");
+        Cost++;
+    }
+
+    public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
+    {
+        source.AddProficiencyEntry(SkillProficiency);
+        _uses++;
+
+        double buffed = (_damage * source.GetProficiencyMultiplier(SkillProficiency).Value) + source.Magic - 10;
+        List<DamageResultDto> damageResults = [];
+        damageResults.Add(mainTarget.TakeDamage(source, buffed, Element));
+        string resultMessgae = $"{source.Name} casts {Name}, striking {mainTarget.Name} with a wave of fire. {mainTarget.Name} takes {damageResults[0].AmountActual} fire damage!";
+
+        _damageTotal += damageResults[0].AmountActual;
+
+        if (MultiTarget && subTargets is not null)
+        {
+            for (int i = 0; i < subTargets.Count && i < TargetsLimit; i++)
+            {
+                buffed *= 2/3;
+                var target = subTargets[i];
+                var result = target.TakeDamage(source, buffed, Element);
+                damageResults.Add(result);
+                resultMessgae += $"\n{target.Name} is also splashed with fire, taking {result.AmountActual} fire damage!";
+
+                _damageTotal += result.AmountActual;
+            }
+        }
+
+        return new(
+            message: resultMessgae,
+            results: damageResults,
+            wasMagic: true
+        );
+    }
+}
+
+/// <summary>
+/// An advanced fire spell that deals 32 fire damage to a single target.
+/// </summary>
+/// <param cref="tag">Tag: "firebolt"</param>
+public sealed class Firebolt: Skill
+{
+    private double _damage = 32;
+    public Firebolt(): base(
+        name: "Firebolt",
+        tag: "firebolt",
+        description: "Shoots a bolt of fire at a single target, dealing 32 damage",
+        cost: 16,
+        element: DamageType.burning,
+        proficiency: Proficiency.firecasting,
+        multiTarget: false,
+        targetsLimit: 1,
+        skillType: ActionType.Attack,
+        level: 1
+    ) { }
+
+    public override bool CanLevelUpSkill()
+    {
+        return Level == 1 || Level == 2;
+    }
+
+    public override Skill Clone()
+    {
+        return new Firebolt()
+        {
+            _damage = _damage
+        };
+    }
+
+    public override void LevelUpSkill()
+    {
+        if (!CanLevelUpSkill())
+        {
+            return;
+        }
+        Level++;
+        _damage += 4;
+        Cost += 1;
+    }
+
+    public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
+    {
+        source.AddProficiencyEntry(SkillProficiency);
+
+        double buffed = (_damage * source.GetProficiencyMultiplier(SkillProficiency).Value) + source.Magic - 10;
+        var result = mainTarget.TakeDamage(source, buffed, Element);
+
+        return new(
+            message: $"{source.Name} casts {Name}, slinging a bolt of fire at {mainTarget.Name}. {mainTarget.Name} is struck with the bolt of flame, taking {result.AmountActual} damage.",
+            results: [result],
+            wasMagic: true
+        );
+    }
+}
+
 
 /*
 // Constructor template

@@ -88,6 +88,53 @@ With this baseline,
 - A stronger attack might deal 25–30.
 - More powerful abilities can deal more, but should have another cost: mana, cooldown, risk, setup, etc.
 
+## Scene
+
+**Items Breakdown**
+- Dialogue
+- Choices, with results:
+    - New scene
+    - Gain item
+    - Skill check
+    - Add string to scene
+    - Close other dialogue opitions
+    - Open other dialogue options
+    - Fight
+    - Use item
+    - Affect party
+        - Heal
+        - Damage
+        - Stats
+    - Change scene parameters
+        - Encounter difficulty
+
+**What effects whether dialogue options are available**
+- Has item
+- Scene parameters (strings added from choices?)
+
+### Working up from the bottom
+
+Each scene has dialogue options. They include who is speaking—whether that is a character or the narrator.
+
+Each dialogue has options attached to it. These options point to different dialogue options. The options may also have effects
+attached to them: 
+    - gaining items to the party or a character
+    - affecting the party stats
+        - healing
+        - damaging
+        - otehr stats
+    - changing scene parameters
+    - checking character skills to challenge them
+    - starting a battle
+    - using an item (whether consuming it, or activating the OnUse method)
+    - entering a new scene
+
+Dialogue options may also be locked, redirecting to different dialogue options in the case of
+- whether the party has an item
+- some scene parameter
+
+Scenes are built of a list of these dialogue options
+
 # ToDos
 
 ## Battle Page

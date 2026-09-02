@@ -10,6 +10,9 @@ public class SpeciesDefaultObject(Dictionary<DamageType, double> resistances, st
 
 public static class SpeciesDictionary
 {
+    /// <summary>
+    /// A dictionary containing the default resistances of each species, as well as a short description
+    /// </summary>
     public static readonly Dictionary<Species, SpeciesDefaultObject> PlayableSpeciesStats = new()
     {
         {

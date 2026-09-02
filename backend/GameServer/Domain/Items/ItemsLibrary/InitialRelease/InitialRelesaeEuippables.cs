@@ -16,7 +16,7 @@ public sealed class RazeChestplate : Equippable
     private static readonly int _defense = 7;
     public RazeChestplate(): base(
         name: "Raze Chestplate",
-        tag: "raze-chestplate",
+        tag: "chestplate-raze",
         cost: 50,
         description: "A chestplate made from many small plates of steel. The smallness of the many plates it is made from makes it very flexible and versatile.\n +7 defense",
         consumable: false,
@@ -181,6 +181,113 @@ public sealed class SpiderRing : Equippable
                 result: target.GetStoredProficiency(_targetProficiency).Value,
                 fatal: false
             )],
+            wasMagic: false
+        );
+    }
+}
+
+public sealed class StoneHelmet: Equippable
+{
+    private readonly int _defenseIncrease = 4;
+    private readonly double _bludgeoningResInc = 0.2;
+    public StoneHelmet(): base(
+        name: "Stone Helmet",
+        tag: "helmet-stone",
+        cost: 120,
+        description: "Increases defense by 4 and adds protection agains bludgeoning damage.",
+        consumable: false,
+        sellable: true,
+        armorType: ArmorTypes.Helmets,
+        armorTypeLimit: 1,
+        equipped: false,
+        shopType: (int)ShopTypes.Equipment,
+        rarity: (int)Rarities.uncommon,
+        collection: (int)ShopCollections.Armor
+    ) { }
+
+    public override Item Clone()
+    {
+        return new StoneHelmet();
+    }
+
+    public override EffectDto OnEquip(DamageableEntity target)
+    {
+        if (!CanEquip(target))
+        {
+            return new(
+                error: $"{target.Name} cannot equip {Name}."
+            );
+        }
+        target.Inventory.EquippedArmorTypes[EquippableArmorType] = 
+            target.Inventory.EquippedArmorTypes.TryGetValue(EquippableArmorType, out var amount) ?
+                amount + 1 : 1;
+        Equipped = true;
+
+        target.Defense += _defenseIncrease;
+        target.IncreaseResistance(DamageType.crushing, _bludgeoningResInc);
+
+        return new(
+            message: $"{target.Name} equips the {Name}, gaining {_defenseIncrease} defense and {_bludgeoningResInc:P} crushing resistance.",
+            results: [
+                new(
+                    sourceId: target.ID,
+                    targetId: target.ID,
+                    actionType: (int)ActionType.Other,
+                    sent: _defenseIncrease,
+                    actual: _defenseIncrease,
+                    result: target.Defense,
+                    fatal: false
+                ),
+                new(
+                    sourceId: target.ID,
+                    targetId: target.ID,
+                    actionType: (int)ActionType.Other,
+                    sent: _bludgeoningResInc,
+                    actual: _bludgeoningResInc,
+                    result: target.GetResistanceMultiplier(DamageType.crushing).Value,
+                    fatal: false
+                )
+            ],
+            wasMagic: false
+        );
+    }
+
+    public override EffectDto OnUnequip(DamageableEntity target)
+    {
+        if (!Equipped)
+        {
+            return new(
+                error: $"{target.Name} does not have {Name} equipped!"
+            );
+        }
+        target.Inventory.EquippedArmorTypes[EquippableArmorType]--;
+        Equipped = false;
+        
+        target.Defense -= _defenseIncrease;
+        target.IncreaseResistance(DamageType.crushing, -_bludgeoningResInc);
+
+        return new(
+            message: $"{target.Name} unequips the {Name}, decreasing defense by {_defenseIncrease} and crushing resistance by {_bludgeoningResInc:P}.",
+            results: [
+                new(
+                    sourceId: target.ID,
+                    targetId: target.ID,
+                    actionType: (int)ActionType.Other,
+                    sent: -_defenseIncrease,
+                    actual: -_defenseIncrease,
+                    result: target.Defense,
+                    fatal: false
+                ),
+                new(
+                    sourceId: target.ID,
+                    targetId: target.ID,
+                    actionType: (int)ActionType.Other,
+                    sent: -_bludgeoningResInc,
+                    actual: -_bludgeoningResInc,
+                    result: target.GetResistanceMultiplier(DamageType.crushing).Value,
+                    fatal: false
+                )
+            ],
             wasMagic: false
         );
     }

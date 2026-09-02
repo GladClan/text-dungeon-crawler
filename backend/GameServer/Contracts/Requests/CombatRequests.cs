@@ -74,7 +74,7 @@ public sealed class AddProficiencyEntryRequest
     [MinLength(1)]
     public string Proficiency { get; init; } = string.Empty;
 
-    public int Amount { get; init; }
+    public int Amount { get; init; } = 1;
 }
 
 public sealed class UseItemOrSkill

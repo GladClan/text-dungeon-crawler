@@ -4,20 +4,22 @@ using GameServer.Contracts.Mappers;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Battle;
+using GameServer.Domain.Entities.BeastiaryEntity;
 using GameServer.Infrastructure;
 
 namespace GameServer.Application.Services;
 
-public sealed class BattleService(StatisticsService statisticsService, EntityService entityService, EntityStore entityStore)
+public sealed class BattleService(StatisticsService statisticsService, EntityService entityService, IBestiaryIndex bestiaryIndex, EntityStore entityStore)
 {
     private readonly EntityStore _entities = entityStore;
     private readonly EntityService _service = entityService;
+    private readonly IBestiaryIndex _index = bestiaryIndex;
     private readonly StatisticsService _statistics = statisticsService;
     private BattleTracker? CurrentBattle;
 
     public BattleDto CommenceBattle(BattleStartRequest request)
     {
-        if (request.OpponentPartyId is null && request.entityRequests is null)
+        if (request.OpponentPartyId is null && request.entityRequests is null && request.BestiaryEntityTags.Count == 0)
         {
             return new BattleDto
             {
@@ -29,10 +31,18 @@ public sealed class BattleService(StatisticsService statisticsService, EntitySer
         {
             opponentParty.AddRange( _service.GetParty(request.OpponentPartyId));
         }
-        List<AddEntityResult>? result = null;
+        List<AddEntityResult> result = [];
+        foreach (string tag in request.BestiaryEntityTags)
+        {
+            var target = _service.AddBeastiaryEntity(tag, request.OpponentPartyId);
+            result.Add(target);
+            if (target is not null && target.Entity is not null)
+            {
+                opponentParty.Add(target.Entity);
+            }
+        }
         if (request.entityRequests is not null)
         {
-            result = [];
             foreach (var eRequest in request.entityRequests)
             {
                 var target = _service.AddEntityFromRequest(eRequest);
@@ -49,7 +59,7 @@ public sealed class BattleService(StatisticsService statisticsService, EntitySer
         return new BattleDto
         {
             EntityDtos = [..opponentParty, ..party],
-            EntityResult = result,
+            EntityResult = result.Count == 0 ? null : result,
             InitiativeOrder = initiative
         };
     }

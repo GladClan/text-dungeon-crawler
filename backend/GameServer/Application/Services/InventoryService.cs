@@ -46,10 +46,9 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             {
                 return item.ToDto();
             }
-            return new ItemDto
-            {
-                Error = $"Item id {itemId} could not be found"
-            };
+            return new ItemDto(
+                error: $"Item id {itemId} could not be found"
+            );
         }
         return null;
     }
@@ -63,10 +62,9 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             {
                 return item.ToDto();
             }
-            return new ItemDto
-            {
-                Error = $"Item with name {name} could not be found"
-            };
+            return new ItemDto(
+                error: $"Item with name {name} could not be found"
+            );
         }
         return null;
     }
@@ -80,10 +78,9 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             {
                 return item.ToDto();
             }
-            return new ItemDto
-            {
-                Error = $"Item with tag {itemTag} could not be found"
-            };
+            return new ItemDto(
+                error: $"Item with tag {itemTag} could not be found"
+            );
         }
         return null;
     }
@@ -102,12 +99,11 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
         if (_entities.TryGet(id, out var target) && target is not null)
         {
             var item = _itemsIndexer.GetItemByTag(tag);
-            if (item.Type.Equals("error"))
+            if (item.Tag.Equals("error"))
             {
-                return new ItemDto
-                {
-                    Error = $"No item exists with tag {tag}."
-                };
+                return new ItemDto(
+                error: $"Item with name {tag} could not be found"
+            );
             }
             target.Inventory.Items.Add(item);
             return item.ToDto();
@@ -125,10 +121,24 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
         return item;
     }
 
+
+    /// <summary>
+    /// Adds an amount of gold to the target's inventory
+    /// </summary>
+    /// <param name="id">The id for the DamageableEntity to add the gold to</param>
+    /// <param name="amount">The amount of gold to add</param>
+    /// <returns>The resulting amount of gold in the target's inventory.<br/>
+    /// Null if the target entity cannot be found.<br/>
+    /// Negative one if the amount would make the target's gold sum negative.
+    /// </returns>
     public int? AddGold(string id, int amount)
     {
         if (_entities.TryGet(id, out var target) && target is not null)
         {
+            if (amount < 0 - target.Inventory.Gold)
+            {
+                return -1;
+            }
             target.Inventory.Gold += amount;
             return target.Inventory.Gold;
         }
@@ -168,10 +178,9 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             var result = target.Inventory.Items.Find(i => i.Id.Equals(itemId, StringComparison.OrdinalIgnoreCase));
             if (result == null)
             {
-                return new ItemDto
-                {
-                    Error = $"Item id \"{id}\" could not be found in the inventory of {target.Name} ({target.ID})"
-                };
+                return new ItemDto(
+                    error: $"Item id \"{id}\" could not be found in the inventory of {target.Name} ({target.ID})"
+                );
             }
             target.Inventory.Items.Remove(result);
             return result.ToDto();

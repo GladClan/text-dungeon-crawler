@@ -15,7 +15,7 @@ public class DamageableEntity
     private static int _entityCounter = 0;
     public string ID { get; }
     public string Name { get; set; }
-    public string EntityType { get; set; }
+    public string EntityType { get; set; } // This can be used as a tag, like 'main' or 'wizard' and so forth
     public string Race { get; set; }
     public string PartyId { get; set; }
     public int MaxHealth { get; set; }
@@ -40,7 +40,10 @@ public class DamageableEntity
     public EntityInventory Inventory { get; set; } = new();
     public List<Skill> Skills { get; set; } = [];
     public IEntityAI? AI { get; set; }
-    public string? DefaultAttackMessageString; // Valid string parameters are: {SourceName} {TargetName} {AttackDamageType} {AmountSent} {AmountActual}
+    /// <summary>
+    /// Valid string parameters are: {SourceName} {TargetName} {AttackDamageType} {AmountSent} {AmountActual}
+    /// </summary>
+    public string? DefaultAttackMessageString;
     public string DeathMessage { get; set; }
     public bool DoNotDeleteOnDeath { get; set; }
     public bool PlayerControlled { get; set; }
@@ -231,6 +234,40 @@ public class DamageableEntity
         );
     }
 
+    public EffectDto DefaultAttack(DamageableEntity target)
+    {
+        if (!IsEntityAlive)
+        {
+            return new EffectDto
+            {
+                Error = $"{Name} is not alive and cannot deal damage."
+            };
+        }
+        if (!target.IsEntityAlive)
+        {
+            return new EffectDto
+            {
+                Error = $"{target.Name} is not alive and cannot take damage."
+            };
+        }
+        var result = target.TakeDamage(this, DealsMagicDamage ? Magic : Strength, AttackDamageType);
+
+        string defaultMessage = "{SourceName} dealt {AmountActual} {AttackDamageType} damage to {TargetName}";
+        string message = 
+            DefaultAttackMessageString ?? defaultMessage
+            .Replace("{SourceName}", Name ?? "")
+            .Replace("{TargetName}", target.Name ?? "")
+            .Replace("{AttackDamageType}", AttackDamageType.ToString())
+            .Replace("{AmountSent}", result.AmountSent.ToString("F2")) // "F2" formats doubles to 2 decimal places
+            .Replace("{AmountActual}", result.AmountActual.ToString("F2")); // "F2" formats doubles to 2 decimal places
+        
+        return new(
+            message: message,
+            results: [result],
+            wasMagic: DealsMagicDamage
+        );
+    }
+
     /// <summary cref="OnDeath">
     /// Checks if the entity's health is less than or equal to zero. If so, calls the OnDeath method.
     /// </summary>
@@ -246,7 +283,7 @@ public class DamageableEntity
     }
 
     /// <summary>
-    /// If the entity's health is less than zero, sets entity health to zero. Also clears ProficiencyEntries and sets experience to zero<br>
+    /// If the entity's health is less than zero, sets entity health to zero. Also clears ProficiencyEntries and sets experience to zero<br/>
     /// <strong>To Revisit:</strong> Shuold this also decrease level or proficiencies? Increase resistance to necro or radiant damage?
     /// </summary>
     private void OnDeath()
@@ -347,8 +384,8 @@ public class DamageableEntity
     /// Gets the effective proficiency value.
     /// </summary>
     /// <remarks>
-    /// If there is no stored value for the proficiency, the default value is 0.5. Proficiencies are not expected to be negative.<br>
-    /// If the target has no parents, it is that value. If the child has parents, it is 75% of the child, 25% of the parent, and so forth.<br>
+    /// If there is no stored value for the proficiency, the default value is 0.5. Proficiencies are not expected to be negative.<br/>
+    /// If the target has no parents, it is that value. If the child has parents, it is 75% of the child, 25% of the parent, and so forth.<br/>
     /// <b>This is a multiplier value, meaning values are to be used as multipliers. A value of 0.5 decreases the effect by 1/2. A value of 2 means the efect will be twice as effective.</b>
     /// </remarks>
     /// <param name="p">Target proficiency</param>
@@ -389,7 +426,7 @@ public class DamageableEntity
     /// Gets the resistance multiplier of the target DamageType, factoring in defense for physical DamageTypes and magic resistance for magical DamageTypes
     /// </summary>
     /// <remarks>
-    /// Expect to use values between -1 and 1, but values can exceed those parameters.<br>
+    /// Expect to use values between -1 and 1, but values can exceed those parameters.<br/>
     /// <b>This is a multiplier value, meaning values are to be used as multipliers. A value of 0.1 decreases the damage by 10x. A value of -2 means the damage will be reversed, and you can expect to heal the target.</b>
     /// </remarks>
     /// <param name="dtEnum">The target resistance to get</param>

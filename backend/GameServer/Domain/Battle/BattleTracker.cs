@@ -70,16 +70,21 @@ public class BattleTracker(string partyId, string opponentPartyId, EntityService
         return party.Any(e => (e.CurrentHealth / e.MaxHealth * 100) <= criticalPercentage);
     }
 
-    public string? GetPartyMemberAtCriticalHealth(string partyId, int criticalPercentage = 20)
+    public string? GetPartyMemberIdAtCriticalHealth(string partyId, int criticalPercentage = 20)
     {
         var party = _service.GetParty(partyId);
         var result = party.FirstOrDefault(m => (m.CurrentHealth / m.MaxHealth * 100) <= criticalPercentage);
         return result?.Id;
     }
 
-    public List<string> GetPartyIds(string partyId)
+    public List<string> GetEntityIdsInParty(string partyId)
     {
-        return [.._service.GetParty(partyId).Select(e => e.PartyId)];
+        return [.._service.GetParty(partyId).Select(e => e.Id)];
+    }
+
+    public List<DamageableEntityDto> GetDamageableEntityDtosInParty(string partyId)
+    {
+        return [.._service.GetParty(partyId)];
     }
 
     public AddEntityResult AddEntityToBattle(DamageableEntityRequest request)

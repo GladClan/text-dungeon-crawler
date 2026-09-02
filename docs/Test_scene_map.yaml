@@ -1,0 +1,234 @@
+
+TestEntry:
+    Dialogue
+        narrator
+            There are three signs:
+            Left to the gate
+            Forward to the ogre
+            Right to the hermit
+    Choices
+        Go left
+            // Go to: WarriorsGate
+        Go straight
+            // Go to: OgresGate
+        Go right
+            // Go to: HermistHovel
+
+WarriorsGate:
+    Dialogue
+        narrator
+            The gate needs a key to open
+    Choies
+        Use the hermit's key on the gate
+            // CONDITION: HasItem("warriors-gate-key") == true
+            // Go to: WarriorsAbode
+        Go back to the crossroads
+            // Go to: TestEntry
+
+OgresGate:
+    Condition
+        // OgresGateOpen == false
+    IfNotMetRequirements
+        // Go to: OgresGateway
+    Dialogue
+        narrator
+            The gate is shut.
+            There is a sign cahined to the entry.
+            It says you must have a champion to open the door and a sufficient fund for entry.
+            Fifty gold.
+            The price is steep, but the prize is dear.
+    Choices
+        Open the gate
+            // CONDITION: MemberInParty(Warrior) == true && HasGold(50)
+            // EFFECT: 
+                // LoseGold(50)
+                // OgresGateOpen = true
+            // Go to: OgresGateway
+        Go back to the crossroads
+
+HermistHovel:
+    Dialogue
+        Narrator
+            A quaint place, this one, but cozy.
+            The hermit is home, cooking a lovely stew.
+            He addresses you.
+        Hermit
+            Hellew, chapper, what can I dew for yew?
+    Choices
+        Ask for the key
+            // CONDITION: HasItem("warriors-gate-key") == false
+            // EFFECT:
+                // ChangeTitle("Go right", "To the hermit's hovel")
+                // GiveItem("warriors-gate-key")
+            // Go to: GetTheKey
+        Has he any spare change
+            // CONDITION: MemberInParty(Warrior) == true && GottenGold < 2
+            // EFFECT: 
+                // GottenGold++
+                // GiveGold(random(5, 9) * random(5, 9))
+            // Go to: GetTheGold
+        Is there anything more he has to offer?
+            // CONDITION: OgresGateOpen == true && HermitGifted == false
+            // Go to: HermitsGift
+        Go back to the crossroads
+
+WarriorsAbode:
+    Dialogue
+        narrator
+            A stark place, definitely home to a man.
+            Sparsely furbished, I mean.
+        Warrior
+            The ogre awaits.
+            You have the coin?
+            I don't.
+            I believe the hermit may be hiding some. He owes me.
+    Choices
+        Bring the warrior along
+            // CONDITION: MemberInParty(Warrior) == false
+            // EFFECT:
+                // ChangeTitle("Go left", "Go to the warrior's abode")
+                // AddMemberToParty(Warrior)
+            // Go to: TestEntry
+        Go back to the crossroads
+
+GetTheKey:
+    Dialogue
+        Hermit
+            Here it is, here it is.
+            I only hid it as a joke, you see? A prank of no consequence.
+        narrator
+            The hermit looks rather uncomfortable.
+        Hermit
+            Okay, you got me...
+            I owe him a couple coins...
+            Okay, a lot of money.
+            I have it hereabouts, I'm just sad to part with it.
+    Choices
+        Stay awhile
+            // Go to: HermitsHovel
+        Go back to the crossroads
+
+GetTheGold:
+    Dialogue
+        Hermit
+            Okay, alright.
+            Here ya go.
+        narrator
+            He reaches in a spot you would never think to look.
+            It's quite a stack of coins.
+            But you wonder if that's all he has to give.
+    Choices
+        Stay awhile
+        Go back to the crossroads
+
+OgresGateway:
+    Dialogue
+        narrator
+            The gate swings open at your approach, and your money pouch feels the lost weight of missing coins.
+            That was indeed a steep price.
+            You hear a bellow from beyond.
+            It seems the challenger awaits you.
+    Choices
+        Accept the ogre's challenge
+            // Go to: OgreFight
+        Go back to the crossroads
+
+HermitsGift:
+    Condition
+        // Skill check: persuasion(difficulty = medium) == success
+    IfNotMetRequirements
+        // Go to: HermitGiftNotGiven
+    Dialogue
+        Hermit
+            Well... I do have one final prize for ye.
+            I was holdin it in case the time came that I found a worthy champion of me own.
+            But you might profit from it more than I, I see.
+        narrator
+            He offers you a choice of three things:
+            A weapon.
+            A helmet.
+            Or a scroll.
+    Choices
+        Take the weapon
+            // EFFECT: 
+                // GiveItem("polearm-ogre-slayer")      // naginata: powerful against ogres
+                // HermitGifted = true
+            // Go to: YouGotAThing
+        Take the helmet
+            // EFFECT:
+                // GiveItem("stone-helmet")             // really good protection
+                // HermitGifted = true
+            // Go to: YouGotAThing
+        Take the scroll
+            // EFFECT:
+                // GiveItem("spell-scroll-shatter")     // deals damage ogre is weak against, and learns you the spell
+                // HermitGifted = true
+            // Go to: YouGotAThing
+
+HermitGiftNotGiven:
+    Dialogue
+        Hermit
+            Well...
+            I'd rather not part with it.
+            No, I think not.
+        narrator
+            The hermit turns away.
+            It seems he wants to help, but he's unconvinced.
+            Perhaps you can try again later.
+    Choices
+        Stay awhile
+        Go back to the crossroads
+
+YouGotAThing:
+    Dialogue
+        Hermit
+            Well there ya go. Best off be goin.
+    Choices
+        Stay awhile
+        Go back to the crossroads
+
+OgreFight:
+    Dialogue
+        narrator
+            The gate swings swiftly shut behind you
+            Ahead of you is the beast, scarred and mindless, with a swarth of minions about him.
+            He approaches, prepare yourself!
+    Choices
+        The ogre attacks. Defens yourself!
+            // Fight Ogre and goblin minions
+            // [OnBattleEnd]
+                // Go to: BattleWon
+
+BattleWon:
+    Dialogue
+        narrator
+            That was quite that battle.
+            Or perhaps it wasn't, I was in fact not paying attention... sorry.
+            Well, there's one last path to take.
+            The orge had some treasure.
+    Choices
+        Investigate the stacks of gems
+            // Go to: GemPile
+
+GemPile:
+    Dialogue
+        narrator
+            There is a stack of gems.
+            Some of them are enchanted, you can see.
+            On further investigation, the rest are glass, though the enchanted gems look more plain.
+            Take them?
+    Choices
+        What a prize!
+            // EFFECT:
+                // GiveItemsArray(["life-gem", "healing-gem", "fortify-gem", "mana-gem"])
+            // Go to: PrincessTower
+
+PrincessTower:
+    Dialogue
+        narrator
+            But it doesn't end there.
+            The warrior keeps going past, as if he sees a far better prize.
+            He is moving towards a tower ahead, and at the top you can just see a window.
+            There is a lady poking her head out of the window, waving at the knight.
+            It seems he's found his prize, too.
+    // End

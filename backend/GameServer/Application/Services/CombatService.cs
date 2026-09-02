@@ -261,42 +261,11 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
         {
             return null;
         }
-        if (!source.IsEntityAlive)
+        var result = source.DefaultAttack(target);
+        if (result.Error.Length == 0)
         {
-            return new EffectDto
-            {
-                Error = $"{source.Name} is not alive and cannot take damage."
-            };
+            _battle.AddLogEntry(result);
         }
-        if (!target.IsEntityAlive)
-        {
-            return new EffectDto
-            {
-                Error = $"{target.Name} is not alive and cannot deal damage."
-            };
-        }
-
-        var effect = target.TakeDamage(
-            source: source,
-            amount: source.DealsMagicDamage ? source.Magic : source.Strength,
-            damageType: source.AttackDamageType
-        );
-
-        string defaultMessage = "{SourceName} dealt {AmountActual} {AttackDamageType} damage to {TargetName}";
-        string message = 
-            source.DefaultAttackMessageString ?? defaultMessage
-            .Replace("{SourceName}", source.Name ?? "")
-            .Replace("{TargetName}", source.Name ?? "")
-            .Replace("{AttackDamageType}", source.AttackDamageType.ToString())
-            .Replace("{AmountSent}", effect.AmountSent.ToString("F2")) // "F2" formats doubles to 2 decimal places
-            .Replace("{AmountActual}", effect.AmountActual.ToString("F2")); // "F2" formats doubles to 2 decimal places
-
-        var result = new EffectDto(
-            message: message,
-            results: [effect],
-            wasMagic: source.DealsMagicDamage
-        );
-        _battle.AddLogEntry(result);
         return result;
     }
 }

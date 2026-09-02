@@ -21,7 +21,12 @@ public enum Proficiency
     enchanting,
     stealth,
     nobility,
-    destiny
+    persuasion,
+    destiny,
+
+    // Spellstrike specifics
+    firecasting,
+    icecasting,
 }
 
 /*
@@ -61,6 +66,11 @@ public static class ProficienciesHierarchies
 
             Proficiency.poison => Proficiency.potions,
 
+            Proficiency.persuasion => Proficiency.nobility,
+
+            Proficiency.firecasting => Proficiency.spellstrike,
+            Proficiency.icecasting => Proficiency.spellstrike,
+            
             _ => null
         };
     }

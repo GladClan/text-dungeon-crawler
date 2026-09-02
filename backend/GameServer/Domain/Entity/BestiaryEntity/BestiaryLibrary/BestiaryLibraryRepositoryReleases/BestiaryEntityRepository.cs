@@ -54,6 +54,158 @@ public static class InitialReleaseRepository
                 initialInventoryTags: ["error", "error"],
                 initialSkillTags: ["error"]
             )
+        },
+        {
+            "ogre-brute",
+            new BeastiaryEntity(
+                name: "Ogre Brute",
+                entityType: "monster",
+                race: "Ogre",
+                tag: "ogre-brute",
+                partyId: "",
+                health: 260,
+                mana: 0,
+                magic: 0,
+                strength: 20,
+                defense: 16,
+                attackType: DamageType.crushing,
+                dealsMagicDamage: false,
+                speed: 12,
+                level: 1,
+                experience: 50,
+                resistances: new Dictionary<DamageType, double>(SpeciesDictionary.PlayableSpeciesStats[Species.Goblin].Resistances),
+                proficiencies: new Dictionary<Proficiency, double>()
+                {
+                    {Proficiency.bludgeoning, 1.7},
+                    {Proficiency.melee_weapons, 1.2},
+                    {Proficiency.combat, 1},
+                },
+                defaultAttackMessageString: "{SourceName} strikes {TargetName} with a giant fist, dealing {AmountActual} damage",
+                deathMessage: "",
+                description: "A rather unintelligent beast known for its quick temper and massive stature. The brute strength alone of this beast is enough to send any normal fighter packing.",
+                bestiaryEntry: "This should be further description of this ogre, talkign about the physical or tempermental attributes of the beast.",
+                journalEntry: "Here is written a little blurb. Perhaps informational, perhaps more jollitous.",
+                loreEntry1: "Lore!",
+                loreEntry2: "LORE!!",
+                defaultAi: "custom-ogre",              // Needs AI
+                initialInventoryTags: ["club-giant"],
+                initialSkillTags: [""]
+            )
+        },
+        {
+            "goblin-vermin",
+            new(
+                name: "Goblin Vermin",
+                entityType: "monster",
+                race: Species.Goblin.ToString(),
+                tag: "goblin-vermin",
+                partyId: "",
+                health: 40,
+                mana: 40,
+                magic: 10,
+                strength: 10,
+                defense: 10,
+                attackType: DamageType.piercing,
+                dealsMagicDamage: false,
+                speed: 10,
+                level: 1,
+                experience: 10,
+                resistances: new Dictionary<DamageType, double>(SpeciesDictionary.PlayableSpeciesStats[Species.Goblin].Resistances),
+                proficiencies: new Dictionary<Proficiency, double>()
+                {
+                    {Proficiency.bludgeoning, 0.75},
+                    {Proficiency.piercing, 0.75},
+                    {Proficiency.stealth, 0.66},
+                    {Proficiency.melee_weapons, 0.6},
+                },
+                defaultAttackMessageString: "{SourceName} leaps upon {TargetName} and bites, dealing {AmountActual} damage",
+                deathMessage: "",
+                description: SpeciesDictionary.PlayableSpeciesStats[Species.Goblin].SpeciesDescription,
+                bestiaryEntry: "",      // Further description about the physical or tempermental attributes of this specific creature.
+                journalEntry: "",       // A little blurb--perhaps informational, perhaps jollitous
+                loreEntry1: "",         // Lore!
+                loreEntry2: "",         // LORE!!
+                defaultAi: "goblin",
+                initialInventoryTags: ["club", "potion-health"],
+                initialSkillTags: ["steal"]
+            )
+        },
+        {
+            "goblin-fireslinger",
+            new(
+                name: "Goblin Fireslinger",
+                entityType: "monster",
+                race: Species.Goblin.ToString(),
+                tag: "goblin-fireslinger",
+                partyId: "",
+                health: 40,
+                mana: 100,
+                magic: 12,
+                strength: 8,
+                defense: 8,
+                attackType: DamageType.crushing,
+                dealsMagicDamage: false,
+                speed: 12,
+                level: 1,
+                experience: 14,
+                resistances: new Dictionary<DamageType, double>(SpeciesDictionary.PlayableSpeciesStats[Species.Goblin].Resistances),
+                proficiencies: new Dictionary<Proficiency, double>()
+                {
+                    {Proficiency.bludgeoning, 0.65},
+                    {Proficiency.firecasting, 0.9},
+                    {Proficiency.spellstrike, 0.7},
+                    {Proficiency.spellcasting, 0.6},
+                },
+                defaultAttackMessageString: "{SourceName} leaps at {TargetName} and strikes, dealing {AmountActual} damage",
+                deathMessage: "",
+                description: SpeciesDictionary.PlayableSpeciesStats[Species.Goblin].SpeciesDescription,
+                bestiaryEntry: "",
+                journalEntry: "",
+                loreEntry1: "",
+                loreEntry2: "",
+                defaultAi: "goblin",
+                initialInventoryTags: ["dagger", "potion-mana", "potion-mana", "potion-health"],
+                initialSkillTags: ["firecast", "firebolt"]
+            )
         }
     };
 }
+
+// {
+//     "",
+//     new BeastiaryEntity(
+//         name: "",
+//         entityType: "",
+//         race: "",
+//         tag: "",
+//         partyId: "",
+//         health: 0,
+//         mana: 0,
+//         magic: 0,
+//         strength: 10,
+//         defense: 10,
+//         attackType: DamageType.damage,
+//         dealsMagicDamage: false,
+//         speed: 10,
+//         level: 1,
+//         experience: 10,
+//         resistances: new Dictionary<DamageType, double>()
+//         {
+//             // 
+//         },
+//         proficiencies: new Dictionary<Proficiency, double>()
+//         {
+//             // 
+//         },
+//         defaultAttackMessageString: "",                      // Valid string parameters are: {SourceName} {TargetName} {AttackDamageType} {AmountSent} {AmountActual}
+//         deathMessage: "",
+//         description: "",
+//         bestiaryEntry: "",
+//         journalEntry: "",
+//         loreEntry1: "",
+//         loreEntry2: "",
+//         defaultAi: "",
+//         initialInventoryTags: [""],
+//         initialSkillTags: [""]
+//     )
+// }

@@ -12,7 +12,9 @@ public enum ShopCollections
 public enum ShopTypes
 {
     error = 1000,
+    Potions = 3,
     Equipment = 10,
+    Magic = 12,
     Siege_Weapons = 15
 }
 

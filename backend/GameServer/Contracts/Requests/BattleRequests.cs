@@ -7,8 +7,7 @@ public sealed class BattleStartRequest
     [Required]
     [MinLength(1)]
     public string PartyId { get; init; } = string.Empty;
-
     public string OpponentPartyId { get; init; } = string.Empty;
-
+    public List<string> BestiaryEntityTags = [];
     public List<DamageableEntityRequest> entityRequests = [];
 }

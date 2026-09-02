@@ -49,6 +49,15 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
         return result.ToDtos();
     }
 
+    public DamageableEntityDto? ChangeParty(string targetDamageableEntityId, string targetPary)
+    {
+        if (!TryGetEntity(targetDamageableEntityId, out var target))
+        {
+            return null;
+        }
+        target.PartyId = targetPary;
+        return target.ToDto();
+    }
     public DamageableEntityDto? GetById(string id)
     {
         if (!TryGetEntity(id, out var entity))
@@ -144,7 +153,7 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
         return result;
     }
 
-    public AddEntityResult AddBeastiaryEntity(string tag)
+    public AddEntityResult AddBeastiaryEntity(string tag, string? partyId = null)
     {
         var result = new AddEntityResult();
         var entity = _index.NewBeastiaryEntityByTag(tag);
@@ -160,6 +169,12 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
                     $"The requested tag '{tag}' did not correspond with any valid entity."
                 )]
             };
+        }
+
+        // If a party was given, assign the entity to that party
+        if (partyId is not null)
+        {
+            entity.PartyId = partyId;
         }
 
         // Add the items to the entity's inventory from its initial items list
