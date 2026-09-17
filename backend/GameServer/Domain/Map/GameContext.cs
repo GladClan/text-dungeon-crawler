@@ -1,19 +1,51 @@
-using GameServer.Application.Services;
+using GameServer.Domain.Battle;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Map.Scene;
 
 namespace GameServer.Domain.Map;
 
-public interface IGameContext
+public class GameContext
 {
-    public List<SceneContainer> Scenes { get; init; }
-    public SceneContainer CurrentScene { get; protected set; }
-    public List<SceneContainer> SceneHistory { get; protected set; }
+    public List<ISceneContainer> Scenes { get; init; }
+    public ISceneContainer CurrentScene { get; set; }
+    public List<ISceneContainer> SceneHistory { get; protected set; }
     public IGameContextState Flags { get; init; }
-    public SceneContainer GetNextScene(Biome targetBiome);
-    public InventoryService InventoryService { get; init; }
+    public BattleTracker? CurrentBattle { get; set; }
+    private string? PendingResponse { get; set; }
 
-    public void SetScene(SceneContainer scene)
+    public GameContext(    
+        List<ISceneContainer> scenes,
+        IGameContextState gameContextState
+    )
+    {
+        if (scenes.Count < 1)
+        {
+            throw new ArgumentException("Game must have at least one scene, you ninny!", nameof(scenes));
+        }
+        Scenes = scenes;
+        CurrentScene = scenes[0];
+        Flags = gameContextState;
+        SceneHistory = [];
+    }
+    
+    public void SetPendingResponse(string response)
+    {
+        PendingResponse = response;
+    }
+
+    public string? GetPendingResponse()
+    {
+        string? response = PendingResponse;
+        PendingResponse = null;
+        return response;
+    }
+
+    public ISceneContainer GetNextScene(Biome targetBiome)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetScene(ISceneContainer scene)
     {
         if (CurrentScene is not null)
         {
@@ -22,26 +54,6 @@ public interface IGameContext
 
         CurrentScene = scene;
     }
-
-    public SceneContainer? ReturnToPreviousScene()
-    {
-        if (SceneHistory.Count == 0)
-        {
-            return null;
-        }
-
-        CurrentScene = SceneHistory.Last();
-        SceneHistory.RemoveAt(SceneHistory.Count - 1);
-
-        return CurrentScene;
-    }
-
-    // Services for use in IEventOptions
-    public EntityService EntityService { get; init; }
-    public CombatService CombatService { get; init; }
-    public BattleService BattleService { get; init; }
-    public SkillService SkillService { get; init; }
-    public StatisticsService StatisticsService { get; init; }
 }
 
 /// <summary>
@@ -52,3 +64,5 @@ public interface IGameContext
 /// <code>public bool LeverPulled { get; set; }</code>
 /// </example>
 public interface IGameContextState { }
+
+public class TestGameContextState: IGameContextState { }

@@ -1,0 +1,679 @@
+# C# Project Map
+
+This map covers all 87 C# files under `backend/GameServer`. Method entries use the format `Name(parameters): ReturnType`. Constructors are listed separately because constructors do not have return types in C#.
+
+## API Controllers
+
+- [CombatController.cs](../backend/GameServer/Api/Controllers/CombatController.cs):
+    - `CombatController(CombatService) : ControllerBase`;
+    - methods:
+        - `IdNotFound(string): string`
+        - `GetProficiencyMultiplier(string,string): ActionResult<ProficiencyDto>`
+        - `GetResistance(string,string): ActionResult<ProficiencyDto>`
+        - `GetExperienceForNextLevel(string): ActionResult<int>`
+        - `GetDeathMessage(string): ActionResult<string>`
+        - `UseItem(UseItemOrSkill): ActionResult<EffectDto>`
+        - `UseSkill(UseItemOrSkill): ActionResult<EffectDto>`
+        - `DefaultAttack(string,string): ActionResult<EffectDto>`.
+- [EntitiesController.cs](../backend/GameServer/Api/Controllers/EntitiesController.cs):
+    - `EntitiesController(EntityService) : ControllerBase`;
+    - methods:
+        - `IdNotFound(string): string`
+        - `GetAllNames(): ActionResult<string[]>`
+        - `GetAllIds(): ActionResult<string[]>`
+        - `GetParty(string): ActionResult<List<DamageableEntityDto>>`
+        - `GetById(string): ActionResult<DamageableEntityDto>`
+        - `AddEntity(DamageableEntityRequest): ActionResult<DamageableEntityDto>`
+        - `AddBestiaryEntity(string): ActionResult<DamageableEntityDto>`
+        - `CloneEntity(string): ActionResult<DamageableEntityDto>`
+        - `FixStats(string,FixStatsRequest): ActionResult<DamageableEntityDto>`
+        - `GetAllResistances(string): ActionResult<List<ResistanceDto>>`
+        - `GetAllProficiencies(string): ActionResult<List<ProficiencyDto>>`
+        - `SetAllResistances(string,List<ResistanceRequest>): ActionResult<List<ResistanceDto>>`
+        - `SetAllProficiencies(string,List<ProficiencyRequest>): ActionResult<List<ResistanceDto>>`
+        - `SetResistance(string,ResistanceRequest): ActionResult<ResistanceDto>`
+        - `SetProficiency(string,ProficiencyRequest): ActionResult<ResistanceDto>`
+        - `ChangeResistance(string,ResistanceRequest): ActionResult<ResistanceDto>`
+        - `ChangeProficieny(string,ResistanceRequest): ActionResult<ResistanceDto>`
+        - `GetIsHidden(string): ActionResult<bool>`
+        - `Hide(string): ActionResult<bool>`
+        - `Reveal(string): ActionResult<bool>`
+        - `GetSpeed(string): ActionResult<double>`
+        - `RemoveDeadPartyMembers(string,string): ActionResult<List<DamageableEntityDto>>`
+        - `RemoveDeadPartyMember(string): ActionResult<DamageableEntityDto>`
+        - `AddParseErrors(IEnumerable<ParseIssue>): void`.
+- [EventController.cs](../backend/GameServer/Api/Controllers/EventController.cs): comments only; no active declarations.
+- [InventoryController.cs](../backend/GameServer/Api/Controllers/InventoryController.cs):
+    - `InventoryController(InventoryService) : ControllerBase`;
+    - methods:
+        - `IdNotFound(string): string`
+        - `GetInventory(string): ActionResult<EntityInventoryDto>`
+        - `GetGold(string): ActionResult<int>`
+        - `GetAllItems(string): ActionResult<List<ItemDto>>`
+        - `GetItemById(string,string): ActionResult<ItemDto>`
+        - `GetItemByName(string,string): ActionResult<ItemDto>`
+        - `GetItemByTag(string,string): ActionResult<ItemDto>`
+        - `GetItemCount(string): ActionResult<int>`
+        - `AbsorbInventory(string,string): ActionResult<EntityInventoryDto>`
+        - `RemoveItemById(string,string): ActionResult<ItemDto>`
+        - `ClearInventory(string): ActionResult`.
+- [SkillController.cs](../backend/GameServer/Api/Controllers/SkillController.cs):
+    - `SkillController(SkillService) : ControllerBase`;
+    - methods:
+        - `IdNotFound(string): string`
+        - `GetAllSkills(string): ActionResult<List<SkillDto>>`
+        - `GetSkillById(string,string): ActionResult<SkillDto>`
+        - `GetSkillByName(string,string): ActionResult<SkillDto>`
+        - `RemoveById(string,string): ActionResult<SkillDto>`
+        - `RemoveByName(string,string): ActionResult<SkillDto>`
+        - `ForgetAllSkills(string): ActionResult<List<SkillDto>>`.
+- [StatsController.cs](../backend/GameServer/Api/Controllers/StatsController.cs):
+    - `StatsController(EntityStatsService) : ControllerBase`;
+    - methods:
+        - `IdNotFound(string): string`
+        - `GetStats(string): ActionResult<EntityStatsDto>`
+        - `GetProficiencyHierarchy(string,string): ActionResult<List<ProficiencyDto>>`
+        - `GetStoredProficiency(string,string): ActionResult<ProficiencyDto>`
+        - `StatsAreHidden(string): ActionResult<bool>`
+        - `HideStats(string): ActionResult<IntPairDto>`
+        - `ShowStats(string): ActionResult<IntPairDto>`.
+
+## Application
+
+- [Common/EnumParser.cs](../backend/GameServer/Application/Common/EnumParser.cs):
+    - static `EnumParser`;
+    - extension overloads `Parse(List<string>): EnumListParseResult<DamageType>`
+    - methods:
+        - `Parse(List<ProficiencyRequest>?): EnumDictionaryParseResult<Proficiency>`
+        - `Parse(List<ResistanceRequest>?): EnumDictionaryParseResult<DamageType>`.
+- [Common/OrdinalDateString.cs](../backend/GameServer/Application/Common/OrdinalDateString.cs):
+    - static `OrdinalDateString`;
+    - methods:
+        - `GetOrdinalDate(int?,bool): string`.
+- [Services/BattleService.cs](../backend/GameServer/Application/Services/BattleService.cs):
+    - `BattleService(StatisticsService,EntityService)`;
+    - methods:
+        - `CommenceBattle(BattleStartRequest): BattleDto`
+        - `EndBattle(): BattleEndDto?`
+        - `GetInitiativeOrder(): List<InitiativeDto>?`
+        - `NextTurn(): TurnoverDto?`
+        - `OnBattleEnd(): List<string>?`
+        - `AddContinuousEffect(IBattleEffect): bool?`
+        - `RemoveAllContinuousEffects(string): bool?`
+        - `RemoveContinuousEffect(string,string): bool?`.
+- [Services/CombatService.cs](../backend/GameServer/Application/Services/CombatService.cs):
+    - `CombatService(EntityStore,BattleTracker)`;
+    - methods:
+        - `GetExperienceForNextLevel(int): int` (static/private)
+        - `TryGetEntity(string,out DamageableEntity?): bool` (private)
+        - `GetProficiencyMultiplier(string,string): ProficiencyDto?`
+        - `GetResistanceMultiplier(string,string): ResistanceDto?`
+        - `TakeDamage(DamageRequest): DamageResultDto?`
+        - `Heal(HealRequest): DamageResultDto?`
+        - `AddHealthBuffer(HealRequest): DamageResultDto?`
+        - `ChangeMana(ManaRequest): DamageResultDto?`
+        - `AddExperience(AddExperienceRequest): LevelUpDto?`
+        - `GetExperienceForNextLevel(string): int?`
+        - `AddProficiencyEntry(AddProficiencyEntryRequest): StringDoubleDto?`
+        - `GetDeathMessage(string): string?`
+        - `UseItem(string,string,string,List<string>?): EffectDto?`
+        - `UseSkill(string,string,string,List<string>?): EffectDto?`
+        - `DefaultAttack(string,string): EffectDto?`.
+- [Services/EntityService.cs](../backend/GameServer/Application/Services/EntityService.cs):
+    - `EntityService(EntityStore,BestiaryIndex,IEntityAIIndex,InventoryService,SkillService)`;
+    - methods:
+        - `TryGetEntity(string,out DamageableEntity?): bool` (private)
+        - `TryParseDamageType(string,out DamageType): bool` (private static)
+        - `GetAllNames(): string[]`
+        - `GetAllIds(): string[]`
+        - `GetParty(string): List<DamageableEntityDto>`
+        - `ChangeParty(string,string): DamageableEntityDto?`
+        - `GetById(string): DamageableEntityDto?`
+        - `AddEntityFromRequest(DamageableEntityRequest): AddEntityResult`
+        - `AddBeastiaryEntity(string,string?): AddEntityResult`
+        - `CloneEntity(string): AddEntityResult?`
+        - `FixStats(string,FixStatsRequest): DamageableEntityDto?`
+        - `GetAllResistances(string): List<ResistanceDto>?`
+        - `GetAllProficiencies(string): List<ProficiencyDto>?`
+        - `SetAllResistances(string,List<ResistanceRequest>): EnumDictionaryParseResult<DamageType>?`
+        - `SetAllProficiencies(string,List<ProficiencyRequest>): EnumDictionaryParseResult<Proficiency>?`
+        - `SetResistanceMultiplier(string,ResistanceRequest): ResistanceDto?`
+        - `SetProficiency(string,ProficiencyRequest): ProficiencyDto?`
+        - `IncreaseResistance(string,ResistanceRequest): ResistanceDto?`
+        - `IncreaseProficiency(string,ProficiencyRequest): ProficiencyDto?`
+        - `AddExperience(string,int): LevelUpDto?`
+        - `IsHidden(string): bool?`
+        - `ToggleIsHidden(string): bool?`
+        - `GetSpeed(string): double?`
+        - `GetDamageableEntityObject(string): DamageableEntity?`
+        - `RemoveEntitiesNotAliveInParty(string): List<DamageableEntityDto>`
+        - `RemoveEntityNotAlive(string): DamageableEntityDto?`.
+- [Services/EntityStatsService.cs](../backend/GameServer/Application/Services/EntityStatsService.cs):
+    - `EntityStatsService(EntityStore)`;
+    - methods:
+        - `TryGetEntity(string,out DamageableEntity?): bool` (private)
+        - `GetStats(string): EntityStatsDto?`
+        - `SetEntityExperience(string,int): IntPairDto?`
+        - `SetEntityLevel(string,int): IntPairDto?`
+        - `SetMaxHealth(string,int): IntPairDto?`
+        - `SetCurrentHealth(string,int): IntPairDto?`
+        - `SetMaxMana(string,int): IntPairDto?`
+        - `SetCurrentMana(string,int): IntPairDto?`
+        - `SetMagic(string,int): IntPairDto?`
+        - `SetStrength(string,int): IntPairDto?`
+        - `SetDefense(string,int): IntPairDto?`
+        - `SetSpeed(string,int): IntPairDto?`
+        - `GetProficiencyHierarchy(string,string): List<ProficiencyDto>?`
+        - `GetStoredProficiency(string,string): ProficiencyDto?`
+        - `StatsDisplayed(string): bool?`
+        - `ToggleDisplayStats(string): bool?`.
+- [Services/EventServices.cs](../backend/GameServer/Application/Services/EventServices.cs):
+    - `EventServices(EntityStore)`;
+    - methods:
+        - `ChallengeEntitySkill(string,double,Proficiency): ChallengeResultDto?`.
+- [Services/InventoryService.cs](../backend/GameServer/Application/Services/InventoryService.cs):
+    - `InventoryService(EntityStore,IItemsIndex)`;
+    - methods:
+        - `GetInventory(string): EntityInventoryDto?`
+        - `GetGold(string): int?`
+        - `GetAllItems(string): List<ItemDto>?`
+        - `GetItemById(string,string): ItemDto?`
+        - `GetItemByName(string,string): ItemDto?`
+        - `GetItemByTag(string,string): ItemDto?`
+        - `GetItemCount(string): int?`
+        - `AddItemByTag(string,string): ItemDto?`
+        - `NewItemByTag(string): Item?`
+        - `AddGold(string,int): int?`
+        - `SetGold(string,int): int?`
+        - `AbsorbInventory(string,string): EntityInventoryDto?`
+        - `RemoveItemById(string,string): ItemDto?`
+        - `ClearInventory(string): bool?`.
+- [Services/SkillService.cs](../backend/GameServer/Application/Services/SkillService.cs):
+    - `SkillService(EntityStore,ISkillsIndex)`;
+    - methods:
+        - `GetAllSkills(string): List<SkillDto>?`
+        - `GetSkillById(string,string): SkillDto?`
+        - `GetSkillByName(string,string): SkillDto?`
+        - `AddSkillByTag(string,string): SkillDto?`
+        - `NewSkillByTag(string): Skill?`
+        - `RemoveSkillById(string,string): SkillDto?`
+        - `RemoveSkillByName(string,string): SkillDto?`
+        - `LearnAllSkillsFromSource(string,string): List<SkillDto>?`
+        - `ForgetAllSkills(string): List<SkillDto>?`.
+- [Services/StatisticsService.cs](../backend/GameServer/Application/Services/StatisticsService.cs):
+    - `StatisticsService(StatisticsTracker)`;
+    - methods:
+        - `GetPartyStatistic(PartyStatistic): double`
+        - `GetEntityStatistic(string,EntityStatistic): double?`
+        - `AddEntriesToStats(List<BattleLogEntry>): bool`.
+
+## Contracts
+
+### DTOs
+
+- [SkillDto.cs](../backend/GameServer/Contracts/DTOs/SkillDto.cs):
+    - `SkillDto`; data-only.
+- [ItemDto.cs](../backend/GameServer/Contracts/DTOs/ItemDto.cs):
+    - `ItemDto`;
+    - constructors
+        - `ItemDto(string,string,string,int,string,bool,bool,string,string?,string?,string?,int?,bool?)`
+        - `ItemDto(string)`;
+    - no methods.
+- [EntityInventoryDto.cs](../backend/GameServer/Contracts/DTOs/EntityInventoryDto.cs):
+    - `EntityInventoryDto`; data-only.
+- [DamageableEntityDto.cs](../backend/GameServer/Contracts/DTOs/DamageableEntityDto.cs):
+    - `DamageableEntityDto`; data-only.
+- [EntityStatsDtos.cs](../backend/GameServer/Contracts/DTOs/EntityStatsDtos.cs):
+    - `EntityStatsDto()`
+    - `IntPairDto`;
+    - constructors
+        - `IntPairDto()`
+        - `IntPairDto(string)`
+        - `IntPairDto(int,int)`;
+    - no methods.
+- [CombatDtos.cs](../backend/GameServer/Contracts/DTOs/CombatDtos.cs):
+    - `ProficiencyDto`
+        - `ResistanceDto`
+        - `DamageResultDto`
+        - `LevelUpDto()`
+        - `StringDoubleDto(string,double,string)`
+        - `EffectDto`;
+        - constructors for the first three and `EffectDto()`
+            - `EffectDto(string,List<DamageResultDto>,bool)`
+            - `EffectDto(string)`; no methods.
+- [EventDtos.cs](../backend/GameServer/Contracts/DTOs/EventDtos.cs):
+    - `BattleDto`
+    - `NextTurnDto`
+    - `InitiativeDto`
+    - `TurnoverDto`
+    - `BattleEndDto`
+    - `ChallengeResultDto`
+    - `EventResultDto`;
+    - constructors
+        - `EventResultDto(string)`
+        - `EventResultDto(bool)`
+        - `EventResultDto(bool,bool,string,List<TargetOption>)`;
+    - no methods.
+
+### Mappers and Parsing
+
+- [Mappers/EntityMapper.cs](../backend/GameServer/Contracts/Mappers/EntityMapper.cs):
+    - static `EntityMapper`;
+    - extension methods:
+        - `ToDto(DamageableEntity): DamageableEntityDto`
+        - `ToDtos(IEnumerable<DamageableEntity>): List<DamageableEntityDto>`
+        - `ToResistanceDtos(IDictionary<DamageType,double>?): List<ResistanceDto>`
+        - `ToProficiencyDtos(IDictionary<Proficiency,double>?): List<ProficiencyDto>`
+        - `ToStringKeyDictionary<TEnum>(Dictionary<TEnum,double>): Dictionary<string,double>`
+        - `SkillToDto(Skill): SkillDto`
+        - `StatsToDto(DamageableEntity): EntityStatsDto`.
+- [Mappers/InventoryMapper.cs](../backend/GameServer/Contracts/Mappers/InventoryMapper.cs):
+    - static `InventoryMapper`;
+    - extension methods:
+        - `ToDto(EntityInventory): EntityInventoryDto`
+        - `ToDto(Item): ItemDto`.
+- [Parsing/AddEntityResult.cs](../backend/GameServer/Contracts/Parsing/AddEntityResult.cs):
+    - `AddEntityResult`;
+    - methods:
+        - `AddErrors(IEnumerable<ParseIssue>): void`
+        - `IsValid(): bool`.
+- [Parsing/EnumDictionaryParseResult.cs](../backend/GameServer/Contracts/Parsing/EnumDictionaryParseResult.cs):
+    - `EnumDictionaryParseResult<TEnum>` and `EnumListParseResult<TEnum>` constrained to `struct, Enum`; data-only.
+- [Parsing/ParseIssue.cs](../backend/GameServer/Contracts/Parsing/ParseIssue.cs): record `ParseIssue(string,string)`; data-only.
+
+### Requests
+
+- [Requests/BattleRequests.cs](../backend/GameServer/Contracts/Requests/BattleRequests.cs):
+    - `BattleStartRequest`; data-only.
+- [Requests/CombatRequests.cs](../backend/GameServer/Contracts/Requests/CombatRequests.cs):
+    - `DamageRequest`
+    - `HealRequest`
+    - `ManaRequest`
+    - `AddExperienceRequest`
+    - `AddProficiencyEntryRequest`
+    - `UseItemOrSkill`;
+    - data-only.
+- [Requests/EntityRequests.cs](../backend/GameServer/Contracts/Requests/EntityRequests.cs):
+    - `ProficiencyRequest`
+    - `ResistanceRequest`
+    - `DamageableEntityRequest`
+    - `SetSpeedRequest`
+    - `ChangeHealthRequest`
+    - `ChangeManaRequest`
+    - `FixStatsRequest`;
+    - data-only.
+- [Requests/InventoryRequests.cs](../backend/GameServer/Contracts/Requests/InventoryRequests.cs):
+    - `InventoryRequest`
+    - `AddItemByIdRequest`
+    - `RemoveItemByNameRequest`
+    - `RemoveItemByIndexRequest`;
+    - data-only.
+- [Requests/SkillsRequests.cs](../backend/GameServer/Contracts/Requests/SkillsRequests.cs):
+    - `LearnSkillByIdRequest`; data-only.
+
+## Data Annotations
+
+- [EnumListAttribute.cs](../backend/GameServer/DataAnnotations/EnumListAttribute.cs):
+    - `EnumListAttribute : ValidationAttribute`; constructor `EnumListAttribute(Type)`; `IsValid(object?,ValidationContext): ValidationResult?`.
+- [MinValueAttribute.cs](../backend/GameServer/DataAnnotations/MinValueAttribute.cs):
+    - `MinimumValueAttribute : ValidationAttribute`; constructor `MinimumValueAttribute(double)`; `IsValid(object?,ValidationContext): ValidationResult?`.
+
+## Domain
+
+### Battle
+
+- [IBattleEffect.cs](../backend/GameServer/Domain/Battle/IBattleEffect.cs):
+    - interface `IBattleEffect`;
+    - methods:
+        - `Apply(DamageableEntity): bool`
+        - `Revert(DamageableEntity): bool`.
+- [StatusEffect.cs](../backend/GameServer/Domain/Battle/StatusEffect.cs):
+    - `StatusEffect(...) : IBattleEffect`;
+    - methods:
+        - `Apply(DamageableEntity): bool`
+        - `Revert(DamageableEntity): bool`
+        - `ModifyStat(DamageableEntity,StatType,double,DamageType): bool` (private static).
+- [StatBuffEffect.cs](../backend/GameServer/Domain/Battle/StatBuffEffect.cs):
+    - `StatBuffEffect(...) : IBattleEffect`;
+    - methods:
+        - `Apply(DamageableEntity): bool`
+        - `Revert(DamageableEntity): bool`
+        - `ModifyStat(DamageableEntity,StatType,double,DamageType?,Proficiency?): bool` (private static).
+- [BattleTracker.cs](../backend/GameServer/Domain/Battle/BattleTracker.cs):
+    - `BattleTracker(string,string,EntityService)`;
+    - methods:
+        - `GetBattleEffectsGroupedById(): IEnumerable<IGrouping<string,IBattleEffect>>`
+        - `RemoveBattleEffect(IBattleEffect): bool`
+        - `EntityHasBattleEffect(string,string): bool`
+        - `GetBattleEffect(string,string): IBattleEffect?`
+        - `AddContinuousEffect(IBattleEffect): bool`
+        - `GetAllEfectsForTarget(string): List<IBattleEffect>`
+        - `GetEntity(string): DamageableEntity?`
+        - `ExistsPartyMemberAtCriticalHealth(string,int): bool`
+        - `GetPartyMemberIdAtCriticalHealth(string,int): string?`
+        - `GetEntityIdsInParty(string): List<string>`
+        - `GetDamageableEntityDtosInParty(string): List<DamageableEntityDto>`
+        - `AddEntityToBattle(DamageableEntityRequest): AddEntityResult`
+        - `AddLogEntry(EffectDto): bool`.
+- [BattleLog.cs](../backend/GameServer/Domain/Battle/BattleLog.cs):
+    - `BattleLog()` and `BattleLogEntry()`;
+    - methods:
+        - `GetAllEntries(): List<BattleLogEntry>`
+        - `GetEntriesBySource(string): List<BattleLogEntry>`
+        - `AddNewEntries(EffectDto): bool`
+        - `GetHighestSingleDamage(int): string?`
+        - `GetHasAttackedSource(string,int): string?`
+        - `GetHighestDamageSent(): string?`
+        - `GetMostDamage(): string?`
+        - `GetMostHealer(int): string?`
+        - `GetFirstFatalDamage(): string?`
+        - `GetMagicUser(): string?`
+        - `GetUsedMagicMost(): string?`
+        - `GetRecentActionsFromSource(string): List<string>`.
+
+### Entities and AI
+
+- [DamageableEntity.cs](../backend/GameServer/Domain/Entity/DamageableEntity.cs):
+    - `DamageableEntity`;
+        - constructors `DamageableEntity()`
+        - full-stat constructor;
+    - methods:
+        - `Heal(DamageableEntity,double): DamageResultDto`
+        - `AddHealthBuffer(DamageableEntity,double,DamageType): DamageResultDto`
+        - `TakeDamage(DamageableEntity,double,DamageType): DamageResultDto`
+        - `DefaultAttack(DamageableEntity): EffectDto`
+        - `DidEntityDie(): bool`
+        - `OnDeath(): void` (private)
+        - `ChangeMana(double): DamageResultDto`
+        - `GetProficiencyHierarchy(Proficiency): List<ProficiencyDto>`
+        - `GetStoredProficiency(Proficiency): ProficiencyDto`
+        - `GetProficiencyMultiplier(Proficiency): ProficiencyDto`
+        - `GetResistanceMultiplier(DamageType): ResistanceDto`
+        - `IncreaseResistance(DamageType,double): ResistanceDto`
+        - `IncreaseProficiency(Proficiency,double): ProficiencyDto`
+        - `AddProficiencyEntry(Proficiency,int): StringDoubleDto`
+        - `GetExperienceForNextLevel(int?): int`
+        - `AddExperience(int): LevelUpDto`
+        - `LevelUpStack(int): int` (private)
+        - `Clone(): DamageableEntity`
+        - `GenerateEntityId(): string` (private).
+- [EntityInventory.cs](../backend/GameServer/Domain/Entity/EntityInventory.cs):
+    - `EntityInventory(List<Item>,int)` and parameterless constructor;
+    - methods:
+        - `AddItem(Item): EntityInventory`
+        - `HasItem(string): bool`
+        - `Clone(): EntityInventory`.
+- [EntitySpeciesDefaults.cs](../backend/GameServer/Domain/Entity/EntitySpeciesDefaults.cs):
+    - `SpeciesDefaultObject(Dictionary<DamageType,double>,string)` and static `SpeciesDictionary`; data-only.
+- [BestiaryEntity/BeastiaryEntity.cs](../backend/GameServer/Domain/Entity/BestiaryEntity/BeastiaryEntity.cs):
+    - `BeastiaryEntity(...) : DamageableEntity`;
+    - `Clone(): BeastiaryEntity`.
+- [BestiaryEntity/IBestiaryIndex.cs](../backend/GameServer/Domain/Entity/BestiaryEntity/IBestiaryIndex.cs):
+    - interface `IBestiaryIndex`;
+    - `NewBeastiaryEntityByTag(string): BeastiaryEntity`.
+- [BestiaryEntity/BestiaryLibrary/BestiaryIndex.cs](../backend/GameServer/Domain/Entity/BestiaryEntity/BestiaryLibrary/BestiaryIndex.cs):
+    - `BestiaryIndex : IBestiaryIndex`;
+    - methods:
+        - `BuildCatalog(): Dictionary<string,BeastiaryEntity>` (private static)
+        - `NewBeastiaryEntityByTag(string): BeastiaryEntity`.
+- [BestiaryEntity/BestiaryLibrary/BestiaryLibraryRepositoryReleases/BestiaryEntityRepository.cs](../backend/GameServer/Domain/Entity/BestiaryEntity/BestiaryLibrary/BestiaryLibraryRepositoryReleases/BestiaryEntityRepository.cs):
+    - static `InitialReleaseRepository`; data-only.
+- [EntityAI/IEntityAI.cs](../backend/GameServer/Domain/Entity/EntityAI/IEntityAI.cs):
+    - interface `IEntityAI`;
+    - methods:
+        - `SetSignificantEntityId(string): bool`
+        - `GetAction(DamageableEntity,BattleTracker): EffectDto`.
+- [EntityAI/IEntityAIIndex.cs](../backend/GameServer/Domain/Entity/EntityAI/IEntityAIIndex.cs):
+    - interface `IEntityAIIndex`;
+    - `GetByTag(string): IEntityAI`.
+- [EntityAI/AILibrary.cs/EntityAIIndex.cs](../backend/GameServer/Domain/Entity/EntityAI/AILibrary.cs/EntityAIIndex.cs):
+    - `EntitAIIndex : IEntityAIIndex`;
+    - methods:
+        - `InitializeAIs(): List<IEntityAI>` (private static)
+        - `GetByTag(string): IEntityAI`.
+- [EntityAI/AILibrary.cs/InitialRelease/EntityAIInitialRelease.cs](../backend/GameServer/Domain/Entity/EntityAI/AILibrary.cs/InitialRelease/EntityAIInitialRelease.cs):
+    - `DefaultAI`
+        - `HatesMagic`
+        - `Berserk`
+        - `CustomOgreAI`
+        - `CustomGoblinAI`;
+    - methods:
+        - include `Confused(string): EffectDto` (private static)
+        - `SetSignificantEntityId(string): bool`
+        - `GetAction(DamageableEntity,BattleTracker): EffectDto`
+        - `DoBuffs(...): EffectDto` (private)
+        - `TakeNPartyMembers(int,List<DamageableEntity>): List<DamageableEntity>` (private static)
+        - `AttackHighestDamageToSelf(...): EffectDto` (private)
+        - `UseItemOrSkill(...): EffectDto` (private)
+        - `PopulateSubTargets(...): List<DamageableEntity>` (private)
+        - and `PopulateTargets(...): List<DamageableEntity>` (private).
+        - `HatesMagic.GetAction` and `Berserk.GetAction` are unfinished;
+        - `CustomGoblinAI.SetSignificantEntityId` is unfinished.
+
+### Enums and Exceptions
+
+- [Enums/ActionType.cs](../backend/GameServer/Domain/Enums/ActionType.cs): enum `ActionType`; data-only.
+- [Enums/ArmorType.cs](../backend/GameServer/Domain/Enums/ArmorType.cs): enum `ArmorTypes`; data-only.
+- [Enums/DamageType.cs](../backend/GameServer/Domain/Enums/DamageType.cs): enum `DamageType`; static `DamageTypeHierarchies`; `IsPhysicalDamage(DamageType): bool`
+        - `IsMagicDamage(DamageType): bool`.
+- [Enums/Difficulty.cs](../backend/GameServer/Domain/Enums/Difficulty.cs): enum `Difficulty`; data-only.
+- [Enums/PlayableSpecies.cs](../backend/GameServer/Domain/Enums/PlayableSpecies.cs): enum `Species`; data-only.
+- [Enums/Proficiency.cs](../backend/GameServer/Domain/Enums/Proficiency.cs): enum `Proficiency`; static `ProficienciesHierarchies`; `GetParentProficiency(Proficiency): Proficiency?`.
+- [Enums/SceneBiomes.cs](../backend/GameServer/Domain/Enums/SceneBiomes.cs): enum `Biome`; data-only.
+- [Enums/ShopCollections.cs](../backend/GameServer/Domain/Enums/ShopCollections.cs): enums `ShopCollections`
+        - `ShopTypes`
+        - `Rarities`; data-only.
+- [Enums/Statistics.cs](../backend/GameServer/Domain/Enums/Statistics.cs): enums `PartyStatistic`
+        - `EntityStatistic`; data-only.
+- [Enums/StatTypes.cs](../backend/GameServer/Domain/Enums/StatTypes.cs): enum `StatType`; data-only.
+- [EntityExceptions.cs](../backend/GameServer/Domain/Exceptions/EntityExceptions.cs):
+    - `EntityNotAliveException : Exception`; constructors parameterless
+        - `(string)`
+        - `(string,Exception)`; no methods.
+
+### Items and Skills
+
+- [Items/Item.cs](../backend/GameServer/Domain/Items/Item.cs):
+    - abstract `Item`;
+    - constructor `Item(string,string,int,string,bool,bool,int,int,int)`;
+        - abstract `Clone(): Item`;
+        - private `NewId(): string`.
+- [Items/Equippable.cs](../backend/GameServer/Domain/Items/Equippable.cs):
+    - abstract `Equippable : Item`;
+    - constructor; `CanEquip(DamageableEntity): bool`
+        - abstract `OnEquip(DamageableEntity): EffectDto`
+        - abstract `OnUnequip(DamageableEntity): EffectDto`.
+- [Items/Useable.cs](../backend/GameServer/Domain/Items/Useable.cs):
+    - abstract `Useable : Item`; constructor; abstract `ItemEffect(...): EffectDto`
+        - `CanUse(DamageableEntity): bool`.
+- [Items/IItemsIndex.cs](../backend/GameServer/Domain/Items/IItemsIndex.cs):
+    - interface `IItemsIndex`;
+        - `GetItemById(string): Item`
+        - `GetItemByTag(string): Item`
+        - `GetShopItems(int,int,int,int): List<Item>`.
+- [Items/ItemsLibrary/ItemsIndex.cs](../backend/GameServer/Domain/Items/ItemsLibrary/ItemsIndex.cs):
+    - `ItemsIndex : IItemsIndex`;
+        - `InitializeItems(): List<Item>` (private static)
+        - `GetItemById(string): Item`
+        - `GetItemByTag(string): Item`
+        - `GetShopItems(int,int,int,int): List<Item>`.
+- [Skills/Skill.cs](../backend/GameServer/Domain/Skills/Skill.cs):
+    - abstract `Skill`; parameterless and full protected constructors; abstract `SkillEffect(...): EffectDto`
+        - `CanLevelUpSkill(): bool`
+        - `LevelUpSkill(): void`
+        - `Clone(): Skill`; concrete `IsLearnable(DamageableEntity): bool`; private `NewId(): string`.
+- [Skills/ISkillsIndex.cs](../backend/GameServer/Domain/Skills/ISkillsIndex.cs):
+    - interface `ISkillsIndex`; `GetSkillById(string): Skill`
+        - `GetSkillByTag(string): Skill`
+        - `GetNSkillsByElement(int,DamageType): List<Skill>`.
+- [Skills/SkillsLibrary/SkillsIndex.cs](../backend/GameServer/Domain/Skills/SkillsLibrary/SkillsIndex.cs):
+    - `SkillsIndex : ISkillsIndex`; `InitializeSkills(): List<Skill>` (private static)
+        - `GetSkillById(string): Skill`
+        - `GetSkillByTag(string): Skill`
+        - `GetNSkillsByElement(int,DamageType): List<Skill>`.
+- [Skills/SkillsLibrary/InitialRelease/InitialReleaseSkills.cs](../backend/GameServer/Domain/Skills/SkillsLibrary/InitialRelease/InitialReleaseSkills.cs):
+    - classes:
+        - `ErrorSkill`
+        - `PoisonBite`
+        - `SummonSpiders`
+        - `SpellShield`
+        - `Absorb`
+        - `Aeroblade`
+        - `Steal`
+        - `Shatter`
+        - `Firecast`
+        - `Firebolt`;
+    - methods:
+        - each implements inherited `Clone(): Skill`
+        - `CanLevelUpSkill(): bool`
+        - `LevelUpSkill(): void`
+        - `SkillEffect(...): EffectDto`;
+    - additional methods:
+        - `ErrorSkill.DoEffect(...): void`
+        - `PoisonBite.FixName(): void`
+        - `SpellShield.Cast(...): DamageResultDto`
+        - `Steal.DoSteal(...): DamageResultDto`
+        - `Steal.DoDamage(...): DamageResultDto`.
+- [Items/ItemsLibrary/InitialRelease/InitialReleaseUseables.cs](../backend/GameServer/Domain/Items/ItemsLibrary/InitialRelease/InitialReleaseUseables.cs):
+    - `ErrorItem`
+    - `Catapult`
+    - `ArmingSword`
+    - `HealingPotion`
+    - `ManaPotion`
+    - `OgreSlayerPolearm`
+    - `ShatterScroll`
+    - `LifeGem`
+    - `HealingGem`
+    - `FortifyGem`
+    - `ManaGem`
+    - `GiantClub`
+    - `Dagger`
+    - `Club`;
+    - nested enum `Catapult.PrepStage`;
+    - each declares an item constructor
+    - methods:
+        - `Clone(): Item`
+        - and `ItemEffect(...): EffectDto`;
+    - overrides additionally include
+        - `CanUse(DamageableEntity): bool` where applicable;
+        - private helpers `OnUse(double): void`
+        - `DoEffect(...): DamageResultDto`.
+- [Items/ItemsLibrary/InitialRelease/InitialRelesaeEuippables.cs](../backend/GameServer/Domain/Items/ItemsLibrary/InitialRelease/InitialRelesaeEuippables.cs):
+    - `RazeChestplate`
+    - `SpiderRing`
+    - `StoneHelmet`;
+    - each has a constructor
+        - `Clone(): Item`
+    - methods:
+        - `OnEquip(DamageableEntity): EffectDto`
+        - `OnUnequip(DamageableEntity): EffectDto`;
+        - `SpiderRing` additionally declares `CanEquip(DamageableEntity): bool`.
+
+### Statistics and Map
+
+- [Statistics/StatisticsTracker.cs](../backend/GameServer/Domain/Statistics/StatisticsTracker.cs):
+    - `StatisticsTracker` and `DamageableEntityStatistics()`; data-only.
+- [Map/GameContext.cs](../backend/GameServer/Domain/Map/GameContext.cs):
+    - `GameContext(...)`;
+    - methods:
+        - `SetPendingResponse(string): void`
+        - `GetPendingResponse(): string?`
+        - `GetNextScene(Biome): SceneContainer`
+        - `SetScene(SceneContainer): void`
+        - `ReturnToPreviousScene(): SceneContainer?`; interface `IGameContextState` has no methods.
+- [Map/Scene/ISceneObject.cs](../backend/GameServer/Domain/Map/Scene/ISceneObject.cs):
+    - `SceneContainer`
+    - `SceneEvent`
+    - `EventConditions`
+    - `Dialogue`
+    - `EventOption`
+    - `TargetOption`;
+    - interfaces
+        - `ISceneState`
+        - `ICondition`
+        - `IGameEffect`
+        - `ITargetSelector`
+        - `IEventNavigation`;
+    - methods:
+        - `ICondition.IsMet(GameContext): EventResultDto`
+        - `IGameEffect.Apply(GameContext): EventResultDto`
+        - `ITargetSelector.GetTargets(GameContext): IReadOnlyList<TargetOption>`
+        - `IEventNavigation.Navigate(GameContext): bool`;
+        - remaining declarations are data-only.
+- [Map/Scene/EventOptionsLibrary/InitialTargetSelectors.cs](../backend/GameServer/Domain/Map/Scene/EventOptionsLibrary/InitialTargetSelectors.cs):
+    - `SpecificEntitySelector`
+    - `PartyMemberSelector`
+    - `LivingPartyMemberSelector`
+    - `PartyMemberWithoutItemSelector`;
+    - method each
+        - `GetTargets(GameContext): IReadOnlyList<TargetOption>`
+- [Map/Scene/EventOptionsLibrary/InitialConditions.cs](../backend/GameServer/Domain/Map/Scene/EventOptionsLibrary/InitialConditions.cs):
+    - `HasItem`
+    - `NotHasItem`
+    - `MemberInParty`
+    - `NotMemberInParty`
+    - `HasGold`
+    - `SkillCheck`;
+    - method each
+        - `IsMet(GameContext): EventResultDto`
+- [Map/Scene/EventOptionsLibrary/InitialGameEffects.cs](../backend/GameServer/Domain/Map/Scene/EventOptionsLibrary/InitialGameEffects.cs):
+    - `ChangeOptionTitle`
+    - `GiveItem`
+    - `GiveItemsArray`
+    - `AddMemberToPartyById`
+    - `AddMemberToPartyRequest`
+    - `RemoveMemberFromParty`
+    - `AddOrRemoveGold`
+    - `StartBattleEffect`;
+    - method each:
+        - `Apply(GameContext): EventResultDto`
+- [Map/Scene/EventOptionsLibrary/Navigation.cs](../backend/GameServer/Domain/Map/Scene/EventOptionsLibrary/Navigation.cs):
+    - `SceneEventNavigation`
+    - `NavigateToPreviousScene`;
+    - method each
+        - `Navigate(GameContext): bool`.
+- [Map/Scene/InitialReleaseScenes/QuickTestSceneObject.cs](../backend/GameServer/Domain/Map/Scene/InitialReleaseScenes/QuickTestSceneObject.cs):
+    - `QuickTestSceneObjectsState`
+    - `QuickTestSceneObject`
+    - nested enum `EventDesignations`
+    - `ConditionTestSceneOgresGateClosed`
+    - `ConditionTestSceneOgresGateOpen`
+    - `ConditionTestSceneGottenGoldFromHermitLessThan`
+    - `ConditionTestSceneNotHermitHasGivenGift`
+    - `EffectTestSceneSetOgresGateOpen`
+    - `EffectTestSceneIncrementGottenGold`
+    - `EffectTestSceneSetHermitGiftedTrue`; condition
+    - methods:
+        - `IsMet(GameContext): EventResultDto`; effect
+    - methods:
+        - `Apply(GameContext): EventResultDto`.
+- [Map/Scene/InitialReleaseScenes/CryptScene.cs](../backend/GameServer/Domain/Map/Scene/InitialReleaseScenes/CryptScene.cs):
+    - `CryptSceneState`; data/comment-only.
+- [Map/Scene/InitialReleaseScenes/UnintegratedPathwayScene.cs](../backend/GameServer/Domain/Map/Scene/InitialReleaseScenes/UnintegratedPathwayScene.cs):
+    - `UnintegratedPathwayState`; data/comment-only.
+- [Map/Scene/InitialReleaseScenes/WizardsTowerScene.cs](../backend/GameServer/Domain/Map/Scene/InitialReleaseScenes/WizardsTowerScene.cs):
+    - commented `WizardsTowerSceneState`; comment-only.
+- [Map/Scene/InitialReleaseScenes/WaterwayScene.cs](../backend/GameServer/Domain/Map/Scene/InitialReleaseScenes/WaterwayScene.cs):
+    - commented `WaterwaySceneState`; comment-only.
+
+## Infrastructure and Startup
+
+- [Infrastructure/EntityStore.cs](../backend/GameServer/Infrastructure/EntityStore.cs):
+    - `EntityStore`; constructor initializes seed entities;
+    - methods:
+        - `TryGet(string,out DamageableEntity?): bool`
+        - `Add(DamageableEntity): void`
+        - `Remove(DamageableEntity): DamageableEntity?`
+        - `GetAllNames(): string[]`
+        - `GetAllIds(): string[]`
+        - `GetParty(string): List<DamageableEntity>`.
+- [Program.cs](../backend/GameServer/Program.cs):
+    - top-level startup and configuration statements;
+    - no declared
+        - interfaces
+        - classes
+        - records
+        - structs
+        - enums
+        - methods
+        - or constructors.

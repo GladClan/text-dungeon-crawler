@@ -4,19 +4,24 @@ using GameServer.Contracts.Mappers;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Entities;
-using GameServer.Domain.Entities.BeastiaryEntity;
 using GameServer.Domain.Entities.BeastiaryEntity.BestiaryLibrary;
 using GameServer.Domain.Enums;
 using GameServer.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
-using System.Security;
 
 namespace GameServer.Application.Services;
 
-public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, InventoryService inventoryService, SkillService skillService)
+public sealed class EntityService(
+    EntityStore entityStore,
+    BestiaryIndex beastIndex,
+    IEntityAIIndex aiIndex,
+    InventoryService inventoryService,
+    SkillService skillService
+)
 {
     private readonly EntityStore _entities = entityStore;
-    private readonly BestiaryIndex _index = index;
+    private readonly BestiaryIndex _index = beastIndex;
+    private readonly IEntityAIIndex _aiIndex = aiIndex;
     private readonly InventoryService _inventoryService = inventoryService;
     private readonly SkillService _skillService = skillService;
 
@@ -58,6 +63,7 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
         target.PartyId = targetPary;
         return target.ToDto();
     }
+
     public DamageableEntityDto? GetById(string id)
     {
         if (!TryGetEntity(id, out var entity))
@@ -122,7 +128,11 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
                 proficiencies: proficiencies,
                 defaultAttackMessageString: attackString,
                 deathMessage: request.DeathMessage
-            );
+            )
+            {
+                AI = request.AITag is null ? null :
+                    _aiIndex.GetByTag(request.AITag)
+            };
 
             if (request.ItemTags is not null)
             {
@@ -212,6 +222,10 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
                 ));
             }
         }
+
+        // Add the entity's AI
+        entity.AI = _aiIndex.GetByTag(entity.DefaultAi);
+
         result.Entity = entity.ToDto();
         
         // Check if the entity had any problems adding items or skills
@@ -370,6 +384,16 @@ public sealed class EntityService(EntityStore entityStore, BestiaryIndex index, 
             return new($"{request.Type} is not a valid proficiency");
         }
         return target.IncreaseProficiency(profEnum, request.Value);
+    }
+
+    public LevelUpDto? AddExperience(string targetDamageableEntityId, int expGain)
+    {
+        
+        if (!TryGetEntity(targetDamageableEntityId, out var target))
+        {
+            return null;
+        }
+        return target.AddExperience(expGain);
     }
 
     public bool? IsHidden(string id)

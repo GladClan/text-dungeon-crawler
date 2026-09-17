@@ -16,7 +16,7 @@ public static class OrdinalDateString
             0 => string.Join(fill, [year, day]),
             1 => string.Join(fill, [year, day, hours]),
             2 => string.Join(fill, [year, day, hours, min]),
-            3 => string.Join(fill, [year.Substring(1,2), day, hours.Substring(1,1), min.Substring(1,1), mil[1..]]),
+            3 => string.Join(fill, [year.Substring(2,2), day, hours.Substring(1,1), min.Substring(1,1), mil[1..]]),
             _ => string.Join(fill, [year, day, hours, min, mil])
         };
     }

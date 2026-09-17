@@ -137,6 +137,7 @@ public sealed class EntityStatsService(EntityStore entityStore)
         }
         return target.GetProficiencyHierarchy(profEnum);
     }
+
     public ProficiencyDto? GetStoredProficiency(string id, string proficiency)
     {
         if (!TryGetEntity(id, out var target))
@@ -149,6 +150,7 @@ public sealed class EntityStatsService(EntityStore entityStore)
         }
         return target.GetStoredProficiency(profEnum);
     }
+
     public bool? StatsDisplayed(string id)
     {
         if (!TryGetEntity(id, out var target))
@@ -157,6 +159,7 @@ public sealed class EntityStatsService(EntityStore entityStore)
         }
         return target.DisplayStats;
     }
+
     public bool? ToggleDisplayStats(string id)
     {
         if (!TryGetEntity(id, out var target))

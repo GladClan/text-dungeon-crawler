@@ -1,6 +1,3 @@
-using GameServer.Domain.Battle;
-using GameServer.Domain.Enums;
-
 namespace GameServer.Domain.Statistics;
 
 public class StatisticsTracker

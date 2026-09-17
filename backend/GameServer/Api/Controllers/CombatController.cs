@@ -46,73 +46,6 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
         return Ok(result);
     }
 
-    [HttpPatch("damage")]
-    public ActionResult<DamageResultDto> TakeDamage([FromBody] DamageRequest request)
-    {
-        var result = _service.TakeDamage(request);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(request.SourceId + " or " + request.TargetId));
-        }
-        if (result.Error.Length > 0)
-        {
-            return ValidationProblem(result.Error);
-        }
-        return Ok(result);
-    }
-
-    [HttpPatch("heal")]
-    public ActionResult<DamageResultDto> Heal([FromBody] HealRequest request)
-    {
-        var result = _service.Heal(request);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(request.SourceId + " or " + request.TargetId));
-        }
-        if (result.Error.Length > 0)
-        {
-            return ValidationProblem(result.Error);
-        }
-        return Ok(result);
-    }
-
-    [HttpPatch("health-buffer")]
-    public ActionResult<DamageResultDto> AddHealthBuffer([FromBody] HealRequest request)
-    {
-        var result = _service.AddHealthBuffer(request);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(request.SourceId + " or " + request.TargetId));
-        }
-        if (result.Error.Length > 0)
-        {
-            return ValidationProblem(result.Error);
-        }
-        return Ok(result);
-    }
-
-    [HttpPatch("change-mana")]
-    public ActionResult<DamageResultDto> ChangeMana([FromBody] ManaRequest request)
-    {
-        var result = _service.ChangeMana(request);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(request.TargetId));
-        }
-        return Ok(result);
-    }
-
-    [HttpPatch("add-experience")]
-    public ActionResult<LevelUpDto> AddExperience([FromBody] AddExperienceRequest request)
-    {
-        var result = _service.AddExperience(request);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(request.TargetId));
-        }
-        return Ok(result);
-    }
-
     [HttpGet("{id}/experience-for-next-level")]
     public ActionResult<int> GetExperienceForNextLevel(string id)
     {
@@ -120,21 +53,6 @@ public sealed class CombatController(CombatService combatService) : ControllerBa
         if (result is null)
         {
             return NotFound(IdNotFound(id));
-        }
-        return Ok(result);
-    }
-
-    [HttpPatch("add-proficiency-entry")]
-    public ActionResult<StringDoubleDto> AddProficiencyEntry([FromBody] AddProficiencyEntryRequest request)
-    {
-        var result = _service.AddProficiencyEntry(request);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(request.TargetId));
-        }
-        if (result.Error.Length > 0)
-        {
-            return ValidationProblem(result.Error);
         }
         return Ok(result);
     }

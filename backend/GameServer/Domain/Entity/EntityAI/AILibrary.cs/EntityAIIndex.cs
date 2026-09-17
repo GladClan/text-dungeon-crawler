@@ -2,7 +2,7 @@ using GameServer.Domain.Entities.EntityAI;
 
 namespace GameServer.Domain.Entities.EntityAI.AILibrary;
 
-public class EntitAIIndex : IEntitAIIndex
+public class EntitAIIndex : IEntityAIIndex
 {
     private readonly List<IEntityAI> AICatalogue = InitializeAIs();
 
@@ -10,7 +10,7 @@ public class EntitAIIndex : IEntitAIIndex
     {
         var AIs = new List<IEntityAI>();
         var AIType = typeof(IEntityAI);
-        var assembly = typeof(IEntitAIIndex).Assembly;
+        var assembly = typeof(IEntityAIIndex).Assembly;
 
         // Find all concrete types that inherit from IEntityAI in the InitialRelease namespace
         var concreteAITypes = assembly.GetTypes()

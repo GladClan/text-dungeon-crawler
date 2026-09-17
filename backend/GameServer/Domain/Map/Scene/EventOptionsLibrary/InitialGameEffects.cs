@@ -1,3 +1,4 @@
+using GameServer.Application.Services;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Requests;
 
@@ -5,70 +6,146 @@ namespace GameServer.Domain.Map.Scene.EventOptionsLibrary;
 
 public class ChangeOptionTitle(EventOption o, string _newTitle): IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
         o.Title = _newTitle;
-        return new();
+        return new(
+            success: true
+        );
     }
 }
 
 public class GiveItem(
-    string _targetDamageableEntityId,
-    string _itemTag
+    ITargetSelector targetSelector,
+    string itemTag,
+    string? prompt
 ): IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        var result = context.InventoryService.AddItemByTag(_targetDamageableEntityId, _itemTag);
-        if (result is null)
+        var targets = targetSelector.GetTargets(services);
+
+        string? targetId = services.GetPendingResponse();
+
+        if (targets.Count > 0)
         {
-            return new(
-                error: $"Could not find entity {_targetDamageableEntityId}"
-            );
+            if (targetId is null)
+            {
+                if (targets.Count == 1)
+                {
+                    targetId = targets[0].EntityId;
+                }
+                else
+                {
+                    return new(
+                        success: true,
+                        requiresTarget: true,
+                        prompt: prompt ?? "",
+                        targets: [..targets]
+                    );
+                }
+            }
+            else
+            {
+                if (targets.Any(t => t.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    var giveItemResult = services.InventoryService.AddItemByTag(targetId, itemTag);
+                    if (giveItemResult is null)
+                    {
+                        return new(
+                            error: $"Could not find the target entity, ID: {targetId}"
+                        );
+                    }
+                    if (giveItemResult.Error.Length > 0)
+                    {
+                        return new(
+                            error: giveItemResult.Error
+                        );
+                    }
+                    return new(
+                        success: true
+                    );
+                }
+            }
         }
-        if (result.Error.Length > 0)
-        {
-            return new(
-                error: result.Error
-            );
-        }
+
         return new(
-            message: $"You received a {result.Name}",
-            results: [],
-            wasMagic: false
+            success: false
         );
     }
 }
 
 public class GiveItemsArray(
-    string _targetDamageableEntityId,
-    List<string> _itemTags
+    ITargetSelector targetSelector,
+    List<string> _itemTags,
+    string? prompt
 ): IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        List<ItemDto> results = [];
-        foreach (string tag in _itemTags)
+        var targets = targetSelector.GetTargets(services);
+
+        string? targetId = services.GetPendingResponse();
+
+        if (targets.Count > 0)
         {
-            var result = context.InventoryService.AddItemByTag(_targetDamageableEntityId, tag);
-            if (result is null)
+            if (targetId is null)
             {
-                return new(
-                    error: $"Could not find entity {_targetDamageableEntityId}"
-                );
+                if (targets.Count == 1)
+                {
+                    targetId = targets[0].EntityId;
+                }
+                else
+                {
+                    return new(
+                        success: false,
+                        requiresTarget: true,
+                        prompt: prompt ?? "",
+                        targets: [..targets]
+                    );
+                }
             }
-            if (result.Error.Length > 0)
+            if (targetId is not null)
             {
-                return new(
-                    error: result.Error
-                );
+                if (targets.Any(t => t.EntityId.Equals(targetId, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    string errors = "";
+                    foreach (string tag in _itemTags)
+                    {
+                        var giveItemResult = services.InventoryService.AddItemByTag(targetId, tag);
+                        if (giveItemResult is null)
+                        {
+                            return new(
+                                error: $"Could not find the target entity, ID: {targetId}"
+                            );
+                        }
+                        _itemTags.RemoveAt(0);
+                        if (giveItemResult.Error.Length > 0)
+                        {
+                            return new(
+                                error: giveItemResult.Error
+                            );
+                        }
+                    }
+
+                    if (errors.Length == 0)
+                    {
+                        return new(
+                            success: true
+                        );
+                    }
+                    else
+                    {
+                        return new(
+                            error: errors
+                        );
+                    }
+                }
             }
-            results.Add(result);
         }
+
         return new(
-            message: $"You received {string.Join(",", results.Select(r => r.Name))}",
-            results: [],
-            wasMagic: false
+            success: false
         );
     }
 }
@@ -78,9 +155,9 @@ public class AddMemberToPartyById(
     string _partyId
 ) : IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        var result = context.EntityService.ChangeParty(_newMemberId, _partyId);
+        var result = services.EntityService.ChangeParty(_newMemberId, _partyId);
         if (result is null)
         {
             return new(
@@ -88,9 +165,7 @@ public class AddMemberToPartyById(
             );
         }
         return new(
-            message: $"{result.Name} joins the party!",
-            results: [],
-            wasMagic: false
+            success: true
         );
     }
 }
@@ -100,16 +175,16 @@ public class AddMemberToPartyRequest(
     string _partyId
 ): IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        var addEntityResult = context.EntityService.AddEntityFromRequest(entityRequest);
+        var addEntityResult = services.EntityService.AddEntityFromRequest(entityRequest);
         if (addEntityResult.Entity is null)
         {
             return new(
                 error: $"There was an issue adding the new entity: {string.Join("\n", addEntityResult.Errors)}"
             );
         }
-        var result = context.EntityService.ChangeParty(addEntityResult.Entity.Id, _partyId);
+        var result = services.EntityService.ChangeParty(addEntityResult.Entity.Id, _partyId);
         if (result is null)
         {
             return new(
@@ -117,9 +192,7 @@ public class AddMemberToPartyRequest(
             );
         }
         return new(
-            message: result.Id,
-            results: [],
-            wasMagic: false
+            success: true
         );
     }
 }
@@ -129,9 +202,9 @@ public class RemoveMemberFromParty(
     string _nullPartyId
 ) : IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        var result = context.EntityService.ChangeParty(_partyMemberId, _nullPartyId);
+        var result = services.EntityService.ChangeParty(_partyMemberId, _nullPartyId);
         if (result is null)
         {
             return new(
@@ -139,43 +212,69 @@ public class RemoveMemberFromParty(
             );
         }
         return new(
-            message: $"{result.Name} leaves the party.",
-            results: [],
-            wasMagic: false
+            success: true
         );
     }
 }
 
 public class AddOrRemoveGold(
-    string _targetDamageableEntityId,
-    int _goldToAdd
+    ITargetSelector targetSelector,
+    int _goldToAdd,
+    string? prompt
 ): IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        var result = context.InventoryService.AddGold(_targetDamageableEntityId, _goldToAdd);
-        if (result is null)
+        var targets = targetSelector.GetTargets(services);
+
+        string? targetId = services.GetPendingResponse();
+
+        if (targets.Count > 0)
         {
-            return new(
-                error: $"Could not find entity {_targetDamageableEntityId}"
-            );
+            if (targetId is null)
+            {
+                if (targets.Count == 1)
+                {
+                    targetId = targets[0].EntityId;
+                }
+                else
+                {
+                    return new(
+                        success: false,
+                        requiresTarget: true,
+                        prompt: prompt ?? "",
+                        targets: [..targets]
+                    );
+                }
+            }
+            if (targetId is not null)
+            {
+                var result = services.InventoryService.AddGold(targetId, _goldToAdd);
+                if (result is null)
+                {
+                    return new(
+                        error: $"Could not find entity {targetId}"
+                    );
+                }
+                return new(
+                    success: true
+                );
+            }
         }
+
         return new(
-            message: $"You gained {result} gold!",
-            results: [],
-            wasMagic: false
+            success: false
         );
     }
 }
 
 public class StartBattleEffect(
-    string battleStartMessage,
     BattleStartRequest battleStartRequest
 ) : IGameEffect
 {
-    public EffectDto Apply(IGameContext context)
+    public EventResultDto Apply(EventServices services)
     {
-        var result = context.BattleService.CommenceBattle(battleStartRequest);
+        var result = services.BattleService.CommenceBattle(battleStartRequest);
         if (result.Error.Length > 0)
         {
             return new(
@@ -183,16 +282,12 @@ public class StartBattleEffect(
             );
         }
         return new(
-            message: battleStartMessage,
-            results: [],
-            wasMagic: false
+            success: true
         );
     }
 }
 
 
 /*
-DoorIsOpen = true
-GuardsAlerted = true
 GiveGold(random(10, 20) * random(9, 20))
 */

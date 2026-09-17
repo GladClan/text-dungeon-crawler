@@ -87,7 +87,7 @@ public static class InitialReleaseRepository
                 journalEntry: "Here is written a little blurb. Perhaps informational, perhaps more jollitous.",
                 loreEntry1: "Lore!",
                 loreEntry2: "LORE!!",
-                defaultAi: "custom-ogre",              // Needs AI
+                defaultAi: "custom-ogre",
                 initialInventoryTags: ["club-giant"],
                 initialSkillTags: [""]
             )

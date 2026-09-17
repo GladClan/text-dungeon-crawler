@@ -1,21 +1,19 @@
 using System.Diagnostics.CodeAnalysis;
 using GameServer.Contracts.Requests;
 using GameServer.Contracts.DTOs;
-using GameServer.Contracts.Mappers;
-using GameServer.Domain.Battle;
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
 using GameServer.Domain.Items;
 using GameServer.Infrastructure;
+using GameServer.Domain.Map;
 
 namespace GameServer.Application.Services;
 
-public sealed class CombatService(EntityStore entityStore, BattleTracker battleTracker)
+public sealed class CombatService(EntityStore entityStore, GameContext context)
 {
     private readonly EntityStore _entities = entityStore;
-    private readonly BattleTracker _battle = battleTracker;
     private readonly int _proficiencyEntryAddition = 1;
-    
+
     private static int GetExperienceForNextLevel(int level)
     {
         // Example formula for experience needed to level up
@@ -143,7 +141,7 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
 
     public EffectDto? UseItem(string id, string itemId, string targetId = "", List<string>? subTargetIds = null)
     {
-        if (_entities.TryGet(id, out var source) && source is not null)
+        if (context.CurrentBattle is not null && _entities.TryGet(id, out var source) && source is not null)
         {
             var item = source.Inventory.Items.FirstOrDefault(i => i.Id.Equals(itemId, StringComparison.InvariantCultureIgnoreCase));
             if (item is not null)
@@ -186,8 +184,8 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
                                     return new(error);
                                 }
                             }
-                            var result = useable.ItemEffect(target, source, targets, _battle);
-                            _battle.AddLogEntry(result);
+                            var result = useable.ItemEffect(target, source, targets, context.CurrentBattle);
+                            context.CurrentBattle.AddLogEntry(result);
                             return result;
                         }
                         else
@@ -217,7 +215,7 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
 
     public EffectDto? UseSkill(string id, string skillId, string targetId, List<string>? subTargetIds = null)
     {
-        if (!TryGetEntity(id, out var source) || !TryGetEntity(targetId, out var target))
+        if (context.CurrentBattle is null || !TryGetEntity(id, out var source) || !TryGetEntity(targetId, out var target))
         {
             return null;
         }
@@ -250,21 +248,21 @@ public sealed class CombatService(EntityStore entityStore, BattleTracker battleT
                 return new(error);
             }
         }
-        var result = skill.SkillEffect(source, target, targets, _battle);
-        _battle.AddLogEntry(result);
+        var result = skill.SkillEffect(source, target, targets, context.CurrentBattle);
+        context.CurrentBattle.AddLogEntry(result);
         return result;
     }
 
     public EffectDto? DefaultAttack(string id, string targetId)
     {
-        if (!TryGetEntity(id, out var source) || !TryGetEntity(targetId, out var target))
+        if (context.CurrentBattle is null || !TryGetEntity(id, out var source) || !TryGetEntity(targetId, out var target))
         {
             return null;
         }
         var result = source.DefaultAttack(target);
         if (result.Error.Length == 0)
         {
-            _battle.AddLogEntry(result);
+            context.CurrentBattle.AddLogEntry(result);
         }
         return result;
     }

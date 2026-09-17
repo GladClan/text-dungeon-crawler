@@ -3,7 +3,6 @@ using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Entities;
-using GameServer.Domain.Statistics;
 
 namespace GameServer.Domain.Battle;
 

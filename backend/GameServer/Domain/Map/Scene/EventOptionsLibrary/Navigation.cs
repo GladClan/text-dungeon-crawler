@@ -1,30 +1,21 @@
+using GameServer.Application.Services;
+
 namespace GameServer.Domain.Map.Scene.EventOptionsLibrary;
 
 public class SceneEventNavigation(int targetEventId) : IEventNavigation
 {
     private readonly int _targetEventId = targetEventId;
 
-    public bool Navigate(IGameContext context)
+    public bool Navigate(EventServices services)
     {
-        if (!context.CurrentScene.Events.TryGetValue(_targetEventId, out _))
-        {
-            return false;
-        }
-
-        context.CurrentScene.CurrentEventId = _targetEventId;
-        return true;
+        return services.SetCurrentEventId(_targetEventId);
     }
 }
 
 public class NavigateToPreviousScene: IEventNavigation
 {
-    public bool Navigate(IGameContext context)
+    public bool Navigate(EventServices services)
     {
-        var result = context.ReturnToPreviousScene();
-        if (result is null)
-        {
-            return false;
-        }
-        return true;
+        return services.NavigateToPreviousScene();
     }
 }

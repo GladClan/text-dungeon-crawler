@@ -104,43 +104,6 @@ public sealed class InventoryController(InventoryService inventoryService) : Con
         return Ok(count);
     }
 
-    [HttpPost("add-item-by-tag/{tag}")]
-    public ActionResult<ItemDto> AddItemByTag(string id, string tag)
-    {
-        var item = _service.AddItemByTag(id, tag);
-        if (item is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        if (item.Error.Length > 0)
-        {
-            return NotFound(item.Error);
-        }
-        return CreatedAtAction(nameof(_service.GetItemByTag), new { id = item.Id }, item);
-    }
-
-    [HttpPatch("add-gold")]
-    public ActionResult<int> AddGold(string id, [FromBody] int amount)
-    {
-        var gold = _service.AddGold(id, amount);
-        if (gold is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        return Ok(gold);
-    }
-
-    [HttpPatch("set-gold")]
-    public ActionResult<int> SetGold(string id, [FromBody] int amount)
-    {
-        var gold = _service.SetGold(id, amount);
-        if (gold is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        return Ok(gold);
-    }
-
     [HttpPut("absorb-inventory")]
     public ActionResult<EntityInventoryDto> AbsorbInventory(string id, [FromBody] string otherId)
     {

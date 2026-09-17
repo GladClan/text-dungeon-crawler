@@ -1,16 +1,14 @@
+using GameServer.Application.Services;
 using GameServer.Contracts.DTOs;
 
 namespace GameServer.Domain.Map.Scene;
 
-public class SceneContainer(
-    Dictionary<int, SceneEvent> events,
-    ISceneState sceneState
-)
+public interface ISceneContainer
 {
-    public Dictionary<int, SceneEvent> Events { get; set; } = events;
+    public Dictionary<int, SceneEvent> Events { get; set; }
     public int CurrentEventId { get; set; }
     public SceneEvent CurrentEvent => Events[CurrentEventId];
-    public ISceneState State { get; init; } = sceneState;
+    public ISceneState State { get; init; }
 }
 
 /// <summary>
@@ -43,8 +41,8 @@ public class EventConditions(
     IEventNavigation requirementsNotMetNavigation
 )
 {
-    public IReadOnlyCollection<ICondition>? Conditions { get; init; } = conditions;
-    public IEventNavigation? IfNotMetRequirements {get; init; } = requirementsNotMetNavigation;    
+    public IReadOnlyCollection<ICondition> Conditions { get; init; } = conditions;
+    public IEventNavigation IfNotMetRequirements {get; init; } = requirementsNotMetNavigation;    
 }
 
 /// <summary>
@@ -70,22 +68,6 @@ public class Dialogue(string source, string message)
 /// <summary>
 /// An option that goes with an event
 /// </summary>
-/// <example>
-/// <code>
-/// Id = "use-heal-potion"
-/// Conditions =
-/// [
-///     HasItem("Potion")
-/// ],
-/// Effects =
-/// [
-///     RemoveItem("Potion"),
-///     Heal(10),
-///     SetFlag("DrankPotion", true)
-/// ],
-/// Navigation = map.CurrentScene.NextEvent(),
-/// </code>
-/// </example>
 public class EventOption(
     string eventTitle,
     IReadOnlyCollection<ICondition> eventConditions,
@@ -107,35 +89,37 @@ public class EventOption(
 /// </Remarks>
 public interface ICondition
 {
-    bool IsMet(IGameContext context);
+    EventResultDto IsMet(EventServices services);
 }
 
 /// <summary>
 /// Effects for choices made, such as giving items, healing, damaging, starting fights, or setting scene state objects.
 /// </summary>
-/// <remarks>
-/// For example: <br/>
-/// Heal<br/>
-/// Damage<br/>
-/// StartBattle<br/>
-/// </remarks>
 /// <example>
 /// public class AddItemEffect(
 ///     string _targetDamageableEntityId,
 ///     string _itemTag,
 /// ) : IGameEffect
 /// {
-///     public void Apply(IGameContext context)
+///     public void Apply(EventServices services)
 ///     {
-///         context.InventoryService.AddItemByTag(_targetDamageableEntityId, _itemTag);
+///         services.InventoryService.AddItemByTag(_targetDamageableEntityId, _itemTag);
 ///     }
 /// }
 /// </example>
 public interface IGameEffect
 {
-    EffectDto Apply(IGameContext context);
-    // Heal / Damage → Combat service
-    // StartBattleEffect → BattleService
+    EventResultDto Apply(EventServices services);
+}
+
+public record TargetOption(
+    string EntityId,
+    string Name
+);
+
+public interface ITargetSelector
+{
+    IReadOnlyList<TargetOption> GetTargets(EventServices services);
 }
 
 /// <summary>
@@ -147,7 +131,7 @@ public interface IEventNavigation
     /// <summary>
     /// Used to navigate to scenes or events
     /// </summary>
-    /// <param name="context"></param>
+    /// <param name="services"></param>
     /// <returns>True if navigation was successful, else false</returns>
-    bool Navigate(IGameContext context);
+    bool Navigate(EventServices services);
 }

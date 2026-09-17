@@ -2,7 +2,7 @@ using GameServer.Domain.Entities.EntityAI;
 
 namespace GameServer.Domain.Entities;
 
-public interface IEntitAIIndex
+public interface IEntityAIIndex
 {
     public IEntityAI GetByTag(string tag);
 }

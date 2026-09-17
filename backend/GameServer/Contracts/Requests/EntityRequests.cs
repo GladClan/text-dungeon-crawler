@@ -87,6 +87,7 @@ public sealed class DamageableEntityRequest
     public List<ProficiencyRequest>? Proficiencies { get; init; }
     public List<string> ItemTags { get; init; } = [];
     public List<string> SkilTags { get; init; } = [];
+    public string? AITag { get; init; }
 }
 
 public sealed class SetSpeedRequest

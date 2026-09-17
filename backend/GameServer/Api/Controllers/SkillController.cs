@@ -56,21 +56,6 @@ public sealed class SkillController(SkillService skillService) : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("add-skill-tag/{skillTag}")]
-    public ActionResult<SkillDto> AddSkillByTag(string id, string skillTag)
-    {
-        var result = _service.AddSkillByTag(id, skillTag);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
-        }
-        if (result.Error.Length > 0)
-        {
-            return ValidationProblem(result.Error);
-        }
-        return Ok(result);
-    }
-
     [HttpDelete("remove-id/{skillId}")]
     public ActionResult<SkillDto> RemoveById(string id, string skillId)
     {
@@ -97,17 +82,6 @@ public sealed class SkillController(SkillService skillService) : ControllerBase
         if (result.Error.Length > 0)
         {
             return NotFound(result.Error);
-        }
-        return Ok(result);
-    }
-
-    [HttpPut("learn-from/{sourceId}")]
-    public ActionResult<List<SkillDto>> LearnAllSkillsFromSource(string id, string sourceId)
-    {
-        var result = _service.LearnAllSkillsFromSource(id, sourceId);
-        if (result is null)
-        {
-            return NotFound(IdNotFound(id));
         }
         return Ok(result);
     }

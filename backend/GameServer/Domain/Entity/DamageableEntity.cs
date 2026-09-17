@@ -654,7 +654,8 @@ public class DamageableEntity
             CurrentHealth = CurrentHealth,
             CurrentMana = CurrentMana,
             Inventory = Inventory.Clone(),
-            Skills = cloneSkills
+            Skills = cloneSkills,
+            AI = AI
         };
 
         return result;

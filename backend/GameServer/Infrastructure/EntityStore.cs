@@ -12,17 +12,17 @@ public sealed class EntityStore
     {
         var warrior = new DamageableEntity(
             name: "Main Character",
-            entityType: "player",
-            race: "human",
+            entityType: "main",
+            race: Species.Human.ToString(),
+            partyId: "player-party",
             health: 150,
             mana: 80,
             magic: 14,
             strength: 14,
             defense: 14,
+            attackType: DamageType.crushing,
             speed: 13,
-            level: 0,
-            experience: 0,
-            resistances: null,
+            resistances: SpeciesDictionary.PlayableSpeciesStats[Species.Human].Resistances,
             proficiencies: new Dictionary<Proficiency, double>{
                 {Proficiency.hand, 1.8d},
                 {Proficiency.slashing, 1.5d},
@@ -33,30 +33,37 @@ public sealed class EntityStore
         );
         var mage = new DamageableEntity(
             name: "Mage boy",
-            entityType: "player",
-            race: "human",
+            entityType: "mage",
+            race: Species.Human.ToString(),
+            partyId: "player-party",
             health: 100,
             mana: 100,
             magic: 18,
             strength: 8,
             defense: 8,
-            proficiencies: new Dictionary<Proficiency, double>{
+            attackType: DamageType.crushing,
+            resistances: SpeciesDictionary.PlayableSpeciesStats[Species.Human].Resistances,
+            proficiencies: new Dictionary<Proficiency, double>(){
                 {Proficiency.spellstrike, 1.7d},
                 {Proficiency.healing, 2.9d},
                 {Proficiency.bludgeoning, 0.9d},
                 {Proficiency.potions, 1d},
                 {Proficiency.slashing, 0.5d}
-        });
+            }
+        );
         var tank = new DamageableEntity(
             name: "Buff Guard",
-            entityType: "player",
-            race: "human",
+            entityType: "warrior",
+            race: Species.Human.ToString(),
+            partyId: "player-party",
             health: 200,
             mana: 50,
             magic: 12,
             strength: 14,
             defense: 18,
+            attackType: DamageType.crushing,
             speed: 18,
+            resistances: SpeciesDictionary.PlayableSpeciesStats[Species.Human].Resistances,
             proficiencies: new Dictionary<Proficiency, double>
             {
                 {Proficiency.bludgeoning, 1.5d},
@@ -65,6 +72,7 @@ public sealed class EntityStore
                 {Proficiency.slashing, 0.7d},
                 {Proficiency.healing, 0.75d}
             });
+
         _entities[warrior.ID] = warrior;
         _entities[mage.ID] = mage;
         _entities[tank.ID] = tank;
