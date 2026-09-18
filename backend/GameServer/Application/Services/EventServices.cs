@@ -169,4 +169,10 @@ public sealed class EventServices(
             );
         }
     }
+
+    public bool SetPendingResponse(string responseString)
+    {
+        context.SetPendingResponse(responseString);
+        return true;
+    }
 }

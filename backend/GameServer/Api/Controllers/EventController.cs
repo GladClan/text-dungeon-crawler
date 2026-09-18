@@ -14,7 +14,7 @@ public sealed class EventController(EventServices services) : ControllerBase
         var result = services.ChooseOption(optionId);
         if (result.RequiresTarget)
         {
-            return StatusCode(StatusCodes.Status300MultipleChoices, result.Targets);
+            return StatusCode(StatusCodes.Status300MultipleChoices, result);
         }
         if (result.Error.Length > 0 || !result.Success)
         {
@@ -35,5 +35,12 @@ public sealed class EventController(EventServices services) : ControllerBase
         {
             return Ok(result);
         }
+    }
+
+    [HttpPost("select-target")]
+    public ActionResult SelectTarget([FromBody] string targetId)
+    {
+        _ = services.SetPendingResponse(targetId);
+        return NoContent();
     }
 }
