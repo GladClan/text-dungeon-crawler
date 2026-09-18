@@ -4,7 +4,7 @@ using GameServer.Contracts.Mappers;
 using GameServer.Contracts.Parsing;
 using GameServer.Contracts.Requests;
 using GameServer.Domain.Entities;
-using GameServer.Domain.Entities.BeastiaryEntity.BestiaryLibrary;
+using GameServer.Domain.Entities.BeastiaryEntity;
 using GameServer.Domain.Enums;
 using GameServer.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
@@ -13,14 +13,14 @@ namespace GameServer.Application.Services;
 
 public sealed class EntityService(
     EntityStore entityStore,
-    BestiaryIndex beastIndex,
+    IBestiaryIndex beastIndex,
     IEntityAIIndex aiIndex,
     InventoryService inventoryService,
     SkillService skillService
 )
 {
     private readonly EntityStore _entities = entityStore;
-    private readonly BestiaryIndex _index = beastIndex;
+    private readonly IBestiaryIndex _index = beastIndex;
     private readonly IEntityAIIndex _aiIndex = aiIndex;
     private readonly InventoryService _inventoryService = inventoryService;
     private readonly SkillService _skillService = skillService;

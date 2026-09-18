@@ -6,11 +6,9 @@ namespace GameServer.Api.Controllers;
 
 [ApiController]
 [Route("api/events")]
-public sealed class EntitiesController(EventServices services) : ControllerBase
+public sealed class EventController(EventServices services) : ControllerBase
 {
-    // ChooseOption
-    // GetCurrentEvent
-    [HttpPatch("choose-option")]
+    [HttpPatch("choose-option/{optionId}")]
     public ActionResult<EventResultDto> ChooseOption(int optionId)
     {
         var result = services.ChooseOption(optionId);
@@ -20,7 +18,7 @@ public sealed class EntitiesController(EventServices services) : ControllerBase
         }
         if (result.Error.Length > 0 || !result.Success)
         {
-            return BadRequest(result.Error);
+            return BadRequest($"Successful: {result.Success}\n" + result.Error);
         }
         return Ok(result);
     }

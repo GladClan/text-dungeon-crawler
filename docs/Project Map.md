@@ -120,7 +120,7 @@ This map covers all 87 C# files under `backend/GameServer`. Method entries use t
         - `UseSkill(string,string,string,List<string>?): EffectDto?`
         - `DefaultAttack(string,string): EffectDto?`.
 - [Services/EntityService.cs](../backend/GameServer/Application/Services/EntityService.cs):
-    - `EntityService(EntityStore,BestiaryIndex,IEntityAIIndex,InventoryService,SkillService)`;
+    - `EntityService(EntityStore,IBestiaryIndex,IEntityAIIndex,InventoryService,SkillService)`;
     - methods:
         - `TryGetEntity(string,out DamageableEntity?): bool` (private)
         - `TryParseDamageType(string,out DamageType): bool` (private static)

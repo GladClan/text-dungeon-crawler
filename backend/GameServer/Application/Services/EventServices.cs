@@ -137,6 +137,17 @@ public sealed class EventServices(
                 currentEvent = context.CurrentScene.CurrentEvent;
             }
             // Return the current event with all viable options
+            List<OptionDto> viableOptions = [];
+            for (int i = 0; i < currentEvent.EventOptions.Count; i++)
+            {
+                if (currentEvent.EventOptions[i].Conditions.All(c => c.IsMet(this).Success == true))
+                {
+                    viableOptions.Add(new(
+                        optionId: i,
+                        optionTitle: currentEvent.EventOptions[i].Title
+                    ));
+                }
+            }
             return new(
                 id: currentEvent.EventId,
                 dialogues: [..
@@ -148,18 +159,7 @@ public sealed class EventServices(
                         )
                     )
                 ],
-                options: [..
-                    currentEvent.EventOptions
-                        .Where( o => o.Conditions.All(
-                            c => c.IsMet(this).Success == true
-                        ))
-                        .Select(
-                            (o, i) => new OptionDto(
-                                optionId: i,
-                                optionTitle: o.Title
-                            )
-                        )
-                ]
+                options: viableOptions
             );
         }
         else
