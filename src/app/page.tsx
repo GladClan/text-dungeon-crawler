@@ -31,9 +31,9 @@ export default function Home() {
           <li style={{marginBottom: 0}}>Save and see your changes instantly.</li>
         </ol>
         <ul style={{...styles.ol, display: "flex", flexDirection: "column"}}>
+          <Link href={'/game'}>Full stack dev test</Link>
           <Link href={'/story'}>Go see what's up</Link>
           <Link href={'/party'}>Check out the gang</Link>
-          <Link href={'/rendering-demo'}>SSR vs Static demo</Link>
           <Link href={'/battle'} onClick={() => (
             setEnemies(toVictory),
             setGameState(gamestate.Battle)
