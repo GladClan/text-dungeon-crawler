@@ -67,8 +67,15 @@ public sealed class EventServices(
     /// </returns>
     public EventResultDto ChooseOption(int optionId)
     {
-        // Find current event
-        // Find option
+        // Make sure option is within the scope of the current event's options
+        if ( optionId < 0 || optionId > context.CurrentScene.CurrentEvent.EventOptions.Count)
+        {
+            string optionscount = context.CurrentScene.CurrentEvent.EventOptions.Count == 1 ? "0" : $"0 - {context.CurrentScene.CurrentEvent.EventOptions.Count - 1}";
+            return new(
+                error: $"ID {optionId} does not exist within the current option value range of {optionscount}"
+            );
+        }
+        // Assign option
         var chosenOption = context.CurrentScene.CurrentEvent.EventOptions[optionId];
         // Check conditions
         foreach (var condition in chosenOption.Conditions)
@@ -99,7 +106,7 @@ public sealed class EventServices(
         else
         {
             return new(
-                success: false
+                error: "Event navigation failed"
             );
         }
     }
