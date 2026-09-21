@@ -94,7 +94,7 @@ const PartyViewer: React.FC<props> = ({partyId, setViewParty}) => {
                                         :
                                         member.inventory.items.map((item, n) =>
                                             <li key={`${n}-${item.tag}`} style={{marginLeft: "20px"}}>
-                                                <p style={styles.selector} onClick={() => setItemOrSkillSelected(item.name)}>{item.name}</p>
+                                                <p style={styles.selector} onClick={() => setItemOrSkillSelected(MatchOrNull(item.name, itemOrSkillSelected))}>{item.name}</p>
                                                 {itemOrSkillSelected === item.name &&
                                                     <ul style={{marginLeft: "20px"}}>
                                                         <li>{item.description}</li>

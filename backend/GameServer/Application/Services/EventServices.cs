@@ -182,4 +182,19 @@ public sealed class EventServices(
         context.SetPendingResponse(responseString);
         return true;
     }
+
+    public BattleDto? GetCurrentBattle()
+    {
+        if (context.CurrentBattle is null)
+        {
+            return null;
+        }
+        var party = EntityService.GetParty(context.CurrentBattle.PartyId);
+        var opponentParty = EntityService.GetParty(context.CurrentBattle.OpponentPartyId);
+        return new()
+        {
+            InitiativeOrder = context.CurrentBattle.InitiativeOrder,
+            EntityDtos = [..party, ..opponentParty]
+        };
+    }
 }

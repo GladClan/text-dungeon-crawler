@@ -914,21 +914,18 @@ public sealed class Steal: Skill
 public sealed class Shatter : Skill
 {
     private double _damage;
-    public Shatter(int _level = 1): base(
+    public Shatter(): base(
         name: "Shatter",
         tag: "shatter",
-        description: $"A simple spell that devastates a single target with {22 + _level * 3} damage.",
+        description: $"A simple spell that devastates a single target with 27 damage.",
         cost: 10,
         element: DamageType.physical,
         proficiency: Proficiency.spellstrike,
         multiTarget: false,
         targetsLimit: 1,
         skillType: ActionType.Attack,
-        level: _level
-    )
-    {
-        _damage = 24 + Level * 3;
-    }
+        level: 1
+    ) { }
     
     public override bool CanLevelUpSkill()
     {
@@ -937,7 +934,12 @@ public sealed class Shatter : Skill
 
     public override Skill Clone()
     {
-        return new Shatter(Level);
+        return new Shatter()
+        {
+            Level = Level,
+            _damage = 24 + Level * 3,
+            Description = $"A simple spell that devastates a single target with {22 + Level * 3} damage.",
+        };
     }
 
     public override void LevelUpSkill()
@@ -972,22 +974,22 @@ public sealed class Firecast : Skill
     private int _uses;
     private double _damageTotal;
 
-    public Firecast(int level, double damage = 20, int uses = 0, double damageTotal = 0, int targetsLimit = 1): base(
+    public Firecast(): base(
         name: "Firecast",
         tag: "firecast",
         description: "Shoots a stream of flame at a single target, dealing 20 fire damage.",
         cost: 9,
         element: DamageType.burning,
         proficiency: Proficiency.firecasting,
-        multiTarget: targetsLimit > 1,
-        targetsLimit: targetsLimit,
+        multiTarget: false,
+        targetsLimit: 1,
         skillType: ActionType.Attack,
-        level: level
+        level: 1
     )
     {
-        _damage = damage;
-        _uses = uses;
-        _damageTotal = damageTotal;
+        _damage = 20;
+        _uses = 0;
+        _damageTotal = 0;
     }
 
     public override bool CanLevelUpSkill()
@@ -999,7 +1001,16 @@ public sealed class Firecast : Skill
 
     public override Skill Clone()
     {
-        return new Firecast(Level, _damage, _uses, _damageTotal, TargetsLimit);
+        return new Firecast()
+        {
+            Level = Level,
+            _damage = _damage,
+            _uses = _uses,
+            _damageTotal = _damageTotal,
+            TargetsLimit = TargetsLimit,
+            MultiTarget = TargetsLimit > 1,
+            Description = Description
+        };
     }
 
     public override void LevelUpSkill()

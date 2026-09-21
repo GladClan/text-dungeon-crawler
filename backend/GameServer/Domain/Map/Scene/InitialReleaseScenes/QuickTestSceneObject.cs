@@ -458,18 +458,16 @@ public class QuickTestSceneObject: ISceneContainer
                             eventEffects: [
                                 new StartBattleEffect
                                 (
-                                    battleStartRequest: new()
-                                    {
-                                        PartyId = _partyId,
-                                        // OpponentPartyId = "",
-                                        // entityRequests = [],
-                                        BestiaryEntityTags = [
+                                    battleStartRequest: new(
+                                        partyId: _partyId,
+                                        opponentPartyId: "ogre-fight",
+                                        bestiaryEntityTags: [
                                             "ogre-brute",
                                             "goblin-vermin",
                                             "goblin-vermin",
                                             "goblin-fireslinger"
                                         ]
-                                    }
+                                    )
                                 )
                             ],
                             eventNavigation: new SceneEventNavigation((int)EventDesignations.BattleWon)

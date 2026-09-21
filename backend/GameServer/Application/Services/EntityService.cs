@@ -190,6 +190,10 @@ public sealed class EntityService(
         // Add the items to the entity's inventory from its initial items list
         foreach (string itemTag in entity.ItemTagsForInitialInventory)
         {
+            if (itemTag.Length == 0)
+            {
+                continue;
+            }
             var item = _inventoryService.NewItemByTag(itemTag);
             if (item is not null)
             {
@@ -208,6 +212,10 @@ public sealed class EntityService(
         // Add skills to the entity's skills from its initial skills list
         foreach (string skillTag in entity.SkillTagsForInitialSkills)
         {
+            if (skillTag.Length == 0)
+            {
+                continue;
+            }
             var skill = _skillService.NewSkillByTag(skillTag);
             if (skill is not null)
             {
@@ -216,6 +224,7 @@ public sealed class EntityService(
             else
             {
                 // If the skill does not exist, do not add it :)
+                Console.WriteLine($"Could not find skill: {skillTag}");
                 result.Errors.Add(new(
                     $"{nameof(_skillService.NewSkillByTag)}({skillTag})",
                     $"{skillTag} is not a valid skill tag"

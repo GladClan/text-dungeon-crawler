@@ -37,6 +37,21 @@ public sealed class EventController(EventServices services) : ControllerBase
         }
     }
 
+    [HttpGet("battle")]
+    public ActionResult<BattleDto> GetCurrentBattle()
+    {
+        var result = services.GetCurrentBattle();
+        if (result is null)
+        {
+            Console.WriteLine($"{nameof(GetCurrentBattle)} returned a null response; no battle is currently active");
+            return NotFound("No battle currently active.");
+        }
+        else
+        {
+            return Ok(result);
+        }
+    }
+
     [HttpPost("select-target")]
     public ActionResult SelectTarget([FromBody] string targetId)
     {

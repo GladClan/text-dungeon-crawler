@@ -113,7 +113,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
 
     public Item? NewItemByTag(string tag)
     {
-        var item = _itemsIndexer.GetItemByTag(tag);
+        var item = _itemsIndexer.GetItemByTag(tag.Trim());
         if (item.Tag == "error")
         {
             return null;

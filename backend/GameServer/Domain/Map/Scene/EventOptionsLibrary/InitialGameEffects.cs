@@ -284,6 +284,7 @@ public class StartBattleEffect(
         var result = services.BattleService.CommenceBattle(battleStartRequest);
         if (result.Error.Length > 0)
         {
+            Console.WriteLine($"Erorr starting battle: {result.Error}");
             return new(
                 error: result.Error
             );
@@ -326,7 +327,6 @@ public sealed class EffectSkillCheck(
         {
             if (targetId is null)
             {
-                Console.WriteLine($"Skillcheck: Finding target...");
                 if (targets.Count == 1)
                 {
                     targetId = targets[0].EntityId;
@@ -343,7 +343,6 @@ public sealed class EffectSkillCheck(
             }
             if (targetId is not null)
             {
-                Console.WriteLine($"Skill check: target found!");
                 _ = services.CombatService.AddProficiencyEntry(new()
                 {
                     TargetId = targetId,
@@ -373,13 +372,8 @@ public sealed class EffectSkillCheck(
                         90d / (1 + ((-2 + difficulty) / 10))                    
                 };
 
-                Console.WriteLine($"Skill check: difficulty set to {difficulty_value}, proficiency multiplier is {targetProficiency.Value}");
                 double check = r.Next((int)(100 / targetProficiency.Value));
                 bool successful = check <= difficulty_value;
-
-                Console.WriteLine($"Skill check success: {check} < {difficulty_value}");
-
-                Console.WriteLine($"Skill check {(successful ? "succeeded" : "failed")}");
 
                 services.GetCurrentSceneState().SkillCheckSuccess = successful;
 

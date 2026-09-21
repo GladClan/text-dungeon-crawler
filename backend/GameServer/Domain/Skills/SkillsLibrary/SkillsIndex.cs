@@ -32,9 +32,11 @@ public class SkillsIndex : ISkillsIndex
                     skills.Add(skill);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Skip skills taht can't be instatantiated
+                // Skip skills that can't be instatantiated
+                Console.WriteLine(
+                    $"Failed to initialize skill type {type.FullName}\n{ex}");
             }
         }
         return skills;

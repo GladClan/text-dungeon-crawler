@@ -16,28 +16,38 @@ public sealed class BattleService(
     private readonly EntityService _service = entityService;
     private readonly StatisticsService _statistics = statisticsService;
 
-    public BattleDto CommenceBattle(BattleStartRequest request)
+    public BattleStartDto CommenceBattle(BattleStartRequest request)
     {
-        if (request.OpponentPartyId is null && request.entityRequests is null && request.BestiaryEntityTags.Count == 0)
+        if (
+            request.OpponentPartyId.Length == 0
+            && request.entityRequests.Count == 0
+            && request.BestiaryEntityTags.Count == 0
+        )
         {
-            return new BattleDto
+            return new BattleStartDto
             {
                 Error = "The party wins! No opponents found."
             };
         }
-        List<DamageableEntityDto> opponentParty = [];
-        if (request.OpponentPartyId is not null)
-        {
-            opponentParty.AddRange( _service.GetParty(request.OpponentPartyId));
-        }
+
+        List<DamageableEntityDto> opponentParty = _service.GetParty(request.OpponentPartyId);
+
         List<AddEntityResult> result = [];
         foreach (string tag in request.BestiaryEntityTags)
         {
             var target = _service.AddBeastiaryEntity(tag, request.OpponentPartyId);
             result.Add(target);
-            if (target is not null && target.Entity is not null)
+            if (target is not null && target.Errors.Count == 0 && target.Entity is not null)
             {
                 opponentParty.Add(target.Entity);
+            }
+            else
+            {
+                Console.WriteLine($"Failed to add bestiary entity tag: [{tag}]");
+                return new()
+                {
+                    Error = $"Entity tag could not be found: {tag}"
+                };
             }
         }
         if (request.entityRequests is not null)
@@ -55,7 +65,7 @@ public sealed class BattleService(
         var party = _service.GetParty(request.PartyId);
         context.CurrentBattle = new(request.PartyId, request.OpponentPartyId ?? $"temp-{OrdinalDateString.GetOrdinalDate(4)}", _service);
         var initiative = GetInitiativeOrder()!;
-        return new BattleDto
+        return new BattleStartDto
         {
             EntityDtos = [..opponentParty, ..party],
             EntityResult = result.Count == 0 ? null : result,
@@ -127,15 +137,24 @@ public sealed class BattleService(
         List<DamageableEntityDto> members = [.. party, .. enemies];
         members.Sort((a, b) => b.Speed.CompareTo(a.Speed));
         
-        int turnCounts = members.Sum(m => 1 + (int)Math.Floor(m.Speed / 20));
-        for (int i = 0; i < turnCounts; i++)
+        int maxTurns = members.Max(m => 1 + (int)(m.Speed / 20));
+
+        for (int round = 0; round < maxTurns; round++)
         {
-            result.Add(new InitiativeDto
+            foreach (var m in members)
             {
-                Initiative = i,
-                EntityName = members[i % members.Count].Name,
-                EntityId = members[i].Id
-            });
+                if (round < 1 + (int)(m.Speed / 20))
+                {
+                    result.Add(
+                        new()
+                        {
+                            Initiative = result.Count + 1,
+                            EntityName = m.Name,
+                            EntityId = m.Id
+                        }
+                    );
+                }
+            }
         }
         context.CurrentBattle.InitiativeOrder = result;
         return result;

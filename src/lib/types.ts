@@ -104,3 +104,14 @@ export type Item = {
     equipped: boolean;
     error: string;
 }
+
+export type Battle = {
+    initiativeOrder: Initiative[];
+    entityDtos: Entity[];
+}
+
+export type Initiative = {
+    initiative: number;
+    entityName: string;
+    entityId: string;
+}

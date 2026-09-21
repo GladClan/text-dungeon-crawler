@@ -11,7 +11,7 @@ public sealed class ErrorItem : Useable
     private int _uses = 0;
     private double _damage = 150d;
 
-    public ErrorItem(double damage = 150d, int uses = 0): base(
+    public ErrorItem(): base(
         name: "Mysterious Cloud",
         tag: "error",
         cost: 0,
@@ -26,11 +26,7 @@ public sealed class ErrorItem : Useable
         shopType: 1000,
         rarity: 1000,
         collection: 99
-    )
-    {
-        _damage = damage;
-        _uses = uses;
-    }
+    ) { }
 
     public override bool CanUse(DamageableEntity target)
     {
@@ -39,7 +35,11 @@ public sealed class ErrorItem : Useable
 
     public override Item Clone()
     {
-        return new ErrorItem(_damage, _uses);
+        return new ErrorItem()
+        {
+        _damage = _damage,
+        _uses = _uses
+        };
     }
 
     private void OnUse(double proficiency)
@@ -121,7 +121,7 @@ public sealed class Catapult : Useable
     private PrepStage _prepStage = PrepStage.empty;
     private double _strengthModifier = 0;
     private static readonly double _damage = 70;
-    public Catapult(PrepStage prepStage = PrepStage.empty, double strengthModifier = 0): base(
+    public Catapult(): base(
         name: "Catapult",
         tag: "catapult",
         cost: 0,
@@ -136,11 +136,7 @@ public sealed class Catapult : Useable
         shopType: (int)ShopTypes.Siege_Weapons,
         rarity: (int)Rarities.impossible,
         collection: (int)ShopCollections.Weapon
-    )
-    {
-        _prepStage = prepStage;
-        _strengthModifier = strengthModifier;
-    }
+    ) { }
 
     public override bool CanUse(DamageableEntity target)
     {
@@ -149,7 +145,11 @@ public sealed class Catapult : Useable
 
     public override Item Clone()
     {
-        return new Catapult(_prepStage, _strengthModifier);
+        return new Catapult()
+    {
+        _prepStage = _prepStage,
+        _strengthModifier = _strengthModifier
+    };
     }
 
     public override EffectDto ItemEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
@@ -248,8 +248,9 @@ public sealed class ArmingSword : Useable
 /// <param cref="tag">Tag: "potion-healing"</param>
 public sealed class HealingPotion : Useable
 {
-    private readonly int _health;
-    public HealingPotion(int health = 25): base(
+    private int _health;
+    
+    public HealingPotion(): base(
         name: "Healing potion",
         tag: "potion-healing",
         cost: 5,
@@ -266,16 +267,19 @@ public sealed class HealingPotion : Useable
         collection: (int)ShopCollections.Potion
     )
     {
-        _health = health;
-        Name = health < 15 ? "Minor Health Potion" :
-            health < 30 ? "Health Potion" :
-            health < 59 ? "Potent Health Potion" :
-            "Greater Health Potion";
-        Description = $"A potion that can be applied to wounds or drunk to heal {_health} health.";
+        _health = 25;
     }
     public override Item Clone()
     {
-        return new HealingPotion(_health);
+        return new HealingPotion()
+        {
+            _health = _health,
+            Name = _health < 15 ? "Minor Health Potion" :
+                _health < 30 ? "Health Potion" :
+                _health < 59 ? "Potent Health Potion" :
+                "Greater Health Potion",
+            Description = $"A potion that can be applied to wounds or drunk to heal {_health} health."
+        };
     }
 
     public override EffectDto ItemEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
@@ -298,11 +302,11 @@ public sealed class HealingPotion : Useable
 /// <param cref="tag">Tag: "potion-mana"</param>
 public sealed class ManaPotion : Useable
 {
-    private readonly int _mana;
-    public ManaPotion(int mana = 15): base(
+    private int _mana;
+    public ManaPotion(): base(
         name: "Mana Potion",
         tag: "potion-mana",
-        cost: mana / 5,
+        cost: 3,
         description: "Description",
         consumable: true,
         sellable: true,
@@ -316,17 +320,19 @@ public sealed class ManaPotion : Useable
         collection: (int)ShopCollections.Potion
     )
     {
-        _mana = mana;
-        Name = mana < 10 ? "Minor Mana Potion" :
-            mana < 20 ? "Mana Potion" :
-            mana < 30 ? "Greater Mana Potion" :
-            "Potent Mana Potion";
-        Description = $"A potion that regenerates {_mana} mana when drunk.";
+        _mana = 15;
     }
-
     public override Item Clone()
     {
-        return new ManaPotion(_mana);
+        return new ManaPotion()
+        {
+            _mana = _mana,
+            Name = _mana < 10 ? "Minor Mana Potion" :
+                _mana < 20 ? "Mana Potion" :
+                _mana < 30 ? "Greater Mana Potion" :
+                "Potent Mana Potion",
+            Description = $"A potion that regenerates {_mana} mana when drunk."
+        };
     }
 
     public override EffectDto ItemEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
@@ -852,7 +858,7 @@ public sealed class WarriorsGateKey: Useable
         name: "Key to the Warrior's Gate",
         tag: "warriors-gate-key",
         cost: 0,
-        description: "A key, once held by a hermit as a prank t oa great warrior. Opens the gate to the warrior's abode.",
+        description: "A key, once held by a hermit as a prank to a great warrior. Opens the gate to the warrior's abode.",
         consumable: false,
         sellable: false,
         element: DamageType.damage,

@@ -5,6 +5,13 @@ namespace GameServer.Contracts.DTOs;
 
 public sealed class BattleDto
 {
+    public List<InitiativeDto> InitiativeOrder { get; set; } = [];
+    public List<DamageableEntityDto> EntityDtos { get; set;} = [];
+}
+
+public sealed class BattleStartDto
+{
+    
     public List<string> Messages { get; set; } = [];
     public List<InitiativeDto> InitiativeOrder { get; set; } = [];
     public List<DamageableEntityDto> EntityDtos { get; set;} = [];
@@ -83,7 +90,7 @@ public class SceneEventDto
     public int ID { get; init; }
     public List<DialogueDto> Dialogues { get; init; }
     public List<OptionDto> Options { get; init; }
-    public bool ExistsActivaBattle { get; init; }
+    public bool ExistsActiveBattle { get; init; }
     public string Error { get; init; }
 
     public SceneEventDto(
@@ -103,7 +110,7 @@ public class SceneEventDto
     {
         Dialogues = [];
         Options = [];
-        ExistsActivaBattle = isBattleActive;
+        ExistsActiveBattle = isBattleActive;
         Error = string.Empty;
     }
     public SceneEventDto(

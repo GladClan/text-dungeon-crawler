@@ -4,6 +4,7 @@ import { ChooseOption, GetCurrentEvent, SelectTarget } from "@/lib/api";
 import { Option, TargetOption, Dialogue } from "@/lib/types";
 import React from "react";
 import PartyViewer from "./components/party_view";
+import BattleView from "./components/battle_view";
 
 type TargetOptions = {
     message: string,
@@ -25,6 +26,7 @@ const GamePage: React.FC = () => {
                     message: "A battle begins..."
                 }]);
                 setOptions(null);
+                setBattleActive(true);
             } else {
                 setDialogue(newEvent.dialogues);
                 setOptions(newEvent.options);
@@ -50,6 +52,7 @@ const GamePage: React.FC = () => {
                     optionId: optionId,
                     options: result.targets
                 });
+                setViewParty(false);
             } else {
                 setTargetOptions(null);
                 await GetEvent();
@@ -77,6 +80,7 @@ const GamePage: React.FC = () => {
         }
     }
 
+    const [battleActive, setBattleActive] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     const [previousDialogue, setPreviousDialogue] = React.useState<Dialogue[]>([]);
     const [dialogue, setDialogue] = React.useState<Dialogue[] | null>();
@@ -99,6 +103,11 @@ const GamePage: React.FC = () => {
                 >
                     View party
                 </button>
+            }
+            {battleActive &&
+                <BattleView
+                    setBattleActive={setBattleActive}
+                />
             }
             <div style={styles.container}>
                 <div style={styles.dialogue}>

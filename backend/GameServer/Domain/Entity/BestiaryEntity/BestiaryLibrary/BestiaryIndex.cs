@@ -27,7 +27,7 @@ public class BestiaryIndex: IBestiaryIndex
     }
     public BeastiaryEntity NewBeastiaryEntityByTag(string tag)
     {
-        var reference = _catalog.TryGetValue(tag, out var entity)
+        var reference = _catalog.TryGetValue(tag.Trim(), out var entity)
             ? entity
             : _catalog["error"];
         

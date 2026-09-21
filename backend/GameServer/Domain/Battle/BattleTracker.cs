@@ -6,16 +6,58 @@ using GameServer.Domain.Entities;
 
 namespace GameServer.Domain.Battle;
 
-public class BattleTracker(string partyId, string opponentPartyId, EntityService entityService)
+public class BattleTracker
 {
-    private readonly EntityService _service = entityService;
-    public string PartyId { get; set; } = partyId;
-    public string OpponentPartyId { get; set; } = opponentPartyId;
+    private readonly EntityService _service;
+    public string PartyId { get; set; }
+    public string OpponentPartyId { get; set; }
     public readonly BattleLog Log = new();
     private readonly List<IBattleEffect> _battleEffects = [];
     public List<InitiativeDto> InitiativeOrder = [];
     public int Turn = 0;
     public int Round = 0;
+
+    public BattleTracker(
+        string partyId,
+        string opponentPartyId,
+        EntityService entityService
+    )
+    {
+        _service = entityService;
+        if (partyId.Length < 1 || opponentPartyId.Length < 1)
+        {
+            throw new ArgumentException("Party ids must not be empty!");
+        }
+        PartyId = partyId;
+        OpponentPartyId = opponentPartyId;
+        InitiativeOrder = [];
+        
+        var party = _service.GetParty(partyId);
+        var oppParty = _service.GetParty(opponentPartyId);
+
+        List<DamageableEntityDto> members = [..party, ..oppParty];
+        members.Sort((a, b) => a.Speed.CompareTo(b.Speed));
+
+        int maxTurns = members.Max(m => 1 + (int)(m.Speed / 20));
+
+        for (int round = 0; round < maxTurns; round++)
+        {
+            foreach (var m in members)
+            {
+                if (round < 1 + (int)(m.Speed / 20))
+                {
+                    InitiativeOrder.Add(
+                        new()
+                        {
+                            Initiative = InitiativeOrder.Count + 1,
+                            EntityName = m.Name,
+                            EntityId = m.Id
+                        }
+                    );
+                }
+            }
+        }
+    }
 
     public IEnumerable<IGrouping<string, IBattleEffect>> GetBattleEffectsGroupedById()
     {
@@ -63,13 +105,13 @@ public class BattleTracker(string partyId, string opponentPartyId, EntityService
     }
 
     
-    public bool ExistsPartyMemberAtCriticalHealth(string partyId, int criticalPercentage = 20)
+    public bool ExistsPartyMemberAtCriticalHealth(string partyId, int criticalPercentage = 18)
     {
         var party = _service.GetParty(partyId);
         return party.Any(e => (e.CurrentHealth / e.MaxHealth * 100) <= criticalPercentage);
     }
 
-    public string? GetPartyMemberIdAtCriticalHealth(string partyId, int criticalPercentage = 20)
+    public string? GetPartyMemberIdAtCriticalHealth(string partyId, int criticalPercentage = 18)
     {
         var party = _service.GetParty(partyId);
         var result = party.FirstOrDefault(m => (m.CurrentHealth / m.MaxHealth * 100) <= criticalPercentage);

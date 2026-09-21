@@ -13,7 +13,7 @@ public class ItemsIndex : IItemsIndex
         var assembly = typeof(ItemsIndex).Assembly;
         string baseNamespace = typeof(ItemsIndex).Namespace ?? "";
 
-        // Find all concrete types that inherit from Item in the InitialRelease namespace
+        // Find all concrete types that inherit from Item in the ItemsLibrary namespace
         var concreteItemTypes = assembly.GetTypes()
             .Where(t => 
                 t.Namespace is not null &&
@@ -30,9 +30,11 @@ public class ItemsIndex : IItemsIndex
                     items.Add(item);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Skip items that can't be instantiated
+                Console.WriteLine(
+                    $"Failed to initialize item type {type.FullName}\n{ex}");
             }
         }
 
@@ -46,7 +48,7 @@ public class ItemsIndex : IItemsIndex
 
     public Item GetItemByTag(string tag)
     {
-        return ItemCatalog.FirstOrDefault(i => i.Tag == tag) ?? new ErrorItem();
+        return ItemCatalog.FirstOrDefault(i => i.Tag.Equals(tag.Trim(), StringComparison.OrdinalIgnoreCase)) ?? new ErrorItem();
     }
 
     public List<Item> GetShopItems(int itemsCount, int shopType, int rarity, int collection)

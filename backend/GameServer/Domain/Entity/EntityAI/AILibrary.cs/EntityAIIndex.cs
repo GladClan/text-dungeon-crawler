@@ -28,9 +28,11 @@ public class EntitAIIndex : IEntityAIIndex
                     AIs.Add(ai);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Skip AI's that can't be instantiated
+                Console.WriteLine(
+                    $"Failed to initialize AI type {type.FullName}\n{ex}");
             }
         }
         return AIs;

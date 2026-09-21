@@ -126,7 +126,7 @@ public static class InitialReleaseRepository
                 loreEntry1: "",         // Lore!
                 loreEntry2: "",         // LORE!!
                 defaultAi: "goblin",
-                initialInventoryTags: ["club", "potion-health"],
+                initialInventoryTags: ["club", "potion-healing"],
                 initialSkillTags: ["steal"]
             )
         },
@@ -164,7 +164,7 @@ public static class InitialReleaseRepository
                 loreEntry1: "",
                 loreEntry2: "",
                 defaultAi: "goblin",
-                initialInventoryTags: ["dagger", "potion-mana", "potion-mana", "potion-health"],
+                initialInventoryTags: ["dagger", "potion-mana", "potion-mana", "potion-healing"],
                 initialSkillTags: ["firecast", "firebolt"]
             )
         }

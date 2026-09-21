@@ -1,4 +1,4 @@
-import { Entity, EventResult, SceneEvent } from "./types";
+import { Battle, Entity, EventResult, SceneEvent } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 type RequestOptions = {
@@ -17,7 +17,7 @@ async function fetchJson<T>(path: string, options: RequestOptions = {}): Promise
         },
         body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-    
+
     if (response.status >= 400){
         throw new Error(`API request failed: ${response.status} ${response.statusText}`)
     }
@@ -48,4 +48,8 @@ export function SelectTarget(targetId: string) {
 
 export function GetParty(partyId: string) {
     return fetchJson<Entity[]>(`/api/entities/party/${partyId}`);
+}
+
+export function GetActiveBattle() {
+    return fetchJson<Battle>(`/api/events/battle`);
 }
