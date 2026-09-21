@@ -842,6 +842,53 @@ public sealed class Club: Useable
     }
 }
 
+/// <summary>
+/// A key item, unlocks the warrior's gate in the test scene.
+/// </summary>
+/// <param cref="tag">Tag: "warriors-gate-key"</param>
+public sealed class WarriorsGateKey: Useable
+{
+    public WarriorsGateKey(): base(
+        name: "Key to the Warrior's Gate",
+        tag: "warriors-gate-key",
+        cost: 0,
+        description: "A key, once held by a hermit as a prank t oa great warrior. Opens the gate to the warrior's abode.",
+        consumable: false,
+        sellable: false,
+        element: DamageType.damage,
+        multiTarget: false,
+        targetsLimit: 1,
+        proficiency: Proficiency.stealth,
+        itemType: ActionType.Other,
+        shopType: (int)ShopTypes.error,
+        rarity: (int)Rarities.impossible,
+        collection: (int)ShopCollections.Artifact
+    ) { }
+
+    public override bool CanUse(DamageableEntity target)
+    {
+        return false;
+    }
+
+    public override Item Clone()
+    {
+        return new WarriorsGateKey();
+    }
+
+    public override EffectDto ItemEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
+    {
+        source.AddProficiencyEntry(ItemProficiency, -1);
+        double buffed = (10 * source.GetProficiencyMultiplier(ItemProficiency).Value) + source.Strength - 10;
+        var result = mainTarget.TakeDamage(source, buffed, Element);
+        return new(
+            message: $"{source.Name} strikes {mainTarget.Name} with {Name}, dealing {result.AmountActual} damage... Why they chose to attack with a key is beyond me.\n" +
+            "HOW they attacked with the key is even farther beyond me!",
+            results: [result],
+            wasMagic: false
+        );
+    }
+}
+
 
 /*
 // Constructor template

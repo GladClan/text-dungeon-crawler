@@ -40,7 +40,7 @@ public sealed class EventController(EventServices services) : ControllerBase
     [HttpPost("select-target")]
     public ActionResult SelectTarget([FromBody] string targetId)
     {
-        _ = services.SetPendingResponse(targetId);
-        return NoContent();
+        var result = services.SetPendingResponse(targetId);
+        return Ok(result);
     }
 }

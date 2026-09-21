@@ -32,11 +32,11 @@ public sealed class EntitiesController(EntityService entityService) : Controller
         return Ok(ids);
     }
 
-    [HttpGet("/party/{partyId}")]
+    [HttpGet("party/{partyId}")]
     public ActionResult<List<DamageableEntityDto>> GetParty(string partyId)
     {
         var result = _service.GetParty(partyId);
-        return result;
+        return Ok(result);
     }
 
     [HttpGet("{id}")]

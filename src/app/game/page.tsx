@@ -3,11 +3,15 @@
 import { ChooseOption, GetCurrentEvent, SelectTarget } from "@/lib/api";
 import { Option, TargetOption, Dialogue } from "@/lib/types";
 import React from "react";
+import PartyViewer from "./components/party_view";
+
+type TargetOptions = {
+    message: string,
+    optionId: number,
+    options: TargetOption[],
+}
 
 const GamePage: React.FC = () => {
-    const _filler1 = "Here is what a paragraph will look like, all long ant strong, full of words.";
-    const _filler_2 = "I didn't want to fill this with some \"lorem ispum\" filler, so I decided I would just type up some stuff and see how it looks on the page. This is a bit longer to see how a longer phrase will look as it wraps around";
-    const _filler_3 = "And here is a repeat of the ifrst two sentences to see what a really long one will look like: " + _filler1 + " " + _filler_2;
 
     async function GetEvent() {
         try {
@@ -40,9 +44,14 @@ const GamePage: React.FC = () => {
         try {
             setLoading(true);
             const result = await ChooseOption(optionId);
-            if (result.RequiresTarget) {
-                setTargetOptions(result.Targets);
+            if (result.requiresTarget) {
+                setTargetOptions({
+                    message: result.message,
+                    optionId: optionId,
+                    options: result.targets
+                });
             } else {
+                setTargetOptions(null);
                 await GetEvent();
             }
         }
@@ -57,7 +66,8 @@ const GamePage: React.FC = () => {
     async function ChooseTarget(targetId: string, optionId: number) {
         try {
             setLoading(true);
-            await SelectTarget(targetId);
+            const result = await SelectTarget(targetId);
+            setTargetOptions(null);
         } catch (err) {
             const message = err instanceof Error ? err.message : "There was a problem with the target selection...";
             console.log(message);
@@ -71,9 +81,25 @@ const GamePage: React.FC = () => {
     const [previousDialogue, setPreviousDialogue] = React.useState<Dialogue[]>([]);
     const [dialogue, setDialogue] = React.useState<Dialogue[] | null>();
     const [options, setOptions] = React.useState<Option[] | null>();
-    const [targetOptions, setTargetOptions] = React.useState<TargetOption[] | null>();
+    const [targetOptions, setTargetOptions] = React.useState<TargetOptions | null>();
+    const [viewParty, setViewParty] = React.useState(false);
+    const [partyId, setPartyId] = React.useState("player-party");
+
     return (
         <div style={styles.page}>
+            {viewParty ? 
+                <PartyViewer
+                    partyId={partyId}
+                    setViewParty={setViewParty}
+                />
+                :
+                <button
+                    style={styles.button}
+                    onClick={() => setViewParty(!viewParty)}
+                >
+                    View party
+                </button>
+            }
             <div style={styles.container}>
                 <div style={styles.dialogue}>
                     {loading ? 
@@ -83,14 +109,19 @@ const GamePage: React.FC = () => {
                         :
                         <>
                             {dialogue ? (
-                                [...dialogue, ...previousDialogue].map((d, i) =>
-                                    <div key={`dialogue-${i}`} style={styles.item}>{d.message}</div>
+                                [...dialogue].map((d, i) =>
+                                    <div key={`dialogue-${i}`} style={styles.item}>
+                                        <ul>
+                                            <span style={{fontSize: "14px"}}>{d.source}</span>
+                                            <li style={{marginLeft: "20px", listStyleType: "none"}}>
+                                                {d.message}
+                                            </li>
+                                        </ul>
+                                    </div>
                                 )
                             ) : (
                                 <>
-                                    <div style={styles.item}>{_filler1}</div>
-                                    <div style={styles.item}>{_filler_2}</div>
-                                    <div style={styles.item}>{_filler_3}</div>
+                                    <div style={styles.item}>Press "Begin" to start the adventure :)</div>
                                 </>
                             )}
                         </>
@@ -101,26 +132,33 @@ const GamePage: React.FC = () => {
                         (
                             <>
                                 {options.map((o, i) => (
-                                    <button key={`option-${i}`} style={styles.button} onClick={() => SendOption(o.optionId)}>
-                                        {o.optionTitle}
-                                        {targetOptions && (
-                                            <div style={styles.targetsContainer}>
-                                                {targetOptions.map((t, n) => 
-                                                    <button
-                                                        key={`target-${n}`}
-                                                        style={styles.targetsButton}
-                                                        onClick={() => ChooseTarget(
-                                                            t.EntityId,
-                                                            o.optionId
-                                                        )}
-                                                    >
-                                                        {t.Name}
-                                                    </button>
+                                        <button
+                                            key={`option-${i}`}
+                                            style={styles.button}
+                                            onClick={() => SendOption(o.optionId)}
+                                        >
+                                            {o.optionTitle}
+                                        </button>
+                                ))}
+                                {targetOptions && (
+                                    <div style={styles.targetsContainer}>
+                                        <p style={{color: "black", fontSize: "18px"}}>
+                                            <strong>{targetOptions.message}</strong>
+                                        </p>
+                                        {targetOptions.options.map((t, n) => 
+                                            <div
+                                                key={`target-${n}`}
+                                                style={styles.targetsButton}
+                                                onClick={() => ChooseTarget(
+                                                    t.entityId,
+                                                    targetOptions.optionId
                                                 )}
+                                            >
+                                                {t.name}
                                             </div>
                                         )}
-                                    </button>
-                                ))}
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <button style={styles.button} onClick={() => GetEvent()}>
@@ -186,19 +224,21 @@ const styles: { [key: string]: React.CSSProperties} = {
         display: "flex",
         flexDirection: "column",
         position: "absolute",
-        top: "10px",
-        left: "10px",
+        top: "50px",
+        // left: "0px",
         cursor: "pointer",
         fontSize: "16px",
         padding: "5px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+        backgroundColor: "#e6d3a3",
+        boxShadow: "0 4px 8px rgba(255, 255, 0, 0.7)",
         borderRadius: "8px",
         zIndex: 10,
     },
     targetsButton: {
+        color: "black",
         cursor: "pointer",
+        textDecoration: "underline",
         minWidth: "75px",
         margin: "5px",
-        // 
     }
 }

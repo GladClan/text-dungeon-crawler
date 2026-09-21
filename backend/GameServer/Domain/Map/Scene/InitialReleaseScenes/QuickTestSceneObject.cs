@@ -6,7 +6,7 @@ using GameServer.Domain.Map.Scene.EventOptionsLibrary;
 
 namespace GameServer.Domain.Map.Scene.InitialReleaseScenes;
 
-public class QuickTestSceneObjectsState: ISceneState
+public class QuickTestSceneObjectsState: SceneState
 {
     public int GottenGold = 0;
     public bool OgresGateOpen = false;
@@ -18,13 +18,12 @@ public class QuickTestSceneObject: ISceneContainer
 {
     public Dictionary<int, SceneEvent> Events { get; set; }
     public int CurrentEventId { get; set; } = 0;
-    public ISceneState State { get; init; }
+    public SceneState State { get; init; }
     private readonly string _partyId;
     private readonly string _narrator = "narrator";
     private readonly string _hermit = "Hermit";
     private readonly string _warrior = "Warrior";
     private readonly string _warriorsKey = "warriors-gate-key";
-    private readonly string _warriorId = "error-warrior-id-not-found";
     private readonly DamageableEntityRequest warriorRequest = new()
     {
         Name = "Chosen Warrior",
@@ -181,7 +180,7 @@ public class QuickTestSceneObject: ISceneContainer
                         new(
                             eventTitle: "Open the gate",
                             eventConditions: [
-                                new MemberInParty(_partyId, (State as QuickTestSceneObjectsState)?.WarriorId ?? _warriorId),
+                                new ConditionTestSceneWarriorInParty(_partyId),
                                 new HasGold(_partyId, 50)
                             ],
                             eventEffects: [
@@ -225,16 +224,15 @@ public class QuickTestSceneObject: ISceneContainer
                         new(
                             eventTitle: "Has he any spare change",
                             eventConditions: [
-                                new MemberInParty(_partyId, (State as QuickTestSceneObjectsState)?.WarriorId ?? _warriorId),
+                                new ConditionTestSceneWarriorInParty(_partyId),
                                 new ConditionTestSceneGottenGoldFromHermitLessThan(2)
                             ],
                             eventEffects: [
-                                new EffectTestSceneIncrementGottenGold(),
-                                new AddOrRemoveGold(
+                                new EffectTestSceneAddGold(
                                     targetSelector: new PartyMemberSelector(_partyId),
-                                    _goldToAdd: 25,
                                     prompt: "Who should get the gold?"
-                                ) // random(5, 9) * random(5, 9)
+                                ),
+                                new EffectTestSceneIncrementGottenGold()
                             ],
                             eventNavigation: new SceneEventNavigation((int)EventDesignations.GetTheGold)
                         ),
@@ -244,7 +242,14 @@ public class QuickTestSceneObject: ISceneContainer
                                 new ConditionTestSceneOgresGateOpen(),
                                 new ConditionTestSceneNotHermitHasGivenGift()
                             ],
-                            eventEffects: [],
+                            eventEffects: [
+                                new EffectSkillCheck(
+                                    targetSelector: new PartyMemberSelector(_partyId),
+                                    proficiency: Proficiency.persuasion,
+                                    difficulty: (int)Difficulty.medium,
+                                    prompt: "Who shoud ask for it? (best choose someone who is proficient in persuasion)"
+                                )
+                            ],
                             eventNavigation: new SceneEventNavigation((int)EventDesignations.HermitsGift)
                         ),
                         GoBackToCrossroads
@@ -268,7 +273,7 @@ public class QuickTestSceneObject: ISceneContainer
                         new(
                             eventTitle: "Bring the warrior along",
                             eventConditions: [
-                                new NotMemberInParty(_partyId, (State as QuickTestSceneObjectsState)?.WarriorId ?? _warriorId)
+                                new ConditionTestSceneNotWarriorInParty(_partyId)
                             ],
                             eventEffects: [
                                 new ChangeOptionTitle(GoLeft, "Go to the warrior's abode"),
@@ -344,12 +349,8 @@ public class QuickTestSceneObject: ISceneContainer
                     eventId: (int)EventDesignations.HermitsGift,
                     conditions: new(
                         conditions: [
-                            new SkillCheck(
-                                targetSelector: new PartyMemberSelector(_partyId),
-                                proficiency: Proficiency.persuasion,
-                                difficulty: (int)Difficulty.medium,
-                                prompt: "Who shoud ask for it? (best choose someone who is proficient in persuasion)"
-                        )],
+                            new ConditionSkillCheckSuccess()
+                        ],
                         requirementsNotMetNavigation: new SceneEventNavigation((int)EventDesignations.HermitGiftNotGiven)
                     ),
                     dialogues: new Dictionary<int, Dialogue>()
@@ -611,6 +612,46 @@ public sealed class ConditionTestSceneOgresGateOpen : ICondition
     }
 }
 
+public sealed class ConditionTestSceneNotWarriorInParty(string party_id) : ICondition
+{
+    public EventResultDto IsMet(EventServices services)
+    {
+        var party = services.EntityService.GetParty(party_id);
+        var state = services.GetCurrentSceneState();
+        bool result = false;
+        if (party is not null && state is QuickTestSceneObjectsState q)
+        {
+            result = !party.Any(m => m.Id.Equals(q.WarriorId, StringComparison.InvariantCultureIgnoreCase));
+            return new(
+                success: result
+            );
+        }
+        return new(
+            error: $"Party not found with id = {party_id}"
+        );
+    }
+}
+
+public sealed class ConditionTestSceneWarriorInParty(string party_id) : ICondition
+{
+    public EventResultDto IsMet(EventServices services)
+    {
+        var party = services.EntityService.GetParty(party_id);
+        var state = services.GetCurrentSceneState();
+        bool result = true;
+        if (party is not null && state is QuickTestSceneObjectsState q)
+        {
+            result = party.Any(m => m.Id.Equals(q.WarriorId, StringComparison.InvariantCultureIgnoreCase));
+            return new(
+                success: result
+            );
+        }
+        return new(
+            error: $"Party not found with id = {party_id}"
+        );
+    }
+}
+
 public sealed class ConditionTestSceneGottenGoldFromHermitLessThan(int timesGottenGold): ICondition
 {
     public EventResultDto IsMet(EventServices services)
@@ -673,6 +714,57 @@ public sealed class EffectTestSceneSetOgresGateOpen : IGameEffect
     }
 }
 
+public class EffectTestSceneAddGold(
+    ITargetSelector targetSelector,
+    string? prompt
+): IGameEffect
+{
+    private static readonly Random r = new();
+    public EventResultDto Apply(EventServices services)
+    {
+        var targets = targetSelector.GetTargets(services);
+
+        string? targetId = services.GetPendingResponse();
+
+        if (targets.Count > 0)
+        {
+            if (targetId is null)
+            {
+                if (targets.Count == 1)
+                {
+                    targetId = targets[0].EntityId;
+                }
+                else
+                {
+                    return new(
+                        success: false,
+                        requiresTarget: true,
+                        prompt: prompt ?? "",
+                        targets: [..targets]
+                    );
+                }
+            }
+            if (targetId is not null)
+            {
+                var result = services.InventoryService.AddGold(targetId, r.Next(5, 9) * r.Next(5, 9));// between 25 and 81 gold each time.
+                if (result is null)
+                {
+                    return new(
+                        error: $"Could not find entity {targetId}"
+                    );
+                }
+                return new(
+                    success: true
+                );
+            }
+        }
+
+        return new(
+            success: false
+        );
+    }
+}
+
 public sealed class EffectTestSceneIncrementGottenGold: IGameEffect
 {
     public EventResultDto Apply(EventServices services)
@@ -717,10 +809,7 @@ public sealed class EffectTestSceneSetHermitGiftedTrue: IGameEffect
     }
 }
 
-public class EffectTestSceneAddMemberToPartyRequest(
-    DamageableEntityRequest entityRequest,
-    string _partyId
-) : IGameEffect
+public class EffectTestSceneAddMemberToPartyRequest(DamageableEntityRequest entityRequest, string _partyId) : IGameEffect
 {
     public EventResultDto Apply(EventServices services)
     {

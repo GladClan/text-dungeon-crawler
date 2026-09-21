@@ -51,7 +51,7 @@ public sealed class EventServices(
         return true;
     }
 
-    public ISceneState GetCurrentSceneState()
+    public SceneState GetCurrentSceneState()
     {
         return context.CurrentScene.State;
     }

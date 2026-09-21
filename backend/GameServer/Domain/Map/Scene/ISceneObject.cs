@@ -8,7 +8,7 @@ public interface ISceneContainer
     public Dictionary<int, SceneEvent> Events { get; set; }
     public int CurrentEventId { get; set; }
     public SceneEvent CurrentEvent => Events[CurrentEventId];
-    public ISceneState State { get; init; }
+    public SceneState State { get; init; }
 }
 
 /// <summary>
@@ -52,7 +52,10 @@ public class EventConditions(
 /// For example, if the player pulls a lever to open a door in a different event, the lever state can be tracked here using a bool.
 /// public bool LeverPulled { get; set; }
 /// </example>
-public interface ISceneState { }
+public class SceneState
+{
+    public bool SkillCheckSuccess = false;
+}
 
 /// <summary>
 /// String pairs that hold the source of a dialogue and the message

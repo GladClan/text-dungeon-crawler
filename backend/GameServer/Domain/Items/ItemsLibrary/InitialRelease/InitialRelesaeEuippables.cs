@@ -94,6 +94,7 @@ public sealed class RazeChestplate : Equippable
 /// + 0.3 to Proficiency.spellcasting
 /// CanEquip override to add a minimum Magic requirement
 /// </remarks>
+/// <param cref="tag">Tag: "spider-ring"</param>
 public sealed class SpiderRing : Equippable
 {
     private static readonly double _proficiencyIncrease = 0.3d;
@@ -101,7 +102,7 @@ public sealed class SpiderRing : Equippable
     private static readonly Proficiency _targetProficiency = Proficiency.spellcasting;
     public SpiderRing(): base(
         name: "Ring of Spiders",
-        tag: "fire-ring",
+        tag: "spider-ring",
         cost: 120,
         description: $"Increases spellcasting proficiency and gives knowledge of the {nameof(SummonSpiders)} spell",
         consumable: false,
@@ -186,6 +187,10 @@ public sealed class SpiderRing : Equippable
     }
 }
 
+/// <summary>
+/// A strong helmet that increases the defense of the wearer and adds 0.2 bludgeoning resistance
+/// </summary>
+/// <param cref="tag">Tag: "helmet-stone"</param>
 public sealed class StoneHelmet: Equippable
 {
     private readonly int _defenseIncrease = 4;

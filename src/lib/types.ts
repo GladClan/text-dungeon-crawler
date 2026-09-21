@@ -1,14 +1,14 @@
 export type EventResult = {
-    Success: boolean;
-    RequiresTarget: boolean;
-    Message: string;
-    Targets: TargetOption[];
-    Error: string;
+    success: boolean;
+    requiresTarget: boolean;
+    message: string;
+    targets: TargetOption[];
+    error: string;
 }
 
 export type TargetOption = {
-    EntityId: string;
-    Name: string;
+    entityId: string;
+    name: string;
 }
 
 export type SceneEvent = {
@@ -30,63 +30,77 @@ export type Option = {
     optionTitle: string;
 }
 
-/*
-
-export type Skill = {
-    name: string,
-    cost: number,
-    description: string,
-    element: string,
-    proficiency: string,
-    level: number
-}
-
-export type Item = {
-    name: string,
-    itemType: string,
-    value: number,
-    description: string
-}
-
-export type DamageableEntity = {
+export type Entity = {
+    id: string;
     name: string;
     entityType: string;
     race: string;
+    partyId: string;
     maxHealth: number;
     currentHealth: number;
+    healthBuffer: number;
+    magic: number;
     maxMana: number;
     currentMana: number;
-    magic: number;
     strength: number;
     defense: number;
-    speed: number;
+    attackDamageType: string;
+    dealsMagicDamage: boolean;
     level: number;
     experience: number;
-    resistances: StringNum[];
-    proficiencies: StringNum[];
-    items: Item[];
-    skills: Skill[]
-    visible: boolean;
-    isHidden: boolean;
-    ai: string;
+    isEntityAlive: boolean;
+    displayStats: boolean;
+    speed: number;
+    resistances: {[key: string]: number};
+    proficiencies: {[key: string]: number};
+
+    inventory: Inventory;
+    skills: Skill[];
+
+    aI: string;
+    deathMessage: string;
+    playerControlled: boolean;
+    error: string;
+
+    // Only if entity is BestiaryEntity
+    description: string;
+    bestiaryEntry: string;
+    journalEntry: string;
+    loreEntry1: string;
+    loreEntry2: string;
 }
 
-export type EntityCreator = {
-    name: string,
-    entityType: string,
-    race: string,
-    health: number,
-    mana: number,
-    magic: number,
-    strength: number,
-    defense: number,
-    speed: number,
-    level?: number,
-    experience?: number,
-    resistances?: { resistance: string, value: number }[],
-    proficiencies?: { proficiency: string, value: number }[],
-    visible?: boolean,
-    isHidden?: boolean,
-    ai?: string
+export type Skill = {
+    id: string;
+    name: string;
+    description: string;
+    tag: string;
+    cost: number;
+    element: string;
+    proficiency: string;
+    multiTarget: boolean;
+    targetsLimit: number;
+    level: number;
+    error: string;
 }
-*/
+
+export type Inventory = {
+    gold: number;
+    items: Item[];
+}
+
+export type Item = {
+    id: string;
+    name: string;
+    tag: string;
+    value: string;
+    description: string;
+    consumable: boolean;
+    sellable: boolean;
+    element: string;
+    proficiency: string;
+    armorType: string;
+    armorTypeLimit: number;
+    equipped: boolean;
+    error: string;
+}

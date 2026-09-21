@@ -1,6 +1,6 @@
 namespace GameServer.Domain.Map.Scene.InitialReleaseScenes;
 
-public class CryptSceneState: ISceneState
+public class CryptSceneState: SceneState
 {
     public bool DisturbedTheDead { get; set; } = false;
     public int DisturbedTheCists { get; set; } = 0;         // In a fight, this is the number of weak skeletons

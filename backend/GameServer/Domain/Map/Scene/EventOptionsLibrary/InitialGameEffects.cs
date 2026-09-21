@@ -1,6 +1,7 @@
 using GameServer.Application.Services;
 using GameServer.Contracts.DTOs;
 using GameServer.Contracts.Requests;
+using GameServer.Domain.Enums;
 
 namespace GameServer.Domain.Map.Scene.EventOptionsLibrary;
 
@@ -256,6 +257,12 @@ public class AddOrRemoveGold(
                         error: $"Could not find entity {targetId}"
                     );
                 }
+                if (result.Value == -1)
+                {
+                    return new(
+                        success: false
+                    );
+                }
                 return new(
                     success: true
                 );
@@ -288,6 +295,101 @@ public class StartBattleEffect(
 }
 
 
-/*
-GiveGold(random(10, 20) * random(9, 20))
-*/
+/// <summary>
+/// 
+/// </summary>
+/// <param name="targetSelector">Selector used to find the target entity performing the skill check</param>
+/// <param name="proficiency">Proficiency being checked</param>
+/// <param name="difficulty">
+/// 0 is trivial      ~90% success at 0.8 proficiency<br/>
+/// 1 is easy         ~75% success at 1.0 proficiency<br/>
+/// 2 is medium       ~50% success at 1.0 proficiency<br/>
+/// 3 is hard         ~25% success at 1.0 proficiency<br/>
+/// 4 is impossible   ~10% success at 1.2 proficiency<br/>
+/// And so forth
+/// </param>
+public sealed class EffectSkillCheck(
+    ITargetSelector targetSelector,
+    Proficiency proficiency,
+    int difficulty,
+    string? prompt
+) : IGameEffect
+{
+    private static readonly Random r = new();
+    public EventResultDto Apply(EventServices services)
+    {
+        
+        var targets = targetSelector.GetTargets(services);
+        string? targetId = services.GetPendingResponse();
+
+        if (targets.Count > 0)
+        {
+            if (targetId is null)
+            {
+                Console.WriteLine($"Skillcheck: Finding target...");
+                if (targets.Count == 1)
+                {
+                    targetId = targets[0].EntityId;
+                }
+                else
+                {
+                    return new(
+                        success: false,
+                        requiresTarget: true,
+                        prompt: prompt ?? "",
+                        targets: [..targets]
+                    );
+                }
+            }
+            if (targetId is not null)
+            {
+                Console.WriteLine($"Skill check: target found!");
+                _ = services.CombatService.AddProficiencyEntry(new()
+                {
+                    TargetId = targetId,
+                    Proficiency = proficiency.ToString()
+                });
+
+                var targetProficiency = services.CombatService.GetProficiencyMultiplier(targetId, proficiency.ToString());
+
+                if (targetProficiency is null || targetProficiency.Error.Length > 0)
+                {
+                    return new(
+                        false
+                    );
+                }
+
+                double difficulty_value = difficulty switch
+                {
+                    0 => 90d/0.8d,
+                    1 => 75d,
+                    2 => 50d,
+                    3 => 25d,
+                    4 => 10d/1.2d,
+                    _ => difficulty > 4 ?
+                        10 / (difficulty - 4) / (1 + (10 / (difficulty - 3))) :
+                        difficulty < -7 ?
+                        1001 :
+                        90d / (1 + ((-2 + difficulty) / 10))                    
+                };
+
+                Console.WriteLine($"Skill check: difficulty set to {difficulty_value}, proficiency multiplier is {targetProficiency.Value}");
+                double check = r.Next((int)(100 / targetProficiency.Value));
+                bool successful = check <= difficulty_value;
+
+                Console.WriteLine($"Skill check success: {check} < {difficulty_value}");
+
+                Console.WriteLine($"Skill check {(successful ? "succeeded" : "failed")}");
+
+                services.GetCurrentSceneState().SkillCheckSuccess = successful;
+
+                return new(
+                    success: true
+                );
+            }
+        }
+        return new(
+            error: $"No targets found"
+        );
+    }
+}

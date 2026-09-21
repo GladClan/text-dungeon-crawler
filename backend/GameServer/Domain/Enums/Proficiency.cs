@@ -74,4 +74,20 @@ public static class ProficienciesHierarchies
             _ => null
         };
     }
+
+    public static int GetAncestorCount(Proficiency p)
+    {
+        if (GetParentProficiency(p) is null)
+        {
+            return 0;
+        }
+        int count = 0;
+        Proficiency parent = p;
+        while (GetParentProficiency(parent) is not null)
+        {
+            count++;
+            parent = (Proficiency)GetParentProficiency(parent)!;
+        }
+        return count;
+    }
 }

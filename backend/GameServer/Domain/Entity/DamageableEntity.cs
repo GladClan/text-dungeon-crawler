@@ -9,6 +9,7 @@ namespace GameServer.Domain.Entities;
 
 public class DamageableEntity
 {
+    private readonly double _defaultProficiencyValue = 0.5d;
     private readonly double _levelStackMultiplier = 1.2;
     private readonly double _baseProficiencyMultiplier = 0.00125;
     private readonly int _defenseConstant = 40;
@@ -341,7 +342,7 @@ public class DamageableEntity
     public List<ProficiencyDto> GetProficiencyHierarchy(Proficiency p)
     {
         List<ProficiencyDto> result = [];
-        double value = Proficiencies.TryGetValue(p, out var val) ? val : 0.5d;
+        double value = Proficiencies.TryGetValue(p, out var val) ? val : _defaultProficiencyValue;
         result.Add(new(
             proficiency: p.ToString(),
             value: value
@@ -352,7 +353,7 @@ public class DamageableEntity
             if (ProficienciesHierarchies.GetParentProficiency(current) is Proficiency parentProficiency)
             {
                 current = parentProficiency;
-                value = Proficiencies.TryGetValue(current, out var v) ? v : 0.5d;
+                value = Proficiencies.TryGetValue(current, out var v) ? v : _defaultProficiencyValue;
                 result.Add(new(
                     proficiency: current.ToString(),
                     value: value
@@ -373,7 +374,7 @@ public class DamageableEntity
     /// <returns cref="ProficiencyDto">A key-value pair with the proficiency and the value of that proficiency (default 0.5)</returns>
     public ProficiencyDto GetStoredProficiency(Proficiency p)
     {
-        var result = Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
+        var result = Proficiencies.TryGetValue(p, out var value) ? value : _defaultProficiencyValue;
         return new(
             proficiency: p.ToString(),
             value: result
@@ -394,22 +395,22 @@ public class DamageableEntity
     /// </returns>
     public ProficiencyDto GetProficiencyMultiplier(Proficiency p)
     {
-        double child = Proficiencies.TryGetValue(p, out var value) ? value : 0.5d;
+        double child = Proficiencies.TryGetValue(p, out var value) ? value : _defaultProficiencyValue;
         if (ProficienciesHierarchies.GetParentProficiency(p) is not null)
         {
-            child *= 0.25d;
+            child *= 0.75d;
         }
         double result = 0d;
         Proficiency current = p;
-        double parentMultiplier = 0.25;
+        double parentMultiplier = 0.5;
         while (true)
         {
             if (ProficienciesHierarchies.GetParentProficiency(current) is Proficiency parentProficiency)
             {
                 current = parentProficiency;
-                double parentValue = Proficiencies.TryGetValue(current, out var val) ? val : 0.5d;
+                double parentValue = Proficiencies.TryGetValue(current, out var val) ? val : _defaultProficiencyValue;
                 result += parentValue * parentMultiplier;
-                parentMultiplier *= 0.25d;
+                parentMultiplier *= 0.5d;
             }
             else
             {

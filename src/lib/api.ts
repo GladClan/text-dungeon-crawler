@@ -1,4 +1,4 @@
-import { EventResult, SceneEvent } from "./types";
+import { Entity, EventResult, SceneEvent } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 type RequestOptions = {
@@ -38,10 +38,14 @@ export function GetCurrentEvent() {
     return fetchJson<SceneEvent>(`/api/events/get-current`);
 }
 
-export function ChooseOption(optionId: number){
+export function ChooseOption(optionId: number) {
     return fetchJson<EventResult>(`/api/events/choose-option/${optionId}`, {method: "PATCH"});
 }
 
-export function SelectTarget(targetId: string){
-    return fetchJson<undefined>(`/api/events/select-target`, {method: "POST", body: targetId})
+export function SelectTarget(targetId: string) {
+    return fetchJson<boolean>(`/api/events/select-target`, {method: "POST", body: targetId})
+}
+
+export function GetParty(partyId: string) {
+    return fetchJson<Entity[]>(`/api/entities/party/${partyId}`);
 }

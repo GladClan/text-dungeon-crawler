@@ -1,6 +1,6 @@
 namespace GameServer.Domain.Map.Scene.InitialReleaseScenes;
 
-public class UnintegratedPathwayState: ISceneState
+public class UnintegratedPathwayState: SceneState
 {
     public bool UsedKey { get; set; } = false;
     public bool CrystalBugsSlain { get; set; } = false;
