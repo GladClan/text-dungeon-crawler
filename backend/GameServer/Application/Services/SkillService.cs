@@ -27,9 +27,9 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             if (skill is null)
             {
                 return new SkillDto
-                {
-                    Error = $"{skillId} not found among the skills of {target.Name} ({target.ID})"
-                };
+                (
+                    error: $"{skillId} not found among the skills of {target.Name} ({target.ID})"
+                );
             }
             return skill.SkillToDto();
         }
@@ -44,9 +44,9 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             if (result is null)
             {
                 return new SkillDto
-                {
-                    Error = $"{target.Name} does not have any skill called {name}"
-                };
+                (
+                    error: $"{target.Name} does not have any skill called {name}"
+                );
             }
             return result.SkillToDto();
         }
@@ -61,9 +61,9 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             if (result.Tag.Equals("error"))
             {
                 return new SkillDto
-                {
-                    Error = $"No skill exists with tag: {tag}"
-                };
+                (
+                    error: $"No skill exists with tag: {tag}"
+                );
             }
             if (result.IsLearnable(target))
             {
@@ -73,9 +73,9 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             else
             {
                 return new SkillDto
-                {
-                    Error = $"{target.Name} cannot learn {result.Name}"
-                };
+                (
+                    error: $"{target.Name} cannot learn {result.Name}"
+                );
             }
         }
         return null;
@@ -99,9 +99,9 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             if (result is null)
             {
                 return new SkillDto
-                {
-                    Error = $"{skillId} not found among the skills of {target.Name} ({target.ID})"
-                };
+                (
+                    error: $"{skillId} not found among the skills of {target.Name} ({target.ID})"
+                );
             }
             target.Skills.Remove(result);
             return result.SkillToDto();
@@ -117,9 +117,9 @@ public sealed class SkillService(EntityStore entityStore, ISkillsIndex skillsInd
             if (result is null)
             {
                 return new SkillDto
-                {
-                    Error = $"{name} not found among the skills of {target.Name} ({target.ID})"
-                };
+                (
+                    error: $"{name} not found among the skills of {target.Name} ({target.ID})"
+                );
             }
             target.Skills.Remove(result);
             return result.SkillToDto();

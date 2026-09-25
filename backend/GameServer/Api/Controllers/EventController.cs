@@ -58,4 +58,10 @@ public sealed class EventController(EventServices services) : ControllerBase
         var result = services.SetPendingResponse(targetId);
         return Ok(result);
     }
+
+    [HttpPost("use-item")]
+    public ActionResult UseItem([FromBody] string itemId, List<string> targets)
+    {
+        return BadRequest("Method not yet implemented");
+    }
 }

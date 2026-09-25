@@ -4,6 +4,7 @@ namespace GameServer.Domain.Items;
 
 public abstract class Item
 {
+    private static int _nextId = 0;
     public string Id { get; init; }         // A unique identifier for the item. Created upon item creation.
     public string Tag { get; init; }        // A tag that identifies the item for creation. All items created from the model have the same tag.
     public string Name { get; set; }        // User-facing name, can have multiple of the same item (i.e. "Health Potion")
@@ -17,7 +18,6 @@ public abstract class Item
 
     public Item(string name, string tag, int value, string description, bool consumable, bool sellable, int shopType, int rarity, int collection)
     {
-        Id = NewId();
         Name = name;
         Tag = tag;
         Value = value;
@@ -27,12 +27,14 @@ public abstract class Item
         ShopType = shopType;
         Rarity = rarity;
         Collection = collection;
+        Id = NewId();
     }
 
     public abstract Item Clone();
 
     private string NewId()
     {
-        return $"{Tag}-{OrdinalDateString.GetOrdinalDate(3)}";
+        _nextId++;
+        return $"{Tag}-{OrdinalDateString.GetOrdinalDate(3)}-{_nextId}";
     }
 }

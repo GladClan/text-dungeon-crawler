@@ -191,10 +191,12 @@ public sealed class EventServices(
         }
         var party = EntityService.GetParty(context.CurrentBattle.PartyId);
         var opponentParty = EntityService.GetParty(context.CurrentBattle.OpponentPartyId);
-        return new()
-        {
-            InitiativeOrder = context.CurrentBattle.InitiativeOrder,
-            EntityDtos = [..party, ..opponentParty]
-        };
+        return new(
+            partyId: context.CurrentBattle.PartyId,
+            opponentPartyId: context.CurrentBattle.OpponentPartyId,
+            currentRound: context.CurrentBattle.Turn,
+            initiativeOrder: context.CurrentBattle.InitiativeOrder,
+            entityDtos: [..party, ..opponentParty]
+        );
     }
 }

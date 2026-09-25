@@ -54,7 +54,7 @@ public static class EntityMapper
             Speed = entity.Speed,
             Resistances = entity.Resistances.ToStringKeyDictionary(),
             Proficiencies = entity.Proficiencies.ToStringKeyDictionary(),
-            Inventory = entity.Inventory.ToDto(),
+            Inventory = entity.Inventory.ToDto(entity),
             Skills = [.. entity.Skills.Select(SkillToDto)],
             AI = ai,
             DeathMessage = entity.DeathMessage,
@@ -103,17 +103,18 @@ public static class EntityMapper
 
     public static SkillDto SkillToDto(this Skill skill)
     {
-        return new SkillDto
-        {
-            Id = skill.Id,
-            Tag = skill.Tag,
-            Name = skill.Name,
-            Description = skill.Description,
-            Cost = skill.Cost,
-            Element = skill.Element.ToString(),
-            Proficiency = skill.SkillProficiency.ToString(),
-            Level = skill.Level
-        };
+        return new SkillDto(
+            id: skill.Id,
+            name: skill.Name,
+            description: skill.Description,
+            canUse: true,
+            tag: skill.Tag,
+            cost: skill.Cost,
+            element: skill.Element.ToString(),
+            proficiency: skill.SkillProficiency.ToString(),
+            targetsLimit: skill.TargetsLimit,
+            level: skill.Level
+        );
     }
 
     public static EntityStatsDto StatsToDto(this DamageableEntity entity)

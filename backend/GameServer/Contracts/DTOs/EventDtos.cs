@@ -3,10 +3,19 @@ using GameServer.Domain.Map.Scene;
 
 namespace GameServer.Contracts.DTOs;
 
-public sealed class BattleDto
+public sealed class BattleDto(
+    string partyId,
+    string opponentPartyId,
+    int currentRound,
+    List<InitiativeDto> initiativeOrder,
+    List<DamageableEntityDto> entityDtos
+)
 {
-    public List<InitiativeDto> InitiativeOrder { get; set; } = [];
-    public List<DamageableEntityDto> EntityDtos { get; set;} = [];
+    public string PartyId { get; set; } = partyId;
+    public string OpponentPartyId { get; set; } = opponentPartyId;
+    public int CurrentRound { get; init; } = currentRound;
+    public List<InitiativeDto> InitiativeOrder { get; set; } = initiativeOrder;
+    public List<DamageableEntityDto> EntityDtos { get; set;} = entityDtos;
 }
 
 public sealed class BattleStartDto

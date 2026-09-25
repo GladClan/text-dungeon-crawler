@@ -97,15 +97,20 @@ export type Item = {
     description: string;
     consumable: boolean;
     sellable: boolean;
+    canUse: boolean;
     element: string;
     proficiency: string;
     armorType: string;
     armorTypeLimit: number;
+    targetsLimit: number;
     equipped: boolean;
     error: string;
 }
 
 export type Battle = {
+    partyId: string;
+    opponentPartyId: string;
+    currentRound: number;
     initiativeOrder: Initiative[];
     entityDtos: Entity[];
 }

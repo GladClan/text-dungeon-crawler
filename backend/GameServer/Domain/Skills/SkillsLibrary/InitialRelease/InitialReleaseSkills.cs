@@ -1124,6 +1124,51 @@ public sealed class Firebolt: Skill
     }
 }
 
+/// <summary>
+/// Heals a single target for 15 health
+/// </summary>
+/// <param cref="tag">Tag: "healing"</param>
+public sealed class Heal : Skill
+{
+    public Heal(): base(
+        name: "Healing",
+        tag: "healing",
+        description: "Heals a single target for 15 health",
+        cost: 0,
+        element: DamageType.healing,
+        proficiency: Proficiency.healing,
+        multiTarget: false,
+        targetsLimit: 1,
+        skillType: ActionType.Healing,
+        level: 1
+    ) { }
+    public override bool CanLevelUpSkill()
+    {
+        return false;
+    }
+
+    public override Skill Clone()
+    {
+        return new Heal();
+    }
+
+    public override void LevelUpSkill()
+    {
+        return;
+    }
+
+    public override EffectDto SkillEffect(DamageableEntity source, DamageableEntity mainTarget, List<DamageableEntity>? subTargets, BattleTracker battle)
+    {
+        source.AddProficiencyEntry(SkillProficiency);
+        double buffed = (15d * source.GetProficiencyMultiplier(SkillProficiency).Value) + source.Magic - 10;
+        var result = mainTarget.Heal(source, buffed);
+        return new(
+            message: $"{source.Name} cast Healing on {mainTarget.Name}, healing them for {result.AmountActual} health.",
+            results: [result],
+            wasMagic: true
+        );
+    }
+}
 
 /*
 // Constructor template

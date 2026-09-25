@@ -14,7 +14,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
     {
         if (_entities.TryGet(id, out var target) && target is not null)
         {
-            return target.Inventory.ToDto();
+            return target.Inventory.ToDto(target);
         }
         return null;
     }
@@ -32,7 +32,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
     {
         if (_entities.TryGet(id, out var target) && target is not null)
         {
-            return [..target.Inventory.Items.Select(i => i.ToDto())];
+            return [..target.Inventory.Items.Select(i => i.ToDto(target))];
         }
         return null;
     }
@@ -44,7 +44,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             var item = target.Inventory.Items.FirstOrDefault(i => i.Id.Equals(itemId, StringComparison.InvariantCultureIgnoreCase));
             if (item is not null)
             {
-                return item.ToDto();
+                return item.ToDto(target);
             }
             return new ItemDto(
                 error: $"Item id {itemId} could not be found"
@@ -60,7 +60,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             var item = target.Inventory.Items.FirstOrDefault(i => i.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
             if (item is not null)
             {
-                return item.ToDto();
+                return item.ToDto(target);
             }
             return new ItemDto(
                 error: $"Item with name {name} could not be found"
@@ -76,7 +76,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             var item = target.Inventory.Items.FirstOrDefault(i => i.Tag.Equals(itemTag, StringComparison.InvariantCultureIgnoreCase));
             if (item is not null)
             {
-                return item.ToDto();
+                return item.ToDto(target);
             }
             return new ItemDto(
                 error: $"Item with tag {itemTag} could not be found"
@@ -106,7 +106,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
             );
             }
             target.Inventory.Items.Add(item);
-            return item.ToDto();
+            return item.ToDto(target);
         }
         return null;
     }
@@ -165,7 +165,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
                 other.Inventory.Items = [];
                 target.Inventory.Gold += other.Inventory.Gold;
                 other.Inventory.Gold = 0;
-                return target.Inventory.ToDto();
+                return target.Inventory.ToDto(target);
             }
         }
         return null;
@@ -183,7 +183,7 @@ public sealed class InventoryService(EntityStore entityStore, IItemsIndex itemIn
                 );
             }
             target.Inventory.Items.Remove(result);
-            return result.ToDto();
+            return result.ToDto(target);
         }
         return null;
         // Also an option, but a bad idea:

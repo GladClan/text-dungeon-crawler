@@ -1,5 +1,7 @@
 using GameServer.Domain.Entities;
 using GameServer.Domain.Enums;
+using GameServer.Domain.Items.ItemsLibrary.InitialRelease;
+using GameServer.Domain.Skills.SkillsLibrary.InitialRelease;
 using System.Collections.Concurrent;
 
 namespace GameServer.Infrastructure;
@@ -30,7 +32,18 @@ public sealed class EntityStore
                 {Proficiency.potions, 0.85d},
                 {Proficiency.healing, 0.6d}
             }
-        );
+        )
+        {
+            Inventory = new()
+            {
+                Items = [
+                    new ArmingSword(),
+                    new HealingPotion(),
+                    new HealingPotion(),
+                    new ManaPotion()
+                ]
+            }
+        };
         var mage = new DamageableEntity(
             name: "Mage boy",
             entityType: "mage",
@@ -50,7 +63,23 @@ public sealed class EntityStore
                 {Proficiency.potions, 1d},
                 {Proficiency.slashing, 0.5d}
             }
-        );
+        )
+        {
+            Inventory = new()
+            {
+                Items = [
+                    new Dagger(),
+                    new HealingGem(),
+                    new ManaPotion(),
+                    new ManaPotion()
+                ]
+            },
+            Skills = [
+                new Heal(),
+                new Aeroblade(),
+                new SpellShield()
+            ]
+        };
         var tank = new DamageableEntity(
             name: "Buff Guard",
             entityType: "warrior",
@@ -70,8 +99,24 @@ public sealed class EntityStore
                 {Proficiency.hand, 1d},
                 {Proficiency.potions, 0.85d},
                 {Proficiency.slashing, 0.7d},
-                {Proficiency.healing, 0.75d}
-            });
+                {Proficiency.healing, 0.75d},
+                {Proficiency.stealth, 0.7d}
+            }
+        )
+        {
+            Inventory = new()
+            {
+                Items = [
+                    new Club(),
+                    new HealingPotion(),
+                    new HealingPotion(),
+                    new RazeChestplate()
+                ]
+            },
+            Skills = [
+                new Steal()
+            ]
+        };
 
         _entities[warrior.ID] = warrior;
         _entities[mage.ID] = mage;

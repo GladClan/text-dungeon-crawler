@@ -34,22 +34,28 @@ async function fetchJson<T>(path: string, options: RequestOptions = {}): Promise
     return JSON.parse(raw) as T;
 }
 
-export function GetCurrentEvent() {
+export async function GetCurrentEvent() {
     return fetchJson<SceneEvent>(`/api/events/get-current`);
 }
 
-export function ChooseOption(optionId: number) {
+export async function ChooseOption(optionId: number) {
     return fetchJson<EventResult>(`/api/events/choose-option/${optionId}`, {method: "PATCH"});
 }
 
-export function SelectTarget(targetId: string) {
+export async function SelectTarget(targetId: string) {
     return fetchJson<boolean>(`/api/events/select-target`, {method: "POST", body: targetId})
 }
 
-export function GetParty(partyId: string) {
-    return fetchJson<Entity[]>(`/api/entities/party/${partyId}`);
+export async function GetParty(partyId: string) {
+    const result = fetchJson<Entity[]>(`/api/entities/party/${partyId}`);
+    return result;
 }
 
-export function GetActiveBattle() {
-    return fetchJson<Battle>(`/api/events/battle`);
+export async function GetActiveBattle() {
+    const result = fetchJson<Battle>(`/api/events/battle`);
+    return result;
+}
+
+export async function UseItem(sourceId: string, itemId: string, targetIds: string[]) {
+    // 
 }

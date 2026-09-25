@@ -8,6 +8,7 @@ namespace GameServer.Domain.Skills;
 
 public abstract class Skill
 {
+    private static int _nextId = 0;
     public string Id { get; }
     public string Name { get; set; } = string.Empty;
     public string Tag { get; init; } = string.Empty;
@@ -34,7 +35,6 @@ public abstract class Skill
 
     protected Skill(string name, string tag, string description, int cost, DamageType element, bool multiTarget, int targetsLimit, ActionType skillType, Proficiency proficiency = Proficiency.spellstrike, int level = 0)
     {
-        Id = NewId();
         Name = name;
         Tag = tag;
         Description = description;
@@ -45,12 +45,14 @@ public abstract class Skill
         TargetsLimit = targetsLimit;
         SkillType = skillType;
         Level = level;
+        Id = NewId();
     }
 
     public abstract Skill Clone();
 
     private string NewId()
     {
-        return $"{Name.Trim().PadLeft(5, '_')[..5]}-{OrdinalDateString.GetOrdinalDate(3)}";
+        _nextId++;
+        return $"{Name.Trim().PadLeft(5, '_')[..5]}-{OrdinalDateString.GetOrdinalDate(3)}-{_nextId}";
     }
 }
