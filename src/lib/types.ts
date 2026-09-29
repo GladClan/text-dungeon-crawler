@@ -120,3 +120,11 @@ export type Initiative = {
     entityName: string;
     entityId: string;
 }
+
+export type TurnOver = {
+    currentTurn: number;
+    affectedEntities: Entity[];
+    messages: string[];
+    initiativeOrder: Initiative[];
+    error: string;
+}

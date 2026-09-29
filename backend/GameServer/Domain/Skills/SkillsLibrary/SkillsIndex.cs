@@ -41,14 +41,15 @@ public class SkillsIndex : ISkillsIndex
         }
         return skills;
     }
-    public Skill GetSkillById(string id)
-    {
-        return SkillCatalog.FirstOrDefault(s => s.Id.Equals(id, StringComparison.InvariantCultureIgnoreCase)) ?? new ErrorSkill();
-    }
 
     public Skill GetSkillByTag(string tag)
     {
-        return SkillCatalog.FirstOrDefault(s => s.Tag.Equals(tag, StringComparison.InvariantCultureIgnoreCase)) ?? new ErrorSkill();
+        return SkillCatalog.FirstOrDefault(
+            s => s.Tag.Equals(
+                tag,
+                StringComparison.InvariantCultureIgnoreCase))
+            ?.Clone()
+        ?? new ErrorSkill();
     }
 
     public List<Skill> GetNSkillsByElement(int n, DamageType damageType)

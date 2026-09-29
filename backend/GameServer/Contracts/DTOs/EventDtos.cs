@@ -41,12 +41,36 @@ public sealed class InitiativeDto
     public string EntityId { get; init; } = string.Empty;
 }
 
-public sealed class TurnoverDto
+public sealed class TurnOverDto
 {
+    public TurnOverDto(
+        string error
+    )
+    {
+        Error = error;
+        AffectedEntities = [];
+        Messages = [];
+        InitiativeOrder = [];
+    }
+
+    public TurnOverDto(
+        int round,
+        List<string> messages,
+        List<InitiativeDto> initiative,
+        List<DamageableEntityDto>? affectedEntities = null
+    )
+    {
+        CurrentTurn = round;
+        Messages = messages;
+        InitiativeOrder = initiative;
+        AffectedEntities = affectedEntities ?? [];
+        Error = string.Empty;
+    }
     public int CurrentTurn { get; init; }
-    public List<string> Messages { get; init; } = [];
-    public List<InitiativeDto> InitiativeOrder { get; init; } = [];
-    public string Error { get; init; } = string.Empty;
+    public List<DamageableEntityDto> AffectedEntities { get; init; }
+    public List<string> Messages { get; init; }
+    public List<InitiativeDto> InitiativeOrder { get; init; }
+    public string Error { get; init; }
 }
 
 public sealed class BattleEndDto

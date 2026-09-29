@@ -1,4 +1,4 @@
-import { Battle, Entity, EventResult, SceneEvent } from "./types";
+import { Battle, Entity, EventResult, SceneEvent, TurnOver } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 type RequestOptions = {
@@ -57,5 +57,57 @@ export async function GetActiveBattle() {
 }
 
 export async function UseItem(sourceId: string, itemId: string, targetIds: string[]) {
-    // 
+    const result = fetchJson<TurnOver>(
+        `/api/events/use-item`,
+        {
+            method: "PATCH",
+            body: {
+                sourceId: sourceId,
+                actionId: itemId,
+                targetIds: targetIds
+            }
+    });
+    return result;
+}
+
+export async function UseSkill(sourceId: string, skillId: string, targetIds: string[]) {
+    const result = fetchJson<TurnOver>(
+        `/api/events/use-skill`,
+        {
+            method: "PATCH",
+            body: {
+                sourceId: sourceId,
+                actionId: skillId,
+                targetIds: targetIds
+            }
+    });
+    return result;
+}
+
+export async function DefaultAttack(sourceId: string, targetId: string) {
+    const result = fetchJson<TurnOver>(
+        `/api/events/default-attack`,
+        {
+            method: "PATCH",
+            body: {
+                sourceId: sourceId,
+                actionId: "default",
+                targetIds: [targetId]
+            }
+    });
+    return result;
+}
+
+export async function Defend(sourceId: string) {
+    const result = fetchJson<TurnOver>(
+        `/api/events/defend`,
+        {
+            method: "PATCH",
+            body: {
+                sourceId: sourceId,
+                actionId: "defend",
+                targetIds: [sourceId]
+            }
+    });
+    return result;
 }

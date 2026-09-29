@@ -92,10 +92,10 @@ const PartyViewer: React.FC<props> = ({partyId, setViewParty}) => {
                                     (member.inventory.items.length == 0 ?
                                         <li>Empty...</li>
                                         :
-                                        member.inventory.items.map((item, n) =>
-                                            <li key={`${n}-${item.tag}`} style={{marginLeft: "20px"}}>
-                                                <p style={styles.selector} onClick={() => setItemOrSkillSelected(MatchOrNull(item.name, itemOrSkillSelected))}>{item.name}</p>
-                                                {itemOrSkillSelected === item.name &&
+                                        member.inventory.items.map((item) =>
+                                            <li key={item.id} style={{marginLeft: "20px"}}>
+                                                <p style={styles.selector} onClick={() => setItemOrSkillSelected(MatchOrNull(item.id, itemOrSkillSelected))}>{item.name}</p>
+                                                {itemOrSkillSelected === item.id &&
                                                     <ul style={{marginLeft: "20px"}}>
                                                         <li>{item.description}</li>
                                                         <li>Sell price: {item.sellable ? item.value : "Not sellable"}</li>
@@ -127,8 +127,8 @@ const PartyViewer: React.FC<props> = ({partyId, setViewParty}) => {
                                     :
                                     member.skills.map((s, n) => 
                                         <li key={`${n}-${s.tag}`} style={{marginLeft: "20px"}}>
-                                            <p style={styles.selector} onClick={() => setItemOrSkillSelected(s.name)}>{s.name}</p>
-                                            {itemOrSkillSelected === s.name &&
+                                            <p style={styles.selector} onClick={() => setItemOrSkillSelected(s.id)}>{s.name}</p>
+                                            {itemOrSkillSelected === s.id &&
                                                 <ul style={{marginLeft: "20px"}}>
                                                     <li>{s.description}</li>
                                                     <li>Cost: {s.cost}</li>

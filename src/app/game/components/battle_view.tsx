@@ -1,5 +1,5 @@
-import { GetActiveBattle, GetParty, UseItem } from "@/lib/api";
-import { Battle, Entity, Item, Skill } from "@/lib/types";
+import { DefaultAttack, GetActiveBattle, GetParty, UseItem, UseSkill } from "@/lib/api";
+import { Battle, Entity, Item, Skill, TurnOver } from "@/lib/types";
 import React from "react";
 
 interface props {
@@ -22,83 +22,12 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
     const [battle, setBattle] = React.useState<Battle | null>(null);
     const [party, setParty] = React.useState<Entity[] | null>(null);
     const [opponents, setOpponents] = React.useState<Entity[] | null>(null);
+    const [messages, setMessages] = React.useState<string[]>([]);
     const [itemOrSkillsOpen, setItemOrSkillsOpen] = React.useState<op>(0);
     const [itemOrSkillUsing, setItemOrSkillUsing] = React.useState<op>(0);
     const [action, setAction] = React.useState<Action | null>(null);
     const [selectedTargets, setSelectedTargets] = React.useState<string[]>([]);
     const [targetsLimit, setTargetsLimit] = React.useState(0);
-
-    function SetAction(request: Skill | Item, actionType: op) {
-        // if selected action is the same as the selected action, deselect
-        if (action?.id === request.id) {
-            setAction(null);
-            setTargetsLimit(0);
-            setItemOrSkillUsing(op.closed);
-        }
-        else {
-            setAction({name: request.name, id: request.id});
-            setItemOrSkillUsing(actionType);
-            setTargetsLimit(request.targetsLimit);
-            setTargetsLimit(request.targetsLimit);
-        }
-        // if selected targets exceeds targets limit, cut the excess
-        if (selectedTargets.length > targetsLimit) {
-            setSelectedTargets((prev) => prev.slice(0, targetsLimit));
-        }
-    }
-
-    function UseItemOrSkill() {
-        if (selectedTargets.length == 0 || !action || !currentEntity) {
-            return;
-        }
-        switch (itemOrSkillUsing) {
-            case op.item:
-                const result = UseItem(currentEntity.id, action.id, selectedTargets);
-                break;
-            case op.skill:
-                // use skill id = id && targets = selectedTargets
-                break;
-            case op.default_attack:
-                // use default attack id = selectedTarget[0]
-                break;
-            default:
-                console.log(`Chosen action is type ${itemOrSkillUsing}... does not compute!`);
-        }
-    }
-
-    function SelectTarget(target: string) {
-        if (selectedTargets.includes(target)) {
-            setSelectedTargets(selectedTargets.filter((i) => i !== target));
-        }
-        else if (selectedTargets.length >= targetsLimit) {
-            return;
-        }
-        else {
-            setSelectedTargets((prev) => [...prev, target]);
-        }
-    }
-
-    function GetOpponentTurn(target: string) {
-        // 
-    }
-
-    function ReloadParties(affected: Entity[]) {
-        // 
-    }
-
-    const currentEntity = 
-        battle?.entityDtos.find(
-            m => m.id === battle.initiativeOrder[battle.currentRound].entityId
-        ) ?? null
-
-    const isPartyTurn = currentEntity?.partyId === battle?.partyId;
-
-    function SetItemOrSkillsOpen(itemOrSkill: op){
-        setItemOrSkillsOpen(
-            itemOrSkill === 0 || itemOrSkill === itemOrSkillsOpen ? 0 :
-            itemOrSkill
-        );
-    }
 
     React.useEffect(() => {
         // Get the party using the partyId parameter from the constructor
@@ -123,18 +52,125 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
         LoadResources();
     }, []);
 
+    function SetAction(
+        request: Pick<Skill | Item, "id" | "name" | "targetsLimit">,
+        actionType: op
+    ) {
+        // if selected action is the same as the selected action, deselect
+        if (action?.id === request.id) {
+            setAction(null);
+            setTargetsLimit(0);
+            setItemOrSkillUsing(op.closed);
+            setSelectedTargets([]);
+        }
+        else {
+            setAction({name: request.name, id: request.id});
+            setItemOrSkillUsing(actionType);
+            setTargetsLimit(request.targetsLimit);
+            setTargetsLimit(request.targetsLimit);
+        }
+        // if selected targets exceeds targets limit, cut the excess
+        if (selectedTargets.length > targetsLimit) {
+            setSelectedTargets((prev) => prev.slice(0, targetsLimit));
+        }
+    }
+
+    async function UseItemOrSkill() {
+        if (selectedTargets.length == 0 || !action || !currentEntity) {
+            return;
+        }
+
+        let result: TurnOver | null = null;
+        switch (itemOrSkillUsing) {
+            case op.item:
+                result = await UseItem(currentEntity.id, action.id, selectedTargets);
+                break;
+            case op.skill:
+                result = await UseSkill(currentEntity.id, action.id, selectedTargets);
+                break;
+            case op.default_attack:
+                result = await DefaultAttack(currentEntity.id, selectedTargets[0]);
+                // use default attack id = selectedTarget[0]
+                break;
+            default:
+                console.log(`Chosen action is type ${itemOrSkillUsing}... does not compute!`);
+        }
+
+        if (result !== null){
+            ReloadParties(result);
+        }
+    }
+
+    function SelectTarget(target: string) {
+        if (selectedTargets.includes(target)) {
+            setSelectedTargets(selectedTargets.filter((i) => i !== target));
+        }
+        else if (selectedTargets.length >= targetsLimit && action) {
+            setSelectedTargets((prev) => [...prev.slice(1), target]);
+        }
+        else if (action) {
+            setSelectedTargets((prev) => [...prev, target]);
+        } else {
+            return;
+        }
+    }
+
+    function GetOpponentTurn(target: string) {
+        // 
+    }
+
+    function ReloadParties(newTurn: TurnOver) {
+        setSelectedTargets([]);
+        setAction(null);
+        if (party && opponents) {
+            newTurn.affectedEntities.forEach(e => {
+                if (e.partyId === battle?.partyId) {
+                    setParty(prev => [...party.filter(m => m.id !== e.id), e]);
+                } else {
+                    setOpponents(prev => [...opponents.filter(m => m.id !== e.id), e]);
+                }
+            });
+        }
+        setBattle(
+            battle ?
+                {
+                    partyId: battle.partyId,
+                    opponentPartyId: battle.opponentPartyId,
+                    currentRound: newTurn.currentTurn,
+                    initiativeOrder: newTurn.initiativeOrder,
+                    entityDtos: battle.entityDtos
+                }
+                : battle
+        );
+        setMessages(prev => [...prev, ...newTurn.messages]);
+    }
+
+    const currentEntity = 
+        battle?.entityDtos.find(
+            m => m.id === battle.initiativeOrder[battle.currentRound].entityId
+        ) ?? null
+
+    const isPartyTurn = currentEntity?.partyId === battle?.partyId;
+
+    function SetItemOrSkillsOpen(itemOrSkill: op){
+        setItemOrSkillsOpen(
+            itemOrSkill === 0 || itemOrSkill === itemOrSkillsOpen ? 0 :
+            itemOrSkill
+        );
+    }
+
     return (
         <div style={styles.page}>
             {/* Initiative */}
             <div style={styles.container_initiative}>
-                {/*
-                    Active member / member:
-                        speed
-                */}
                 {battle?.initiativeOrder.map((member) => 
-                    <div key={`initiative-${member.initiative}`}>
+                    <div
+                        key={`initiative-${member.initiative}`}
+                        style={{...(member.entityName === currentEntity?.name ? {boxShadow: "0 0 20px #ddd000", padding: "5px"} : {})}}
+                    >
                         <p>{member.entityName}</p>
                         <p>Initiative: {member.initiative}</p>
+                        {/* member speed */}
                     </div>
                 )}
             </div>
@@ -145,6 +181,14 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                 <div style={styles.buttonsContainer}>
                     <div
                         style={styles.action}
+                        onClick={() => SetAction(
+                            {
+                                id: "default",
+                                name: "unarmed strike",
+                                targetsLimit: 1
+                            },
+                            op.default_attack
+                        )}
                     >
                         Attack
                     </div>
@@ -205,7 +249,18 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                 </div>
 
                 {/* Confirm button (checks that an item/attack has been selected and the targets have also been selected) */}
-                <div style={{...styles.confirmButton, ...(action && selectedTargets.length > 0 ? {} : styles.confirmButtonDisactivated)}}>{action ? `Use ${action.name}` : ""}</div>
+                <div
+                    style={{
+                        ...styles.confirmButton,
+                        ...(action && selectedTargets.length > 0 ?
+                            {} :
+                            styles.confirmButtonDisactivated
+                        )
+                    }}
+                    onClick={() => UseItemOrSkill()}
+                >
+                    {action ? `Use ${action.name}` : ""}
+                </div>
                 
             </div>
 
@@ -240,25 +295,9 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
 
                 {/* Events */}
                 <div style={styles.hud_item}>
-                    <p>
-                        Action selected: {" "}
-                        {action? action.name : "None"}
-                    </p>
-                    {action &&
-                        <>
-                            <p>Maximium targets: {targetsLimit}</p>
-                            {selectedTargets.length > 0 ? (
-                                <>
-                                    <ul>Targets selected:</ul>
-                                    {selectedTargets.map((t, i) =>
-                                        <li key={`${i}-${t}`}>{t}</li>
-                                    )}
-                                </>
-                            ) :
-                            <p>No targets selected.</p>
-                            }
-                        </>
-                    }
+                    {messages.map((message, i) =>
+                        <p key={i}>{message}</p>
+                    )}
                 </div>
 
                 {/* Enemies */}

@@ -1,5 +1,6 @@
 using GameServer.Application.Services;
 using GameServer.Contracts.DTOs;
+using GameServer.Contracts.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameServer.Api.Controllers;
@@ -59,9 +60,77 @@ public sealed class EventController(EventServices services) : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("use-item")]
-    public ActionResult UseItem([FromBody] string itemId, List<string> targets)
+    [HttpPatch("use-item")]
+    public ActionResult UseItem([FromBody] ActionRequest request)
     {
-        return BadRequest("Method not yet implemented");
+        Console.WriteLine($"API request: using item {request.ActionId} from {request.SourceId}");
+        var result = services.DoAction(
+            Domain.Enums.ItemSkillDefault.Item,
+            sourceId: request.SourceId,
+            actionId: request.ActionId,
+            targets: request.TargetIds
+        );
+
+        if (result.Error.Length != 0)
+        {
+            Console.WriteLine(result.Error);
+            return NotFound(result.Error);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPatch("use-skill")]
+    public ActionResult<TurnOverDto> UseSkill([FromBody] ActionRequest request)
+    {
+        var result = services.DoAction(
+            Domain.Enums.ItemSkillDefault.Item,
+            sourceId: request.SourceId,
+            actionId: request.ActionId,
+            targets: request.TargetIds
+        );
+
+        if (result.Error.Length != 0)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPatch("default-attack")]
+    public ActionResult<TurnOverDto> DefaultAttack([FromBody] ActionRequest request)
+    {
+        var result = services.DoAction(
+            Domain.Enums.ItemSkillDefault.Default,
+            sourceId: request.SourceId,
+            actionId: "",
+            targets: request.TargetIds
+        );
+
+        if (result.Error.Length != 0)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPatch("defend")]
+    public ActionResult<TurnOverDto> Defend([FromBody] ActionRequest request)
+    {
+        var result = services.DoAction(
+            Domain.Enums.ItemSkillDefault.Default,
+            sourceId: request.SourceId,
+            actionId: "",
+            targets: []
+        );
+
+        if (result.Error.Length != 0)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result);
     }
 }

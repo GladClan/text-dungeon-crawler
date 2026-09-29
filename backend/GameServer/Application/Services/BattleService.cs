@@ -160,7 +160,7 @@ public sealed class BattleService(
         return result;
     }
 
-    public TurnoverDto? NextTurn()
+    public TurnOverDto? NextTurn()
     {
         if (context.CurrentBattle == null)
         {
@@ -203,13 +203,11 @@ public sealed class BattleService(
         {
             error += string.Join("\n", OnBattleEnd()!);
         }
-        return new TurnoverDto
-        {
-            CurrentTurn = context.CurrentBattle.Turn,
-            Messages = results,
-            InitiativeOrder = context.CurrentBattle.InitiativeOrder,
-            Error = error
-        };
+        return new TurnOverDto(
+            round: context.CurrentBattle.Turn,
+            messages: results,
+            initiative: context.CurrentBattle.InitiativeOrder
+        );
     }
 
     public List<string>? OnBattleEnd()

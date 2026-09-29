@@ -184,7 +184,12 @@ public sealed class CombatService(EntityStore entityStore, GameContext context)
                                     return new(error);
                                 }
                             }
-                            var result = useable.ItemEffect(target, source, targets, context.CurrentBattle);
+                            var result = useable.ItemEffect(
+                                source: source,
+                                mainTarget: target,
+                                subTargets: targets,
+                                battle: context.CurrentBattle
+                            );
                             context.CurrentBattle.AddLogEntry(result);
                             return result;
                         }
@@ -248,7 +253,12 @@ public sealed class CombatService(EntityStore entityStore, GameContext context)
                 return new(error);
             }
         }
-        var result = skill.SkillEffect(source, target, targets, context.CurrentBattle);
+        var result = skill.SkillEffect(
+            source: source,
+            mainTarget: target,
+            subTargets: targets,
+            battle: context.CurrentBattle
+        );
         context.CurrentBattle.AddLogEntry(result);
         return result;
     }

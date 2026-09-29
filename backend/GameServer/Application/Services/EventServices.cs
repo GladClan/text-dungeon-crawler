@@ -1,4 +1,5 @@
 using GameServer.Contracts.DTOs;
+using GameServer.Domain.Enums;
 using GameServer.Domain.Map;
 using GameServer.Domain.Map.Scene;
 
@@ -199,4 +200,70 @@ public sealed class EventServices(
             entityDtos: [..party, ..opponentParty]
         );
     }
+
+    public TurnOverDto DoAction(ItemSkillDefault action, string sourceId, string actionId, List<string> targets)
+    {
+        EffectDto? result = action switch
+        {
+            ItemSkillDefault.Item => CombatService.UseItem(
+                    id: sourceId,
+                    itemId: actionId,
+                    targetId: targets[0],
+                    subTargetIds: targets.Count > 1 ? [.. targets.Skip(1)] : null
+                ),
+            ItemSkillDefault.Skill => CombatService.UseSkill(
+                    id: sourceId,
+                    skillId: actionId,
+                    targetId: targets[0],
+                    subTargetIds: targets.Count > 1 ? [.. targets.Skip(1)] : null
+                ),
+            ItemSkillDefault.Default => CombatService.DefaultAttack(
+                    id: sourceId,
+                    targetId: targets[0]
+                ),
+            ItemSkillDefault.Defend => throw new NotImplementedException(),
+            ItemSkillDefault.Flee => throw new NotImplementedException(),
+            _ => new(error: $"What is it you want to do? What even is {action}???")
+        };
+        if (result is null || result.Error.Length != 0)
+        {
+            return new(
+                error: result?.Error ?? $"Entity id {sourceId} could not be found"
+            );
+        }
+
+        var turnResult = BattleService.NextTurn();
+
+        if (turnResult is null || turnResult.Error.Length != 0)
+        {
+            return new(
+                error: turnResult?.Error ?? "No active battle found"
+            );
+        }
+
+        turnResult.Messages.Insert(0, result.Message);
+
+        // Get the affected entities and add them to the return
+        if (result.Results is not null)
+        {
+            foreach (var e in result.Results)
+            {
+                var entity = EntityService.GetById(e.TargetId);
+                if (entity is not null && !turnResult.AffectedEntities.Any(m => m.Id.Equals(e.TargetId, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    turnResult.AffectedEntities.Add(entity);
+                }
+            }
+        }
+        
+        return turnResult;
+    }
+    // UseItem
+    // UseSkill
+    // DefaultAttack
+        // Check that the entity ids count is not greater than the targets limit
+        // Each activates the thing, which returns the affect to the entity
+        // Get the affected entities
+        // On success, call next round for the battle
+        // return a dto with the messages, affected entities, and the new initiative
 }

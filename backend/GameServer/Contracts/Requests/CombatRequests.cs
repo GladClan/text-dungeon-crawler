@@ -4,6 +4,22 @@ using GameServer.Domain.Enums;
 
 namespace GameServer.Contracts.Requests;
 
+public sealed class ActionRequest
+{
+    
+    [Required]
+    [MinLength(1)]
+    public string SourceId { get; init; } = string.Empty;
+
+    [Required]
+    [MinLength(1)]
+    public string ActionId { get; init; } = string.Empty;
+
+    [Required]
+    [MinLength(1)]
+    public List<string> TargetIds { get; init; } = [];
+}
+
 public sealed class DamageRequest
 {
     [Required]

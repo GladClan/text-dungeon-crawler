@@ -41,14 +41,14 @@ public class ItemsIndex : IItemsIndex
         return items;
     }
 
-    public Item GetItemById(string id)
-    {
-        return ItemCatalog.FirstOrDefault(i => i.Id == id) ?? new ErrorItem();
-    }
-
     public Item GetItemByTag(string tag)
     {
-        return ItemCatalog.FirstOrDefault(i => i.Tag.Equals(tag.Trim(), StringComparison.OrdinalIgnoreCase)) ?? new ErrorItem();
+        return ItemCatalog.FirstOrDefault(
+            i => i.Tag.Equals(
+                tag.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            ?.Clone()
+        ?? new ErrorItem();
     }
 
     public List<Item> GetShopItems(int itemsCount, int shopType, int rarity, int collection)
