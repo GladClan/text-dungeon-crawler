@@ -57,19 +57,22 @@ public sealed class TurnOverDto
         int round,
         List<string> messages,
         List<InitiativeDto> initiative,
-        List<DamageableEntityDto>? affectedEntities = null
+        List<DamageableEntityDto>? affectedEntities = null,
+        bool battleEnd = false
     )
     {
         CurrentTurn = round;
         Messages = messages;
         InitiativeOrder = initiative;
         AffectedEntities = affectedEntities ?? [];
+        BattleEnd = battleEnd;
         Error = string.Empty;
     }
     public int CurrentTurn { get; init; }
     public List<DamageableEntityDto> AffectedEntities { get; init; }
     public List<string> Messages { get; init; }
     public List<InitiativeDto> InitiativeOrder { get; init; }
+    public bool BattleEnd { get; init; }
     public string Error { get; init; }
 }
 

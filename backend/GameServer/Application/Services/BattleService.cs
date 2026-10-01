@@ -131,8 +131,8 @@ public sealed class BattleService(
             return null;
         }
         List<InitiativeDto> result = [];
-        var party = _service.GetParty(context.CurrentBattle.PartyId);
-        var enemies = _service.GetParty(context.CurrentBattle.OpponentPartyId);
+        var party = _service.GetParty(context.CurrentBattle.PartyId).Where(m => m.IsEntityAlive);
+        var enemies = _service.GetParty(context.CurrentBattle.OpponentPartyId).Where(m => m.IsEntityAlive);
         
         List<DamageableEntityDto> members = [.. party, .. enemies];
         members.Sort((a, b) => b.Speed.CompareTo(a.Speed));
@@ -177,7 +177,8 @@ public sealed class BattleService(
             {
                 foreach(IBattleEffect b in g)
                 {
-                    if (!b.Apply(target))
+                    bool result = b.Apply(target);
+                    if (!result)
                     {
                         context.CurrentBattle.RemoveBattleEffect(b);
                     }
@@ -193,20 +194,23 @@ public sealed class BattleService(
             }
         }
         context.CurrentBattle.Turn++;
-        if (context.CurrentBattle.Turn > context.CurrentBattle.InitiativeOrder.Count)
+        if (context.CurrentBattle.Turn >= context.CurrentBattle.InitiativeOrder.Count)
         {
             context.CurrentBattle.Turn = 0;
             context.CurrentBattle.Round++;
             context.CurrentBattle.InitiativeOrder = GetInitiativeOrder()!;
         }
+        bool battleOver = false;
         if (!_service.GetParty(context.CurrentBattle.PartyId).Any(e => e.IsEntityAlive) || !_service.GetParty(context.CurrentBattle.OpponentPartyId).Any(e => e.IsEntityAlive))
         {
+            battleOver = true;
             error += string.Join("\n", OnBattleEnd()!);
         }
         return new TurnOverDto(
             round: context.CurrentBattle.Turn,
             messages: results,
-            initiative: context.CurrentBattle.InitiativeOrder
+            initiative: context.CurrentBattle.InitiativeOrder,
+            battleEnd: battleOver
         );
     }
 

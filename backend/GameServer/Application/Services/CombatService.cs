@@ -276,4 +276,27 @@ public sealed class CombatService(EntityStore entityStore, GameContext context)
         }
         return result;
     }
+
+    public EffectDto? AIAutomaticAction(string sourceId)
+    {
+        if (context.CurrentBattle is null)
+        {
+            return new(
+                error: "No battle found!"
+            );
+        }
+        if (!TryGetEntity(sourceId, out var source))
+        {
+            return null;
+        }
+        if (source.AI is null)
+        {
+            return new(
+                error: $"{source.Name} does not have AI assigned!"
+            );
+        }
+
+        var result = source.AI.GetAction(source, context.CurrentBattle);
+        return result;
+    }
 }

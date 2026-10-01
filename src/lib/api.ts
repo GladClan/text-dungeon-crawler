@@ -111,3 +111,13 @@ export async function Defend(sourceId: string) {
     });
     return result;
 }
+
+export async function GetOpponentTurn(sourceId: string) {
+    const result = fetchJson<TurnOver>(
+        `/api/events/opponent-turn`,
+        {
+            method: "PATCH",
+            body: sourceId
+    });
+    return result;
+}

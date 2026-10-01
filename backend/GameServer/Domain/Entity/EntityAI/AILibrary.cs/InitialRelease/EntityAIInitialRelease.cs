@@ -428,7 +428,7 @@ public class HatesMagic: IEntityAI
     public string SignificantEntityId { get; set; } = "";
     public bool SetSignificantEntityId(string id)
     {
-        throw new NotImplementedException();
+        return false;
     }
 
     public EffectDto GetAction(DamageableEntity source, BattleTracker battle)
@@ -530,6 +530,8 @@ public class CustomOgreAI : IEntityAI
 
     public EffectDto GetAction(DamageableEntity source, BattleTracker battle)
     {
+        Console.WriteLine($"Getting turn for {source.Name}");
+
         // First round: set the opponent party id so it can be used for later decisions
         _oppPartyId ??= source.PartyId.Equals(battle.PartyId, StringComparison.InvariantCultureIgnoreCase) ?
                 // If the source party id is the same as battle party id, set oppPartyId to OpponentPartyId
@@ -594,7 +596,33 @@ public class CustomOgreAI : IEntityAI
                     targetId = null;
                 }
             }
-            targetId ??= battle.GetDamageableEntityDtosInParty(_oppPartyId).OrderByDescending(e => e.Strength).FirstOrDefault()?.Id;
+            if (targetId is null || targetId.Length == 0)
+            {
+                // targetId = battle.GetDamageableEntityDtosInParty(_oppPartyId).OrderByDescending(e => e.Strength).FirstOrDefault()?.Id;
+                List<DamageableEntityDto> potentials = [..battle.GetDamageableEntityDtosInParty(_oppPartyId).OrderByDescending(e => e.Strength)];
+                int i = 0;
+                while ((targetId is null || targetId.Length == 0) && i < potentials.Count)
+                {
+                    targetId = potentials[i].Id;
+                    var target = battle.GetEntity(targetId);
+                    if (target is null || !target.IsEntityAlive)
+                    {
+                        targetId = null;
+                    }
+                    i++;
+                }
+                if (targetId is null)
+                {
+                    Console.WriteLine($"No targets could be found for {source.Name} to attack.");
+                    return new(
+                        error: $"No targets could be found for {source.Name} to attack."
+                    );
+                }
+                else
+                {
+                    SignificantEntityId = targetId;
+                }
+            }
         }
 
         var mainTarget = battle.GetEntity(SignificantEntityId);
@@ -621,7 +649,12 @@ public class CustomOgreAI : IEntityAI
                 }
                 if (mainTarget is not null || subtargets.Count > 0)
                 {
-                    var result = item.ItemEffect(source, mainTarget ?? subtargets[0], mainTarget is not null ? subtargets : subtargets[1..], battle);
+                    var result = item.ItemEffect(
+                        source: source,
+                        mainTarget: mainTarget ?? subtargets[0],
+                        subTargets: mainTarget is not null ? subtargets : subtargets[1..],
+                        battle: battle
+                    );
                     return new(
                         message: resultMessage + result.Message,
                         results: result.Results ?? [],
@@ -630,6 +663,7 @@ public class CustomOgreAI : IEntityAI
                 }
                 else
                 {
+                    Console.WriteLine($"{SignificantEntityId} could not be found. {(SignificantEntityId == null ? "it is null" : "")}");
                     return new(
                         error: $"{SignificantEntityId} could not be found... was it lost???"
                     );
@@ -650,6 +684,7 @@ public class CustomOgreAI : IEntityAI
                 }
                 else
                 {
+                    Console.WriteLine($"{SignificantEntityId} could not be found.");
                     return new(
                         error: $"{SignificantEntityId} could not be found... was it lost???"
                     );
@@ -675,7 +710,12 @@ public class CustomOgreAI : IEntityAI
             }
             if (mainTarget is not null || subtargets.Count > 0)
             {
-                var result = skill.SkillEffect(source, mainTarget ?? subtargets[0], mainTarget is not null? subtargets : subtargets[1..], battle);
+                var result = skill.SkillEffect(
+                    source: source,
+                    mainTarget: mainTarget ?? subtargets[0],
+                    subTargets: mainTarget is not null? subtargets : subtargets[1..],
+                    battle: battle
+                );
                 return new(
                     message: resultMessage + result.Message,
                     results: result.Results ?? [],
@@ -684,6 +724,7 @@ public class CustomOgreAI : IEntityAI
             }
             else
             {
+                Console.WriteLine($"{SignificantEntityId} could not be found. {(SignificantEntityId == null ? "it is null" : "")}");
                 return new(
                     error: $"{SignificantEntityId} could not be found... was it lost???"
                 );
@@ -718,6 +759,10 @@ public class CustomOgreAI : IEntityAI
 
     public bool SetSignificantEntityId(string id)
     {
+        if (id.Length == 0)
+        {
+            return false;
+        }
         SignificantEntityId = id;
         return true;
     }
@@ -733,11 +778,12 @@ public class CustomGoblinAI : IEntityAI
     private readonly int _turns_between_using_skills = 2;
     private int _turns_since_last_used_skill = 1;
     private int _attack_skill_last_used_index = -1;
-    private bool _buffed_from_weakness = false;
     private string? _oppPartyId;
 
     public EffectDto GetAction(DamageableEntity source, BattleTracker battle)
     {
+        Console.WriteLine($"Getting action for {source.Name}");
+
         // First round: set the opponent party id so it can be used for later decisions
         _oppPartyId ??= source.PartyId.Equals(battle.PartyId, StringComparison.InvariantCultureIgnoreCase) ?
                 // If the source party id is the same as battle party id, set oppPartyId to OpponentPartyId
@@ -815,6 +861,7 @@ public class CustomGoblinAI : IEntityAI
         // Attack with item or default attack
         if (mainTarget is not null && _turns_since_last_used_skill < _turns_between_using_skills)
         {
+Console.WriteLine($"Attacking with item");
             _turns_since_last_used_skill++;
 
             // Attack with item
@@ -832,16 +879,23 @@ public class CustomGoblinAI : IEntityAI
                 {
                     subtargets = PopulateTargets(item.TargetsLimit, battle);
                 }
-                return item.ItemEffect(source, mainTarget, subtargets, battle);
+                return item.ItemEffect(
+                    source: source,
+                    mainTarget: mainTarget,
+                    subTargets: subtargets, battle
+                );
             }
 
             // Attack with default attack
-            return source.DefaultAttack(mainTarget);
+            return source.DefaultAttack(
+                target: mainTarget
+            );
         }
 
         // Attack with skill
         if (mainTarget is not null && attackSkills.Count > 0)
         {
+Console.WriteLine($"Attacking with skill");
             _attack_skill_last_used_index++;
             if (_attack_skill_last_used_index >= attackSkills.Count)
             {
@@ -856,7 +910,11 @@ public class CustomGoblinAI : IEntityAI
                 subtargets = PopulateTargets(skill.TargetsLimit, battle);
             }
 
-            return skill.SkillEffect(source, mainTarget, subtargets, battle);
+            return skill.SkillEffect(
+                source: source,
+                mainTarget: mainTarget,
+                subTargets: subtargets, battle
+            );
         }
         
         // Use other skills or items to buff party or other such.
@@ -907,7 +965,210 @@ public class CustomGoblinAI : IEntityAI
 
     public bool SetSignificantEntityId(string id)
     {
-        throw new NotImplementedException();
+        SignificantEntityId = id;
+        return true;
+    }
+}
+
+public class CustomGoblinMageAI : IEntityAI
+{
+    public string Tag { get; } = "goblin-mage";
+    public string SignificantEntityId { get; set; } = "";
+
+    private readonly Random rand = new();
+    private int _attack_item_last_used_index = -1;
+    private readonly int _turns_between_using_items = 2;
+    private int _turns_since_last_used_item = 1;
+    private int _attack_skill_last_used_index = -1;
+    private string? _oppPartyId;
+
+    public EffectDto GetAction(DamageableEntity source, BattleTracker battle)
+    {
+        Console.WriteLine($"Getting action for {source.Name}");
+
+        // First round: set the opponent party id so it can be used for later decisions
+        _oppPartyId ??= source.PartyId.Equals(battle.PartyId, StringComparison.InvariantCultureIgnoreCase) ?
+                // If the source party id is the same as battle party id, set oppPartyId to OpponentPartyId
+                battle.OpponentPartyId :
+                // If the source party id is not battle party id, set oppPartyId to battle PartyId
+                battle.PartyId;
+
+        // get a list of the options that source can use, items and skills.
+        List<Useable> useables = [..
+            source.Inventory.Items
+                .Where(i => i is Useable u && u.CanUse(source))
+                .Select(i => (Useable)i)
+        ];
+        List<Useable> attackItems = [.. 
+            useables.Where(i => i is Useable u && u.ItemType == Enums.ActionType.Attack)
+        ];
+        List<Useable> healingItems = [..
+            useables.Where(i => i is Useable u && u.ItemType == Enums.ActionType.Healing)
+        ];
+        List<Useable> otherItems = [..
+            useables.Where(i => i is Useable u && u.ItemType != Enums.ActionType.Attack && u.ItemType != Enums.ActionType.Healing)
+        ];
+
+        // List<Skill> useableSkills = [..
+        //     source.Skills
+        //         .Where(s => s.CanUse(source))
+        // ];
+        List<Skill> attackSkills = [.. 
+            source.Skills   // useableSkills
+                .Where(s => s.SkillType == Enums.ActionType.Attack)
+        ];
+        List<Skill> healingSkills = [..
+            source.Skills   // useableSkills
+                .Where(s => s.SkillType == Enums.ActionType.Healing)
+        ];
+        List<Skill> otherSkills = [..
+            source.Skills   // useableSkills
+                .Where(s => s.SkillType != Enums.ActionType.Attack && s.SkillType != Enums.ActionType.Healing)
+        ];
+
+        // Check if there is party in trouble and heal them if necessary
+        var critHealthId = battle.GetPartyMemberIdAtCriticalHealth(source.PartyId);
+        if (critHealthId is not null)
+        {
+            var target = battle.GetEntity(critHealthId);
+            if (target is not null && (healingItems.Count > 0 || healingSkills.Count > 0))
+            {
+                if (healingItems.Count > 0)
+                {
+                    return healingItems[0].ItemEffect(source, target, null, battle);
+                }
+                else
+                {
+                    return healingSkills[0].SkillEffect(source, target, null, battle);
+                }
+            }
+        }
+
+        // Set target to attack
+        // First check to see if there is already a target and if it is alive
+        bool isTargetAlive = false;
+        if (SignificantEntityId.Length > 0)
+        {
+            var targetEntity = battle.GetEntity(SignificantEntityId);
+            isTargetAlive = targetEntity is not null && targetEntity.IsEntityAlive;
+        }
+        if (SignificantEntityId.Length == 0 || !isTargetAlive)
+        {
+            // Set target to the weakest entity
+            SetSignificantEntityId(
+                battle.GetDamageableEntityDtosInParty(_oppPartyId).OrderByDescending(e => -e.Strength).FirstOrDefault(e => e.IsEntityAlive)?.Id ?? ""
+            );
+        }
+        var mainTarget = battle.GetEntity(SignificantEntityId);
+        // Attack with item or default attack
+        if (mainTarget is not null && _turns_since_last_used_item > _turns_between_using_items)
+        {
+Console.WriteLine($"Attacking with item");
+            _turns_since_last_used_item++;
+
+            // Attack with item
+            if (attackItems.Count > 0 && rand.Next(100) > 20)
+            {
+                // Cycle through attack items
+                _attack_item_last_used_index++;
+                if (_attack_item_last_used_index >= attackItems.Count)
+                {
+                    _attack_item_last_used_index = 0;
+                }
+                var item = attackItems[_attack_item_last_used_index];
+                List<DamageableEntity> subtargets = [];
+                if (item.MultiTarget)
+                {
+                    subtargets = PopulateTargets(item.TargetsLimit, battle);
+                }
+                return item.ItemEffect(
+                    source: source,
+                    mainTarget: mainTarget,
+                    subTargets: subtargets, battle
+                );
+            }
+
+            // Attack with default attack
+            return source.DefaultAttack(
+                target: mainTarget
+            );
+        }
+
+        // Attack with skill
+        if (mainTarget is not null && attackSkills.Count > 0)
+        {
+Console.WriteLine($"Attacking with skill");
+            _attack_skill_last_used_index++;
+            if (_attack_skill_last_used_index >= attackSkills.Count)
+            {
+                _attack_skill_last_used_index = 0;
+            }
+
+            var skill = attackSkills[_attack_skill_last_used_index];
+
+            List<DamageableEntity> subtargets = [];
+            if (skill.MultiTarget)
+            {
+                subtargets = PopulateTargets(skill.TargetsLimit, battle);
+            }
+
+            return skill.SkillEffect(
+                source: source,
+                mainTarget: mainTarget,
+                subTargets: subtargets, battle
+            );
+        }
+        
+        // Use other skills or items to buff party or other such.
+        if (_turns_since_last_used_item < _turns_between_using_items)
+        {
+            _turns_since_last_used_item++;
+
+            var firendlyTargets = PopulateTargets(10, battle, source.PartyId);
+            // Try other items first
+            if (otherItems.Count > 0)
+            {
+                // 
+            }
+            if (otherSkills.Count > 0)
+            {
+                // 
+            }
+        }
+        return new(
+            message: $"{source.Name} regrets that Isaac could not be bothered to finish programming its AI.\n{source.Name} now had nothing to do...",
+            results: [],
+            wasMagic: false
+        );
+    }
+
+    private List<DamageableEntity> PopulateTargets(int targetsLimit, BattleTracker battle, string? partyId = null)
+    {
+        if (_oppPartyId is null && partyId is null)
+        {
+            return [];
+        }
+        List<DamageableEntity> result = [];
+        List<DamageableEntityDto> potentialTargets = [..
+            battle.GetDamageableEntityDtosInParty((partyId ?? _oppPartyId)!)
+                .OrderByDescending(e => -e.Strength)
+                .Where(e => e.IsEntityAlive)
+        ];
+        for (int i = 0; i < targetsLimit && i < potentialTargets.Count; i++)
+        {
+            var target = battle.GetEntity(potentialTargets[i].Id);
+            if (target is not null)
+            {
+                result.Add(target);
+            }
+        }
+        return result;
+    }
+
+    public bool SetSignificantEntityId(string id)
+    {
+        SignificantEntityId = id;
+        return true;
     }
 }
 

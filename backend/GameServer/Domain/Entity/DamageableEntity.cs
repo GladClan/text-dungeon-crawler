@@ -12,7 +12,7 @@ public class DamageableEntity
     private readonly double _defaultProficiencyValue = 0.5d;
     private readonly double _levelStackMultiplier = 1.2;
     private readonly double _baseProficiencyMultiplier = 0.00125;
-    private readonly int _defenseConstant = 40;
+    private readonly int _defenseConstant = 10;
     private static int _entityCounter = 0;
     public string ID { get; }
     public string Name { get; set; }
@@ -139,7 +139,7 @@ public class DamageableEntity
         }
         // apply healing resistance if exists
         var healingResistance = GetResistanceMultiplier(DamageType.healing);
-        double actual = amount * healingResistance.Value;
+        double actual = Math.Round(amount - amount * healingResistance.Value, 5);
         CurrentHealth += Math.Min(actual, MaxHealth - CurrentHealth);
         bool wasFatal = DidEntityDie();
         return new(
@@ -212,12 +212,19 @@ public class DamageableEntity
             );
         }
         var resistanceDto = GetResistanceMultiplier(damageType);
-        double actual = amount * resistanceDto.Value;
-        HealthBuffer -= actual;
-        if (HealthBuffer < 0)
+        double actual = Math.Round(amount - amount * resistanceDto.Value, 5);
+        if (actual > 0)
         {
-            CurrentHealth += HealthBuffer;
-            HealthBuffer = 0;
+            HealthBuffer -= actual;
+            if (HealthBuffer < 0)
+            {
+                CurrentHealth += HealthBuffer;
+                HealthBuffer = 0;
+            }
+        }
+        else
+        {
+            CurrentHealth -= actual;
         }
         if (CurrentHealth > MaxHealth)
         {
@@ -255,13 +262,13 @@ public class DamageableEntity
 
         string defaultMessage = "{SourceName} dealt {AmountActual} {AttackDamageType} damage to {TargetName}";
         string message = 
-            DefaultAttackMessageString ?? defaultMessage
+            (DefaultAttackMessageString ?? defaultMessage)
             .Replace("{SourceName}", Name ?? "")
             .Replace("{TargetName}", target.Name ?? "")
             .Replace("{AttackDamageType}", AttackDamageType.ToString())
             .Replace("{AmountSent}", result.AmountSent.ToString("F2")) // "F2" formats doubles to 2 decimal places
             .Replace("{AmountActual}", result.AmountActual.ToString("F2")); // "F2" formats doubles to 2 decimal places
-        
+
         return new(
             message: message,
             results: [result],
@@ -419,7 +426,7 @@ public class DamageableEntity
         }
         return new(
             proficiency: p.ToString(),
-            value: child + result
+            value: Math.Round(child + result, 5)
         );
     }
 
@@ -437,8 +444,8 @@ public class DamageableEntity
         var result = Resistances.TryGetValue(dtEnum, out var value) ? value : 1d;
         if (DamageTypeHierarchies.IsPhysicalDamage(dtEnum))
         {
-            result += Math.Abs(result) * (Defense / _defenseConstant);
-        } else 
+            result *= Defense / _defenseConstant;
+        } else
         if (
             DamageTypeHierarchies.IsMagicDamage(dtEnum) &&
             dtEnum != DamageType.spellstrike &&

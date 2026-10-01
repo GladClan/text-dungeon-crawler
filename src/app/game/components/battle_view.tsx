@@ -1,4 +1,4 @@
-import { DefaultAttack, GetActiveBattle, GetParty, UseItem, UseSkill } from "@/lib/api";
+import { DefaultAttack, GetActiveBattle, GetOpponentTurn, GetParty, UseItem, UseSkill } from "@/lib/api";
 import { Battle, Entity, Item, Skill, TurnOver } from "@/lib/types";
 import React from "react";
 
@@ -28,6 +28,7 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
     const [action, setAction] = React.useState<Action | null>(null);
     const [selectedTargets, setSelectedTargets] = React.useState<string[]>([]);
     const [targetsLimit, setTargetsLimit] = React.useState(0);
+    const opponentTurnRunning = React.useRef(false);
 
     React.useEffect(() => {
         // Get the party using the partyId parameter from the constructor
@@ -52,10 +53,26 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
         LoadResources();
     }, []);
 
+    const currentEntity = 
+        battle?.entityDtos.find(
+            m => m.id === battle.initiativeOrder[battle.currentRound % battle.initiativeOrder.length].entityId
+        ) ?? null
+
+    const isPartyTurn = currentEntity?.partyId === battle?.partyId;
+
+    function SetItemOrSkillsOpen(itemOrSkill: op){
+        setItemOrSkillsOpen(
+            itemOrSkill === 0 || itemOrSkill === itemOrSkillsOpen ? 0 :
+            itemOrSkill
+        );
+    }
+
     function SetAction(
         request: Pick<Skill | Item, "id" | "name" | "targetsLimit">,
         actionType: op
     ) {
+        setItemOrSkillsOpen(op.closed);
+
         // if selected action is the same as the selected action, deselect
         if (action?.id === request.id) {
             setAction(null);
@@ -76,6 +93,7 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
     }
 
     async function UseItemOrSkill() {
+        setItemOrSkillsOpen(op.closed);
         if (selectedTargets.length == 0 || !action || !currentEntity) {
             return;
         }
@@ -102,6 +120,7 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
     }
 
     function SelectTarget(target: string) {
+        setItemOrSkillsOpen(op.closed);
         if (selectedTargets.includes(target)) {
             setSelectedTargets(selectedTargets.filter((i) => i !== target));
         }
@@ -115,22 +134,73 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
         }
     }
 
-    function GetOpponentTurn(target: string) {
-        // 
-    }
+    // Get opponent turn
+    React.useEffect(() => {
+        if (isPartyTurn) {
+            return;
+        }
+
+        opponentTurnRunning.current = true;
+
+        async function RunOpponentTurn() {
+            if (!battle || !currentEntity) {
+                return;
+            }
+
+            try {
+                // Give it a pause for presentation
+                await new Promise(resolve => setTimeout(resolve, 750));
+
+                const result = await GetOpponentTurn(currentEntity.id);
+                ReloadParties(result);
+            } catch (err) {
+                console.log("Opponent turn failed.");
+                console.log(err);
+            } finally {
+                opponentTurnRunning.current = false;
+            }
+        }
+
+        RunOpponentTurn();
+    }, [battle, currentEntity, isPartyTurn]);
 
     function ReloadParties(newTurn: TurnOver) {
+        setItemOrSkillsOpen(op.closed);
         setSelectedTargets([]);
         setAction(null);
+
+        const updatedParty = party;
         if (party && opponents) {
-            newTurn.affectedEntities.forEach(e => {
-                if (e.partyId === battle?.partyId) {
-                    setParty(prev => [...party.filter(m => m.id !== e.id), e]);
-                } else {
-                    setOpponents(prev => [...opponents.filter(m => m.id !== e.id), e]);
-                }
-            });
+            if (newTurn.affectedEntities.some(m => m.partyId === battle?.partyId)) {
+                newTurn.affectedEntities.forEach(e => {
+                    if (e.partyId === battle?.partyId) {
+                        const target = party.find(m => m.id === e.id);
+                        if (target) {
+                            party[
+                                party.indexOf(target)
+                            ] = e;
+                        }
+                    }
+                });
+                setParty(updatedParty);
+            }
+
+            const updatedOpponents = opponents;
+            if (newTurn.affectedEntities.some(m => m.partyId === battle?.opponentPartyId)) {
+                newTurn.affectedEntities.forEach(e => {
+                    if (e.partyId === battle?.opponentPartyId) {
+                        const target = opponents.find(m => m.id === e.id);
+                        if (target) {
+                            opponents[
+                                opponents.indexOf(target)
+                            ] = e;
+                        }
+                    }
+                });
+                setOpponents(updatedOpponents);
+            }
         }
+
         setBattle(
             battle ?
                 {
@@ -138,25 +208,11 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                     opponentPartyId: battle.opponentPartyId,
                     currentRound: newTurn.currentTurn,
                     initiativeOrder: newTurn.initiativeOrder,
-                    entityDtos: battle.entityDtos
+                    entityDtos: (party && opponents ? [...party, ...opponents] : battle.entityDtos)
                 }
                 : battle
         );
         setMessages(prev => [...prev, ...newTurn.messages]);
-    }
-
-    const currentEntity = 
-        battle?.entityDtos.find(
-            m => m.id === battle.initiativeOrder[battle.currentRound].entityId
-        ) ?? null
-
-    const isPartyTurn = currentEntity?.partyId === battle?.partyId;
-
-    function SetItemOrSkillsOpen(itemOrSkill: op){
-        setItemOrSkillsOpen(
-            itemOrSkill === 0 || itemOrSkill === itemOrSkillsOpen ? 0 :
-            itemOrSkill
-        );
     }
 
     return (
@@ -166,7 +222,7 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                 {battle?.initiativeOrder.map((member) => 
                     <div
                         key={`initiative-${member.initiative}`}
-                        style={{...(member.entityName === currentEntity?.name ? {boxShadow: "0 0 20px #ddd000", padding: "5px"} : {})}}
+                        style={{...(member.entityId === currentEntity?.id ? {boxShadow: "0 0 20px #ddd000", padding: "5px"} : {})}}
                     >
                         <p>{member.entityName}</p>
                         <p>Initiative: {member.initiative}</p>
@@ -287,7 +343,12 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                         >
                             <h2>{member.name}</h2>
                             <p>Level: {member.level}</p>
-                            <p>Health: {member.currentHealth} / {member.maxHealth}</p>
+                            <p>Speed: {member.speed}</p>
+                            <p>Health: {parseFloat(member.currentHealth.toFixed(3))} / {member.maxHealth}
+                                {member.healthBuffer > 0 && 
+                                    <span style={{marginLeft: "20px"}}>Buffer: {member.healthBuffer}</span>
+                                }
+                            </p>
                             <p>Mana: {member.currentMana} / {member.maxMana}</p>
                         </div>
                     )}
@@ -296,7 +357,12 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                 {/* Events */}
                 <div style={styles.hud_item}>
                     {messages.map((message, i) =>
-                        <p key={i}>{message}</p>
+                        <p
+                            style={{marginBottom: "20px"}}
+                            key={i}
+                        >
+                            {message}
+                        </p>
                     )}
                 </div>
 
@@ -322,7 +388,8 @@ const BattleView: React.FC<props> = ({ setBattleActive }) => {
                             {member.displayStats &&
                                 <>
                                     <p>Level: {member.level}</p>
-                                    <p>Health: {member.currentHealth} / {member.maxHealth}</p>
+                                    <p>Speed: {member.speed}</p>
+                                    <p>Health: {parseFloat(member.currentHealth.toFixed(3))} / {member.maxHealth}</p>
                                     <p>Mana: {member.currentMana} / {member.maxMana}</p>
                                 </>
                             }
@@ -427,7 +494,8 @@ const styles: { [key: string]: React.CSSProperties} = {
         display: "grid",
         gridTemplateColumns: "1fr 1fr 1fr",
         gap: "5vw",
-        height: "100%"
+        height: "100%",
+        maxHeight: "70vh",
     },
     hud_item: {
         height: "100%",

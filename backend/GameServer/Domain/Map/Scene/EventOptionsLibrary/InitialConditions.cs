@@ -113,7 +113,7 @@ public class HasGold(
                 partyGold += m.Inventory.Gold;
             }
             return new(
-                success: partyGold > _targetGoldAmount
+                success: partyGold >= _targetGoldAmount
             );
         }
         return new(

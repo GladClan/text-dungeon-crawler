@@ -51,12 +51,12 @@ public class QuickTestSceneObject: ISceneContainer
             new() { Type = DamageType.soaking.ToString(), Value = -0.1 },
         ],
         Proficiencies = [
-            new() { Type = Proficiency.bludgeoning.ToString(), Value = 1 },
-            new() { Type = Proficiency.bow.ToString(), Value = 0.85 },
-            new() { Type = Proficiency.piercing.ToString(), Value = 1.2 },
-            new() { Type = Proficiency.slashing.ToString(), Value = 0.95 },
-            new() { Type = Proficiency.hand.ToString(), Value = 0.98 },
-            new() { Type = Proficiency.healing.ToString(), Value = 0.75 },
+            new() { Type = Proficiency.bludgeoning.ToString(), Value = 1.1 },
+            new() { Type = Proficiency.bow.ToString(), Value = 0.95 },
+            new() { Type = Proficiency.piercing.ToString(), Value = 1.3 },
+            new() { Type = Proficiency.slashing.ToString(), Value = 1.05 },
+            new() { Type = Proficiency.hand.ToString(), Value = 1.08 },
+            new() { Type = Proficiency.healing.ToString(), Value = 0.85 },
             new() { Type = Proficiency.nobility.ToString(), Value = 1.3 },
         ],
         ItemTags = [

@@ -104,17 +104,16 @@ public class BattleTracker
         return _service.GetDamageableEntityObject(id);
     }
 
-    
     public bool ExistsPartyMemberAtCriticalHealth(string partyId, int criticalPercentage = 18)
     {
         var party = _service.GetParty(partyId);
-        return party.Any(e => (e.CurrentHealth / e.MaxHealth * 100) <= criticalPercentage);
+        return party.Any(m => m.IsEntityAlive && (m.CurrentHealth / m.MaxHealth * 100) <= criticalPercentage);
     }
 
     public string? GetPartyMemberIdAtCriticalHealth(string partyId, int criticalPercentage = 18)
     {
         var party = _service.GetParty(partyId);
-        var result = party.FirstOrDefault(m => (m.CurrentHealth / m.MaxHealth * 100) <= criticalPercentage);
+        var result = party.FirstOrDefault(m => m.IsEntityAlive && (m.CurrentHealth / m.MaxHealth * 100) <= criticalPercentage);
         return result?.Id;
     }
 

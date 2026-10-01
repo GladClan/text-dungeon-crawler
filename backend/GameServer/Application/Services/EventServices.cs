@@ -244,26 +244,62 @@ public sealed class EventServices(
         turnResult.Messages.Insert(0, result.Message);
 
         // Get the affected entities and add them to the return
-        if (result.Results is not null)
-        {
-            foreach (var e in result.Results)
-            {
-                var entity = EntityService.GetById(e.TargetId);
-                if (entity is not null && !turnResult.AffectedEntities.Any(m => m.Id.Equals(e.TargetId, StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    turnResult.AffectedEntities.Add(entity);
-                }
-            }
-        }
+        PopulateAffectedEntities(turnResult.AffectedEntities, result.Results);
         
         return turnResult;
     }
-    // UseItem
-    // UseSkill
-    // DefaultAttack
-        // Check that the entity ids count is not greater than the targets limit
-        // Each activates the thing, which returns the affect to the entity
-        // Get the affected entities
-        // On success, call next round for the battle
-        // return a dto with the messages, affected entities, and the new initiative
+
+    public TurnOverDto DoOpponentTurn(string entityId)
+    {
+        var result = CombatService.AIAutomaticAction(sourceId: entityId);
+        if (result is null || result.Error.Length != 0)
+        {
+            return new(
+                error: result?.Error ?? $"Entity id {entityId} could not be found"
+            );
+        }
+
+        var turnResult = BattleService.NextTurn();
+
+        if (turnResult is null || turnResult.Error.Length != 0)
+        {
+            return new(
+                error: turnResult?.Error ?? "No active battle found"
+            );
+        }
+
+        turnResult.Messages.Insert(0, result.Message);
+
+        PopulateAffectedEntities(turnResult.AffectedEntities, result.Results);
+
+        return turnResult;
+    }
+
+    private bool PopulateAffectedEntities(List<DamageableEntityDto> affectedList, List<DamageResultDto>? request)
+    {
+        if (request is null)
+        {
+            return false;
+        }
+        foreach (var e in request)
+        {
+            if (!affectedList.Any(m => m.Id.Equals(e.TargetId, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                var entity = EntityService.GetById(id: e.TargetId);
+                if (entity is not null)
+                {
+                    affectedList.Add(entity);
+                }
+            }
+            if (!affectedList.Any(m => m.Id.Equals(e.SourceId, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                var entity = EntityService.GetById(id: e.SourceId);
+                if (entity is not null)
+                {
+                    affectedList.Add(entity);
+                }
+            }
+        }
+        return true;
+    }
 }

@@ -8,7 +8,7 @@ public static class InitialReleaseRepository
     {
         {
             "error",
-            new BeastiaryEntity(
+            new(
                 name: "m̴̪̟̒͆y̸̑͜s̸͚̜̘̲̋̋̀̕͜͜͝t̴̲̞͕̤͂͝e̵̺̤͂̑͋̀́̅r̷̟̳̼̪͛ỉ̵͙͎̟̮͎̐̊̒̈́̂ͅo̵̪͕͑̿̈̇̄ṳ̴̗̰̱̣̣͑s̸̩̠̩͐̔͝ ̴̢̒ç̴̠̏̂̇̇̾o̶̖̙͔͕͍͕̓r̶̗͆̽̍̂̓͝r̶̦̭̗̄̆̆͛̔͠u̶̬̗̮̺̪̫͂̀̋̚p̵̗̆̉t̷̤͉͍̞̫̪̂i̸̦͎̭̬̊̈́̐̅͝ͅõ̴̡̫̥͊n̶̡̡͖͈̍͂̾̔͠",
                 entityType: "monster",
                 race: "None",
@@ -57,7 +57,7 @@ public static class InitialReleaseRepository
         },
         {
             "ogre-brute",
-            new BeastiaryEntity(
+            new(
                 name: "Ogre Brute",
                 entityType: "monster",
                 race: "Ogre",
@@ -163,7 +163,7 @@ public static class InitialReleaseRepository
                 journalEntry: "",
                 loreEntry1: "",
                 loreEntry2: "",
-                defaultAi: "goblin",
+                defaultAi: "goblin-mage",
                 initialInventoryTags: ["dagger", "potion-mana", "potion-mana", "potion-healing"],
                 initialSkillTags: ["firecast", "firebolt"]
             )

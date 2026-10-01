@@ -388,7 +388,7 @@ public sealed class OgreSlayerPolearm: Useable
         List<DamageResultDto> results = [];
         results.Add(mainTarget.TakeDamage(source, buffed, Element));
 
-        string resultMessage = $"{source.Name} slices {mainTarget.Name} with their {Name}, dealing {results[0]} slicing damage.";
+        string resultMessage = $"{source.Name} slices {mainTarget.Name} with their {Name}, dealing {results[0].AmountActual} slicing damage.";
 
         if (r.Next(100) < source.GetProficiencyMultiplier(Proficiency.spellstrike).Value * 20)
         {

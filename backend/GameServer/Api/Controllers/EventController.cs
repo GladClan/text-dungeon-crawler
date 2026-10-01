@@ -63,7 +63,6 @@ public sealed class EventController(EventServices services) : ControllerBase
     [HttpPatch("use-item")]
     public ActionResult UseItem([FromBody] ActionRequest request)
     {
-        Console.WriteLine($"API request: using item {request.ActionId} from {request.SourceId}");
         var result = services.DoAction(
             Domain.Enums.ItemSkillDefault.Item,
             sourceId: request.SourceId,
@@ -84,7 +83,7 @@ public sealed class EventController(EventServices services) : ControllerBase
     public ActionResult<TurnOverDto> UseSkill([FromBody] ActionRequest request)
     {
         var result = services.DoAction(
-            Domain.Enums.ItemSkillDefault.Item,
+            Domain.Enums.ItemSkillDefault.Skill,
             sourceId: request.SourceId,
             actionId: request.ActionId,
             targets: request.TargetIds
@@ -92,6 +91,7 @@ public sealed class EventController(EventServices services) : ControllerBase
 
         if (result.Error.Length != 0)
         {
+            Console.WriteLine(result.Error);
             return NotFound(result.Error);
         }
 
@@ -132,5 +132,18 @@ public sealed class EventController(EventServices services) : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpPatch("opponent-turn")]
+    public ActionResult<TurnOverDto> GetOpponentTurn([FromBody] string entityId)
+    {
+        var result = services.DoOpponentTurn(entityId);
+        if (result.Error.Length != 0)
+        {
+            Console.Write($"Get opponent turn failed!");
+            Console.WriteLine(result.Error);
+            return NotFound(result.Error);
+        }
+        return result;
     }
 }
